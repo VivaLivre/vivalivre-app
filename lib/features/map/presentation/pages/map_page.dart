@@ -134,23 +134,25 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
         return;
       }
 
-      // ── 2.1 Verifica se a precisão é "Exata" (Android 12+ / iOS 14+) ─────────
+      // ── 2.5. VERIFICAÇÃO DE PRECISÃO (EXATA VS APROXIMADA) ───────────────────
+      // Verifica se o usuário escolheu a bolinha "Aproximada" na tela do Android 12+
       final accuracy = await Geolocator.getLocationAccuracy();
       if (accuracy == LocationAccuracyStatus.reduced) {
-        _showSnack('O VivaLivre funciona melhor com "Localização Exata". Ativa-a nas definições.');
-        // Opcional: podemos deixar continuar com precisão reduzida ou parar aqui.
-        // Por agora, avisamos e tentamos obter a posição mesmo assim.
+        _showSnack('O VivaLivre precisa da localização EXATA para achar banheiros. Altere nas configurações.');
+        
+        // Opcional: Abre as configurações do celular direto para a pessoa arrumar
+        await Future.delayed(const Duration(seconds: 2));
+        await Geolocator.openAppSettings();
+        return;
       }
 
-      // ── 4. Configuração de plataforma específica ─────────────────────────────
+      // ── 3. CRÍTICO: Limpeza de cache — descarta a última posição conhecida ───
       final LocationSettings locationSettings;
 
       if (defaultTargetPlatform == TargetPlatform.android) {
         locationSettings = AndroidSettings(
           accuracy: LocationAccuracy.bestForNavigation,
-          // BYPASS do Fused Location Provider — usa o chip GPS de hardware direto.
           forceLocationManager: true,
-          // 15 segundos: margem suficiente para cold-start de satélites GPS.
           timeLimit: const Duration(seconds: 15),
         );
       } else if (defaultTargetPlatform == TargetPlatform.iOS ||
@@ -175,7 +177,6 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
 
       if (!mounted) return;
 
-      // ── 6. Validação extra de precisão ───────────────────────────────────────
       if (pos.accuracy > 50) {
         _showSnack(
           'Precisão baixa (±${pos.accuracy.toInt()} m). '
