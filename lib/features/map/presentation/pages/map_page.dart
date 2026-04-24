@@ -24,7 +24,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
   // Mock data — agora com dados de teste em Mauá, SP
   final List<Map<String, dynamic>> _bathrooms = [
     {'id': 1, 'name': 'Shopping de Mauá (Mauá Plaza Shopping)', 'rating': 4.8, 'distance': '0.0 km', 'tags': ['Acessível', 'Limpo'], 'open': true, 'lat': -23.6666, 'lng': -46.4628},
-    {'id': 2, 'name': 'Rua Dorival Cagnotto, 39, Jardim Miranda D\'Aviz', 'rating': 4.1, 'distance': '0.0 km', 'tags': ['Gratuito', 'Público'], 'open': true, 'lat': -23.6627, 'lng': -46.4318},
+    {'id': 2, 'name': 'Rua Dorival Cagnotto, 39, Jardim Miranda D\'Aviz', 'rating': 4.1, 'distance': '0.0 km', 'tags': ['Gratuito', 'Público'], 'open': true, 'lat': -23.6812, 'lng': -46.4358},
     {'id': 3, 'name': 'Supermercado Nagumo (Av. Barão de Mauá, 3232)', 'rating': 4.5, 'distance': '0.0 km', 'tags': ['Acessível', 'Comercial'], 'open': true, 'lat': -23.6650, 'lng': -46.4350},
   ];
 
@@ -80,8 +80,14 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
     HapticFeedback.mediumImpact();
     setState(() => _showEmergency = true);
     
-    // Find the best bathroom (open, highest rating)
-    final emergencyBathroom = _bathrooms.where((b) => b['open'] == true).toList()..sort((a, b) => b['rating'].compareTo(a['rating']));
+    // Find the closest bathroom (open, sorted by distance)
+    final distanceCalc = const Distance();
+    final emergencyBathroom = _bathrooms.where((b) => b['open'] == true).toList()..sort((a, b) {
+      if (_currentPosition == null) return 0;
+      final distA = distanceCalc.as(LengthUnit.Meter, _currentPosition!, LatLng(a['lat'], a['lng']));
+      final distB = distanceCalc.as(LengthUnit.Meter, _currentPosition!, LatLng(b['lat'], b['lng']));
+      return distA.compareTo(distB);
+    });
     
     if (emergencyBathroom.isNotEmpty) {
       final best = emergencyBathroom.first;
@@ -279,7 +285,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
           Positioned(
             left: 16,
             right: 16,
-            bottom: 80,
+            bottom: 16,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -288,6 +294,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                   _LocationCard(
                     bathroom: _bathrooms.firstWhere((b) => b['id'] == _selectedPin),
                     onClose: () => setState(() => _selectedPin = null),
+                    currentPosition: _currentPosition,
                   ),
                   const SizedBox(height: 16),
                 ],
@@ -598,13 +605,24 @@ class _TopBar extends StatelessWidget {
 class _LocationCard extends StatelessWidget {
   final Map<String, dynamic> bathroom;
   final VoidCallback onClose;
+  final LatLng? currentPosition;
 
-  const _LocationCard({required this.bathroom, required this.onClose});
+  const _LocationCard({required this.bathroom, required this.onClose, this.currentPosition});
 
   @override
   Widget build(BuildContext context) {
     final isOpen = bathroom['open'] as bool;
     final tags = bathroom['tags'] as List;
+
+    String distanceText = bathroom['distance'] as String;
+    if (currentPosition != null) {
+      final distMeters = const Distance().as(LengthUnit.Meter, currentPosition!, LatLng(bathroom['lat'], bathroom['lng'])).toDouble();
+      if (distMeters < 1000) {
+        distanceText = '${distMeters.toInt()} m';
+      } else {
+        distanceText = '${(distMeters / 1000).toStringAsFixed(1)} km';
+      }
+    }
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -661,7 +679,7 @@ class _LocationCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        '${bathroom['distance']} de distância',
+                        '$distanceText de distância',
                         style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
                       ),
                     ],
