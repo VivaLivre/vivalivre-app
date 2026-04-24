@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:viva_livre_app/features/health/presentation/pages/health_dashboard_page.dart';
 
 // ═════════════════════════════════════════════════════════════════════════════
 //  Models
@@ -138,18 +139,36 @@ class _HealthPageState extends State<HealthPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Diário Clínico',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w800,
-                      color: _kText,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    today,
-                    style: const TextStyle(fontSize: 14, color: _kSubText),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Diário Clínico',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w800,
+                              color: _kText,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            today,
+                            style: const TextStyle(fontSize: 14, color: _kSubText),
+                          ),
+                        ],
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.bar_chart_rounded, color: _kBlue),
+                        tooltip: 'Ver Resumo',
+                        onPressed: () {
+                          Navigator.pushNamed(context, '/health-dashboard', arguments: _timeline);
+                        },
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 24),
 
@@ -555,3 +574,4 @@ class _SymptomSearchModalState extends State<_SymptomSearchModal> {
     );
   }
 }
+

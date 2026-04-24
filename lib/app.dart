@@ -10,6 +10,7 @@ import 'package:viva_livre_app/features/home/presentation/pages/main_shell.dart'
 import 'package:viva_livre_app/features/health/presentation/pages/health_dashboard_page.dart';
 import 'package:viva_livre_app/features/health/presentation/pages/add_health_entry_page.dart';
 import 'package:viva_livre_app/features/health/presentation/health_bloc.dart';
+import 'package:viva_livre_app/features/health/presentation/pages/health_page.dart';
 
 class App extends StatelessWidget {
   final FirebaseAuth firebaseAuth;
@@ -77,7 +78,10 @@ class App extends StatelessWidget {
         '/login': (_) => const LoginPage(),
         '/register': (_) => const RegisterPage(),
         '/home': (_) => const MainShell(),
-        '/health-dashboard': (_) => const HealthDashboardPage(),
+        '/health-dashboard': (context) {
+          final args = ModalRoute.of(context)?.settings.arguments as List<HealthRecord>? ?? [];
+          return HealthDashboardPage(records: args);
+        },
         '/add-health-entry': (_) => const AddHealthEntryPage(),
       },
     );
