@@ -1,4 +1,4 @@
-// ─────────────────────────────────────────────────────────────────────────────
+﻿// ─────────────────────────────────────────────────────────────────────────────
 // map_page.dart — VivaLivre
 // Flutter 3.x  |  flutter_map ^8.3.0  |  latlong2 ^0.9.1
 // ─────────────────────────────────────────────────────────────────────────────
@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:vibration/vibration.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
@@ -206,7 +207,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
   //  Nenhuma chamada de rede, nenhum geocoding.
 
   void _handleFindNearest() {
-    HapticFeedback.mediumImpact();
+    Vibration.vibrate(duration: 50);
     setState(() => _showEmergency = true);
 
     // Encontra o banheiro matematicamente mais próximo usando Distance()
@@ -358,9 +359,37 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
               bottom: 0,
               child: IgnorePointer(
                 child: Container(
-                  color: Colors.white.withValues(alpha: 0.55),
-                  child: const Center(
-                    child: CircularProgressIndicator(color: _kBlue),
+                  color: Colors.white.withValues(alpha: 0.3),
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 24,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: const Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          CircularProgressIndicator(color: _kBlue, strokeWidth: 3),
+                          SizedBox(height: 16),
+                          Text(
+                            'A procurar satélites...',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF0F172A),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -441,7 +470,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
       alignment: Alignment.center,
       child: GestureDetector(
         onTap: () {
-          HapticFeedback.lightImpact();
+          Vibration.vibrate(duration: 30);
           setState(() => _selectedPin = isSelected ? null : b['id'] as int);
           _animatedMove(
             LatLng(b['lat'] as double, b['lng'] as double),
