@@ -80,11 +80,12 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
     HapticFeedback.mediumImpact();
     setState(() => _showEmergency = true);
     
-    // Find the closest bathroom (open, sorted by distance)
+    // Find the closest bathroom (open, sorted by distance using latlong2)
+    final distance = const Distance();
     final emergencyBathroom = _bathrooms.where((b) => b['open'] == true).toList()..sort((a, b) {
       if (_currentPosition == null) return 0;
-      final distA = Geolocator.distanceBetween(_currentPosition!.latitude, _currentPosition!.longitude, a['lat'], a['lng']);
-      final distB = Geolocator.distanceBetween(_currentPosition!.latitude, _currentPosition!.longitude, b['lat'], b['lng']);
+      final distA = distance.as(LengthUnit.Meter, _currentPosition!, LatLng(a['lat'], a['lng']));
+      final distB = distance.as(LengthUnit.Meter, _currentPosition!, LatLng(b['lat'], b['lng']));
       return distA.compareTo(distB);
     });
     
@@ -238,14 +239,14 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
                       point: LatLng(b['lat'], b['lng']),
                       width: 60,
                       height: 80,
-                      alignment: Alignment.topCenter,
+                      alignment: Alignment.center,
                       child: _BathroomPin(
                         bathroom: b,
                         isSelected: isSelected,
                         onTap: () {
                           HapticFeedback.lightImpact();
                           setState(() => _selectedPin = isSelected ? null : b['id'] as int);
-                          _animatedMapMove(LatLng(b['lat'], b['lng'] - 0.002), 16.0); // Offset to fit the card
+                          _animatedMapMove(LatLng(b['lat'], b['lng']), 17.0); // Centralização exata
                         },
                       ),
                     );
