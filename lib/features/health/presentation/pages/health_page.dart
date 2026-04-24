@@ -286,7 +286,7 @@ class _EmptyTimeline extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           const Text(
-            'Nenhum evento registado ainda hoje.\nContinue a cuidar da sua sa�de!',
+            'Nenhum evento registado ainda hoje.\nContinue a cuidar da sua saúde!',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 14, color: Color(0xFF64748B), height: 1.4),
           ),
