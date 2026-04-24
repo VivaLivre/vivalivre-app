@@ -46,7 +46,10 @@ class _LoginPageState extends State<LoginPage> {
           if (state is AuthError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(state.message, style: const TextStyle(color: Colors.white)),
+                content: Text(
+                  state.message,
+                  style: const TextStyle(color: Colors.white),
+                ),
                 backgroundColor: Colors.red.shade600,
               ),
             );
@@ -59,7 +62,10 @@ class _LoginPageState extends State<LoginPage> {
           return SafeArea(
             child: Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 28.0, vertical: 32.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 28.0,
+                  vertical: 32.0,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
@@ -96,7 +102,10 @@ class _LoginPageState extends State<LoginPage> {
                       enabled: !isLoading,
                       decoration: const InputDecoration(
                         hintText: 'seu@email.com',
-                        prefixIcon: Icon(Icons.email_outlined, color: Color(0xFF94A3B8)),
+                        prefixIcon: Icon(
+                          Icons.email_outlined,
+                          color: Color(0xFF94A3B8),
+                        ),
                       ),
                       keyboardType: TextInputType.emailAddress,
                       textInputAction: TextInputAction.next,
@@ -113,7 +122,10 @@ class _LoginPageState extends State<LoginPage> {
                       onSubmitted: (_) => _onLoginPressed(),
                       decoration: InputDecoration(
                         hintText: 'Sua senha',
-                        prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF94A3B8)),
+                        prefixIcon: const Icon(
+                          Icons.lock_outline,
+                          color: Color(0xFF94A3B8),
+                        ),
                         suffixIcon: IconButton(
                           icon: Icon(
                             _obscurePassword
@@ -121,7 +133,9 @@ class _LoginPageState extends State<LoginPage> {
                                 : Icons.visibility_outlined,
                             color: const Color(0xFF94A3B8),
                           ),
-                          onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                          onPressed: () => setState(
+                            () => _obscurePassword = !_obscurePassword,
+                          ),
                         ),
                       ),
                     ),

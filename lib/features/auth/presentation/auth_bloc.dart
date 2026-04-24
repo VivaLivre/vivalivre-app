@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -7,22 +8,29 @@ part 'auth_event.dart';
 part 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+  final FirebaseAuth _firebaseAuth;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
-  AuthBloc() : super(AuthInitial()) {
-    // Check initial state
-    _firebaseAuth.authStateChanges().listen((User? user) {
-      if (user != null) {
-        // If we wanted to listen and emit stream updates we could use a separate stream listener event.
-        // For simplicity, we are managing states directly in the handlers for now.
-      }
-    });
-
+  AuthBloc({required FirebaseAuth firebaseAuth})
+      : _firebaseAuth = firebaseAuth,
+        super(AuthInitial()) {
+    on<AuthAppStarted>(_onAuthAppStarted);
     on<AuthLoginRequested>(_onAuthLoginRequested);
     on<AuthRegisterRequested>(_onAuthRegisterRequested);
     on<AuthGoogleSignInRequested>(_onAuthGoogleSignInRequested);
     on<AuthLogoutRequested>(_onAuthLogoutRequested);
+  }
+
+  Future<void> _onAuthAppStarted(
+    AuthAppStarted event,
+    Emitter<AuthState> emit,
+  ) async {
+    final user = _firebaseAuth.currentUser;
+    if (user != null) {
+      emit(AuthAuthenticated(user));
+    } else {
+      emit(AuthUnauthenticated());
+    }
   }
 
   Future<void> _onAuthLoginRequested(
@@ -81,7 +89,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
-        emit(const AuthError('Login com Google cancelado.'));
+        emit(AuthUnauthenticated());
         return;
       }
 

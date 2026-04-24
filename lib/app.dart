@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:viva_livre_app/features/auth/presentation/auth_bloc.dart';
 import 'package:viva_livre_app/features/auth/presentation/pages/splash_page.dart';
 import 'package:viva_livre_app/features/auth/presentation/pages/onboarding_page.dart';
 import 'package:viva_livre_app/features/auth/presentation/pages/login_page.dart';
 import 'package:viva_livre_app/features/auth/presentation/pages/register_page.dart';
 import 'package:viva_livre_app/features/home/presentation/pages/main_shell.dart';
+import 'package:viva_livre_app/features/health/presentation/pages/health_dashboard_page.dart';
+import 'package:viva_livre_app/features/health/presentation/pages/add_health_entry_page.dart';
+import 'package:viva_livre_app/features/health/presentation/health_bloc.dart';
 
-// App agora é apenas a casca do MaterialApp + tema + rotas.
-// O MultiBlocProvider foi movido para o main.dart (nível runApp),
-// garantindo que o contexto com o Bloc seja o ancestral de TUDO.
 class App extends StatelessWidget {
-  const App({super.key});
+  final FirebaseAuth firebaseAuth;
+
+  const App({super.key, required this.firebaseAuth});
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +31,10 @@ class App extends StatelessWidget {
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
           fillColor: Colors.white,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 16,
+          ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
@@ -69,6 +77,8 @@ class App extends StatelessWidget {
         '/login': (_) => const LoginPage(),
         '/register': (_) => const RegisterPage(),
         '/home': (_) => const MainShell(),
+        '/health-dashboard': (_) => const HealthDashboardPage(),
+        '/add-health-entry': (_) => const AddHealthEntryPage(),
       },
     );
   }

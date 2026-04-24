@@ -66,6 +66,8 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>O aplicativo precisa de acesso à localização para mostrar banheiros próximos a você no mapa.</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -79,3 +81,4 @@
 	</array>
 </dict>
 </plist>
+
