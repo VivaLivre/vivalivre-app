@@ -23,9 +23,9 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
 
   // Mock data — agora com dados de teste em Mauá, SP
   final List<Map<String, dynamic>> _bathrooms = [
-    {'id': 1, 'name': 'Shopping de Mauá (Mauá Plaza Shopping)', 'rating': 4.8, 'distance': '0.0 km', 'tags': ['Acessível', 'Limpo'], 'open': true, 'lat': -23.666912, 'lng': -46.462345},
-    {'id': 2, 'name': 'Rua Dorival Cagnotto, 39, Jardim Miranda D\'Aviz', 'rating': 4.1, 'distance': '0.0 km', 'tags': ['Gratuito', 'Público'], 'open': true, 'lat': -23.681121, 'lng': -46.435728},
-    {'id': 3, 'name': 'Supermercado Nagumo (Av. Barão de Mauá, 3232)', 'rating': 4.5, 'distance': '0.0 km', 'tags': ['Acessível', 'Comercial'], 'open': true, 'lat': -23.681617, 'lng': -46.432857},
+    {'id': 1, 'name': 'Mauá Plaza Shopping', 'rating': 4.8, 'distance': '0.0 km', 'tags': ['Acessível', 'Limpo'], 'open': true, 'lat': -23.663803, 'lng': -46.461523},
+    {'id': 2, 'name': 'Minha Casa (Jd. Miranda D\'Aviz)', 'rating': 4.1, 'distance': '0.0 km', 'tags': ['Privado', 'Público'], 'open': true, 'lat': -23.66279, 'lng': -46.43183},
+    {'id': 3, 'name': 'Nagumo Barão de Mauá', 'rating': 4.5, 'distance': '0.0 km', 'tags': ['Acessível', 'Comercial'], 'open': true, 'lat': -23.6743, 'lng': -46.4526},
   ];
 
   @override

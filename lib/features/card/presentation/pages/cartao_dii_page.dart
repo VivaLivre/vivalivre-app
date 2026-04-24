@@ -722,6 +722,11 @@ class _DigitalIDCardBack extends StatelessWidget {
       constraints: const BoxConstraints(minHeight: 230),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, Color(0xFFF8FAFC)],
+        ),
         boxShadow: const [
           BoxShadow(color: Color(0x730F3482), blurRadius: 64, offset: Offset(0, 24)),
         ],
@@ -729,38 +734,60 @@ class _DigitalIDCardBack extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: Stack(
         children: [
-          Container(color: Colors.white),
+          Positioned(
+            top: -50, right: -50,
+            child: Icon(Icons.qr_code_2_rounded, size: 200, color: const Color(0xFFF1F5F9).withValues(alpha: 0.5)),
+          ),
           Positioned.fill(
             child: Padding(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(20),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('QR Code de Validação Oficial', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Color(0xFF111827))),
-                  const SizedBox(height: 4),
-                  const Text('Aponte a câmara do aplicativo validador para verificar a autenticidade deste documento em tempo real.', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, color: Color(0xFF6B7280))),
+                  const Text('INFORMAÇÕES ADICIONAIS', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Color(0xFF94A3B8), letterSpacing: 1.0)),
                   const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _BackInfoField(
+                          icon: Icons.bloodtype_rounded,
+                          label: 'TIPO SANGUÍNEO',
+                          value: 'O+',
+                          color: Colors.red.shade600,
+                        ),
+                      ),
+                      Expanded(
+                        child: _BackInfoField(
+                          icon: Icons.contact_emergency_rounded,
+                          label: 'EMERGÊNCIA',
+                          value: '(11) 98765-4321',
+                          color: const Color(0xFF2563EB),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  const Divider(color: Color(0xFFF1F5F9)),
+                  const SizedBox(height: 12),
+                  const Text('QR CODE DE VALIDAÇÃO', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Color(0xFF94A3B8))),
+                  const SizedBox(height: 8),
                   Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      border: Border.all(color: const Color(0xFFE2E8F0), width: 2),
-                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     child: QrImageView(
                       data: 'viva-livre-app://verify?id=VL-2025-00842&user=marcos-silva',
                       version: QrVersions.auto,
-                      size: 140.0,
+                      size: 100.0,
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      Icon(Icons.verified_user_rounded, color: Color(0xFF059669), size: 14),
-                      SizedBox(width: 4),
-                      Text('Assinatura Digital VivaLivre', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF059669))),
-                    ],
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Este cartão é pessoal e intransferível. A falsificação deste documento é crime previsto no Art. 297 do Código Penal.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 8, color: Color(0xFF94A3B8), fontStyle: FontStyle.italic),
                   ),
                 ],
               ),
@@ -768,6 +795,27 @@ class _DigitalIDCardBack extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _BackInfoField extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color color;
+
+  const _BackInfoField({required this.icon, required this.label, required this.value, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Icon(icon, size: 20, color: color),
+        const SizedBox(height: 4),
+        Text(label, style: const TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Color(0xFF64748B))),
+        Text(value, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Color(0xFF1E293B))),
+      ],
     );
   }
 }
