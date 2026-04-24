@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:viva_livre_app/features/auth/presentation/auth_bloc.dart';
 import 'package:viva_livre_app/features/map/presentation/pages/map_page.dart';
 import 'package:viva_livre_app/features/health/presentation/pages/health_page.dart';
+import 'package:viva_livre_app/features/card/presentation/pages/cartao_dii_page.dart';
 import 'package:viva_livre_app/features/profile/presentation/pages/profile_page.dart';
 
 class MainShell extends StatefulWidget {
@@ -18,7 +19,7 @@ class _MainShellState extends State<MainShell> {
   static const _pages = [
     MapPage(),
     HealthPage(),
-    _PlaceholderPage(icon: Icons.badge_rounded, title: 'Cartão DII', color: Color(0xFF7C3AED)),
+    CartaoDIIPage(),
     ProfilePage(),
   ];
 
@@ -133,53 +134,4 @@ class _NavItem {
   _NavItem({required this.icon, required this.label});
 }
 
-// ── Placeholder temporário para o Cartão DII ─────────────────────────────────
 
-class _PlaceholderPage extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final Color color;
-
-  const _PlaceholderPage({
-    required this.icon,
-    required this.title,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, size: 40, color: color),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF1E293B),
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Em desenvolvimento',
-              style: TextStyle(fontSize: 14, color: Color(0xFF64748B)),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
