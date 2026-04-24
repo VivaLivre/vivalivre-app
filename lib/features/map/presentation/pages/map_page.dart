@@ -321,9 +321,19 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
               // ── Tile Layer ─────────────────────────────────────────────────
               // BUG-3 FIX: userAgentPackageName obrigatório no flutter_map v8.
               TileLayer(
+                // OSM padrão — sem {r}, sem retina, funciona em todos os dispositivos.
                 urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                 userAgentPackageName: 'com.vivalivre.app',
-                retinaMode: MediaQuery.of(context).devicePixelRatio > 1.0,
+
+                // Cache agressivo: evita re-downloads e garante que tiles
+                // já carregados continuam visíveis ao fazer pan/zoom.
+                maxNativeZoom: 19,
+                maxZoom: 22,
+
+                // Fallback visual enquanto o tile ainda está a carregar.
+                errorTileCallback: (tile, error, stackTrace) {
+                  // tile falhou → não mostra nada (padrão), sem crash.
+                },
               ),
 
               // ── Marker Layer ───────────────────────────────────────────────
