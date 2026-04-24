@@ -1,5 +1,13 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
+import 'dart:io';
+
+import 'package:share_plus/share_plus.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 
 class CartaoDIIPage extends StatefulWidget {
   const CartaoDIIPage({super.key});
@@ -11,11 +19,48 @@ class CartaoDIIPage extends StatefulWidget {
 class _CartaoDIIPageState extends State<CartaoDIIPage> {
   bool _copied = false;
 
-  void _handleShare() {
+  void _handleShare() async {
     setState(() => _copied = true);
+    await Share.share(
+      'Confira meu Cartão DII Digital - VivaLivre: VL-2025-00842\nValide escaneando o QR Code pelo aplicativo oficial.',
+    );
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) setState(() => _copied = false);
     });
+  }
+
+  Future<void> _generatePdf() async {
+    final pdf = pw.Document();
+
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        build: (pw.Context context) {
+          return pw.Center(
+            child: pw.Column(
+              mainAxisAlignment: pw.MainAxisAlignment.center,
+              children: [
+                pw.Text('Cartão DII Digital - VivaLivre', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
+                pw.SizedBox(height: 20),
+                pw.Text('Titular: Marcos O. Silva'),
+                pw.Text('N° Registro: VL-2025-00842'),
+                pw.Text('CID: K50/K51'),
+                pw.Text('Validade: 31/12/2026'),
+                pw.SizedBox(height: 40),
+                pw.Text('Este documento comprova a necessidade de acesso prioritário a sanitários.'),
+                pw.SizedBox(height: 10),
+                pw.Text('Lei Federal n° 13.146/2015', style: pw.TextStyle(fontSize: 10, color: PdfColors.grey)),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+
+    await Printing.layoutPdf(
+      onLayout: (PdfPageFormat format) async => pdf.save(),
+      name: 'Cartao_DII_VivaLivre.pdf',
+    );
   }
 
   @override
@@ -88,15 +133,15 @@ class _CartaoDIIPageState extends State<CartaoDIIPage> {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
                 children: [
-                  // Digital Card
-                  const _DigitalIDCard(),
+                  // Digital Card with Flip Animation
+                  const _FlipCardContainer(),
                   const SizedBox(height: 16),
 
                   // Subtitle
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 24),
                     child: Text(
-                      'Apresente este cartão digital para garantir acesso prioritário a sanitários em qualquer estabelecimento.',
+                      'Toque no cartão para girar e ver o QR Code em ecrã inteiro.',
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 12, color: Color(0xFF6B7280), height: 1.5),
                     ),
@@ -110,7 +155,7 @@ class _CartaoDIIPageState extends State<CartaoDIIPage> {
                         child: ElevatedButton.icon(
                           onPressed: _handleShare,
                           icon: Icon(_copied ? Icons.check_rounded : Icons.share_rounded, size: 18),
-                          label: Text(_copied ? 'Link copiado!' : 'Compartilhar'),
+                          label: Text(_copied ? 'Compartilhado!' : 'Compartilhar'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: _copied ? const Color(0xFF10B981) : const Color(0xFF2563EB),
                             foregroundColor: Colors.white,
@@ -123,7 +168,7 @@ class _CartaoDIIPageState extends State<CartaoDIIPage> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: OutlinedButton.icon(
-                          onPressed: () {},
+                          onPressed: _generatePdf,
                           icon: const Icon(Icons.download_rounded, size: 18),
                           label: const Text('Baixar PDF'),
                           style: OutlinedButton.styleFrom(
@@ -319,17 +364,62 @@ class _LegalInfoState extends State<_LegalInfo> {
   }
 }
 
-// ── The Digital Card UI ───────────────────────────────────────────────────────
+// ── The Digital Card UI (Flip Animation) ──────────────────────────────────────
 
-class _DigitalIDCard extends StatefulWidget {
-  const _DigitalIDCard();
+class _FlipCardContainer extends StatefulWidget {
+  const _FlipCardContainer();
 
   @override
-  State<_DigitalIDCard> createState() => _DigitalIDCardState();
+  State<_FlipCardContainer> createState() => _FlipCardContainerState();
 }
 
-class _DigitalIDCardState extends State<_DigitalIDCard> with SingleTickerProviderStateMixin {
+class _FlipCardContainerState extends State<_FlipCardContainer> {
+  bool _showFront = true;
+
+  void _toggleCard() {
+    setState(() => _showFront = !_showFront);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: _toggleCard,
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 600),
+        transitionBuilder: (Widget child, Animation<double> animation) {
+          final rotateAnim = Tween(begin: pi, end: 0.0).animate(animation);
+          return AnimatedBuilder(
+            animation: rotateAnim,
+            child: child,
+            builder: (context, widget) {
+              final isUnder = (ValueKey(_showFront) != widget?.key);
+              final value = isUnder ? min(rotateAnim.value, pi / 2) : rotateAnim.value;
+              return Transform(
+                transform: Matrix4.rotationY(value)..setEntry(3, 2, 0.001),
+                alignment: Alignment.center,
+                child: widget,
+              );
+            },
+          );
+        },
+        child: _showFront ? _DigitalIDCardFront(key: const ValueKey(true)) : _DigitalIDCardBack(key: const ValueKey(false)),
+      ),
+    );
+  }
+}
+
+// ── Digital Card Front ────────────────────────────────────────────────────────
+
+class _DigitalIDCardFront extends StatefulWidget {
+  const _DigitalIDCardFront({super.key});
+
+  @override
+  State<_DigitalIDCardFront> createState() => _DigitalIDCardFrontState();
+}
+
+class _DigitalIDCardFrontState extends State<_DigitalIDCardFront> with SingleTickerProviderStateMixin {
   late AnimationController _sweepController;
+  File? _userImage;
 
   @override
   void initState() {
@@ -341,6 +431,14 @@ class _DigitalIDCardState extends State<_DigitalIDCard> with SingleTickerProvide
   void dispose() {
     _sweepController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickImage() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      setState(() => _userImage = File(image.path));
+    }
   }
 
   @override
@@ -357,7 +455,7 @@ class _DigitalIDCardState extends State<_DigitalIDCard> with SingleTickerProvide
       clipBehavior: Clip.antiAlias,
       child: Stack(
         children: [
-          // ── Background Gradients ──
+          // Background Gradients
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -407,7 +505,6 @@ class _DigitalIDCardState extends State<_DigitalIDCard> with SingleTickerProvide
             },
           ),
 
-          // Micro-dot pattern (simulated using custom painter)
           Positioned.fill(child: CustomPaint(painter: _MicroDotPainter())),
 
           // Corner Glows
@@ -432,14 +529,13 @@ class _DigitalIDCardState extends State<_DigitalIDCard> with SingleTickerProvide
             ),
           ),
 
-          // ── Card Content ──
+          // Card Content
           Positioned.fill(
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Header
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -493,7 +589,6 @@ class _DigitalIDCardState extends State<_DigitalIDCard> with SingleTickerProvide
                   ),
 
                   const SizedBox(height: 12),
-                  // Divider
                   Container(
                     height: 1,
                     decoration: const BoxDecoration(
@@ -502,25 +597,27 @@ class _DigitalIDCardState extends State<_DigitalIDCard> with SingleTickerProvide
                   ),
                   const SizedBox(height: 16),
 
-                  // Main Body
                   Expanded(
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Photo placeholder
-                        Container(
-                          width: 68, height: 84,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.white.withValues(alpha: 0.4), width: 2),
+                        // Editable Photo
+                        GestureDetector(
+                          onTap: _pickImage,
+                          child: Container(
+                            width: 68, height: 84,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.white.withValues(alpha: 0.4), width: 2),
+                              image: _userImage != null ? DecorationImage(image: FileImage(_userImage!), fit: BoxFit.cover) : null,
+                            ),
+                            child: _userImage == null ? const Icon(Icons.add_a_photo_rounded, color: Colors.white54, size: 32) : null,
                           ),
-                          child: const Icon(Icons.person_rounded, color: Colors.white54, size: 48),
                         ),
                         const SizedBox(width: 16),
 
-                        // Info fields
-                        Expanded(
+                        const Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -542,20 +639,24 @@ class _DigitalIDCardState extends State<_DigitalIDCard> with SingleTickerProvide
                           ),
                         ),
 
-                        // QR Code
+                        // Mini QR Code
                         Column(
                           children: [
                             Container(
-                              width: 80, height: 80,
+                              width: 64, height: 64,
                               padding: const EdgeInsets.all(4),
                               decoration: BoxDecoration(
                                 color: Colors.white,
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(8),
                               ),
-                              child: const Icon(Icons.qr_code_2_rounded, size: 72, color: Color(0xFF0F172A)),
+                              child: QrImageView(
+                                data: 'viva-livre-app://verify?id=VL-2025-00842',
+                                version: QrVersions.auto,
+                                size: 56.0,
+                              ),
                             ),
                             const SizedBox(height: 6),
-                            const Text('Escaneie\npara validar', textAlign: TextAlign.center, style: TextStyle(color: Color(0x73FFFFFF), fontSize: 8, height: 1.2)),
+                            const Text('Girar para\nampliar', textAlign: TextAlign.center, style: TextStyle(color: Color(0x73FFFFFF), fontSize: 8, height: 1.2)),
                           ],
                         ),
                       ],
@@ -563,7 +664,6 @@ class _DigitalIDCardState extends State<_DigitalIDCard> with SingleTickerProvide
                   ),
 
                   const SizedBox(height: 16),
-                  // Legal footer
                   Container(
                     padding: const EdgeInsets.only(top: 12),
                     decoration: const BoxDecoration(
@@ -579,7 +679,7 @@ class _DigitalIDCardState extends State<_DigitalIDCard> with SingleTickerProvide
                             TextSpan(
                               children: [
                                 TextSpan(text: 'Lei Federal nº 13.146/2015 ', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xE6FEF08A))),
-                                TextSpan(text: '· Lei Federal — Acesso prioritário a sanitários públicos e privados.'),
+                                TextSpan(text: '· Acesso prioritário a sanitários.'),
                               ],
                             ),
                             style: TextStyle(color: Color(0xA6FFFFFF), fontSize: 8.5),
@@ -593,7 +693,6 @@ class _DigitalIDCardState extends State<_DigitalIDCard> with SingleTickerProvide
             ),
           ),
 
-          // Brazilian flag accent stripe
           Positioned(
             bottom: 0, left: 0, right: 0,
             height: 6,
@@ -604,6 +703,67 @@ class _DigitalIDCardState extends State<_DigitalIDCard> with SingleTickerProvide
                 Expanded(child: Container(color: const Color(0x8093C5FD))),
                 Expanded(child: Container(color: const Color(0x4DFFFFFF))),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Digital Card Back ─────────────────────────────────────────────────────────
+
+class _DigitalIDCardBack extends StatelessWidget {
+  const _DigitalIDCardBack({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(minHeight: 230),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: const [
+          BoxShadow(color: Color(0x730F3482), blurRadius: 64, offset: Offset(0, 24)),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
+        children: [
+          Container(color: Colors.white),
+          Positioned.fill(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('QR Code de Validação Oficial', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Color(0xFF111827))),
+                  const SizedBox(height: 4),
+                  const Text('Aponte a câmara do aplicativo validador para verificar a autenticidade deste documento em tempo real.', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, color: Color(0xFF6B7280))),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(color: const Color(0xFFE2E8F0), width: 2),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: QrImageView(
+                      data: 'viva-livre-app://verify?id=VL-2025-00842&user=marcos-silva',
+                      version: QrVersions.auto,
+                      size: 140.0,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Icon(Icons.verified_user_rounded, color: Color(0xFF059669), size: 14),
+                      SizedBox(width: 4),
+                      Text('Assinatura Digital VivaLivre', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF059669))),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ],
