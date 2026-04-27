@@ -21,7 +21,13 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
   
   final List<String> _symptomsOptions = [
     'Dor Abdominal', 'Diarreia', 'Sangue nas Fezes', 'Fadiga Extrema',
-    'Febre', 'Náusea/Vómito', 'Gases/Inchaço', 'Perda de Apetite', 'Dores Articulares'
+    'Febre', 'Náusea/Vómito', 'Gases/Inchaço', 'Perda de Apetite', 'Dores Articulares',
+    'Cólica Intestinal', 'Urgência Evacuatória', 'Incontinência Fecal', 'Muco nas Fezes',
+    'Constipação/Prisão de Ventre', 'Azia', 'Refluxo', 'Dor de Cabeça', 'Enxaqueca',
+    'Tontura', 'Calafrios', 'Suores Noturnos', 'Aftas', 'Feridas na Boca', 'Lesões na Pele',
+    'Eritema Nodoso', 'Olhos Vermelhos/Irritados', 'Visão Embaçada', 'Perda de Peso',
+    'Anemia', 'Fraqueza', 'Desidratação', 'Boca Seca', 'Palpitações', 'Ansiedade',
+    'Insónia', 'Alterações de Humor'
   ];
 
   Future<void> _selectDate(BuildContext context) async {
@@ -54,8 +60,9 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
 
   @override
   Widget build(BuildContext context) {
-    FocusScope.of(context).unfocus();
-    return Scaffold(
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
       appBar: AppBar(
         title: const Text('Registrar Novo Sintoma/Crise'),
         actions: [
@@ -156,6 +163,7 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
               const SizedBox(height: 24.0),
             ],
           ),
+        ),
         ),
       ),
     );

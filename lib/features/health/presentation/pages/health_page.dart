@@ -53,6 +53,33 @@ class _HealthPageState extends State<HealthPage> {
     'Gases/Inchaço',
     'Perda de Apetite',
     'Dores Articulares',
+    'Cólica Intestinal',
+    'Urgência Evacuatória',
+    'Incontinência Fecal',
+    'Muco nas Fezes',
+    'Constipação/Prisão de Ventre',
+    'Azia',
+    'Refluxo',
+    'Dor de Cabeça',
+    'Enxaqueca',
+    'Tontura',
+    'Calafrios',
+    'Suores Noturnos',
+    'Aftas',
+    'Feridas na Boca',
+    'Lesões na Pele',
+    'Eritema Nodoso',
+    'Olhos Vermelhos/Irritados',
+    'Visão Embaçada',
+    'Perda de Peso',
+    'Anemia',
+    'Fraqueza',
+    'Desidratação',
+    'Boca Seca',
+    'Palpitações',
+    'Ansiedade',
+    'Insónia',
+    'Alterações de Humor',
   ];
   late List<String> _customSymptoms;
 
@@ -488,8 +515,6 @@ class _SymptomSearchModalState extends State<_SymptomSearchModal> {
 
   @override
   Widget build(BuildContext context) {
-    FocusScope.of(context).unfocus();
-    
     final query = _searchCtrl.text.trim();
     final bool showCustomAdd = query.isNotEmpty && 
                                !widget.availableSymptoms.any((s) => s.toLowerCase() == query.toLowerCase());
