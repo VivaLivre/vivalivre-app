@@ -207,7 +207,8 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
   //  Nenhuma chamada de rede, nenhum geocoding.
 
   void _handleFindNearest() {
-    Vibration.vibrate(duration: 50);
+    HapticFeedback.vibrate();
+    HapticFeedback.heavyImpact();
     setState(() => _showEmergency = true);
 
     // Encontra o banheiro matematicamente mais próximo usando Distance()

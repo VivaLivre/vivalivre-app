@@ -63,6 +63,33 @@ class _HealthPageState extends State<HealthPage> {
   }
 
   // ── Lógica ──
+  void _confirmDelete(int index) {
+    HapticFeedback.heavyImpact();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Excluir Registo', style: TextStyle(fontWeight: FontWeight.bold)),
+        content: const Text('Tem a certeza que deseja excluir este registo?'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar', style: TextStyle(color: _kSubText)),
+          ),
+          TextButton(
+            onPressed: () {
+              setState(() {
+                _timeline.removeAt(index);
+              });
+              Navigator.pop(context);
+            },
+            child: const Text('Excluir', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _addRecord(String title, String type) {
     Vibration.vibrate(duration: 30);
     setState(() {
@@ -175,7 +202,7 @@ class _HealthPageState extends State<HealthPage> {
 
                   // -- Acesso Rapido: Banheiro --
                   GestureDetector(
-                    onTap: () { Vibration.vibrate(duration: 50); _addRecord('Ida ao Banheiro', 'banheiro'); },
+                    onTap: () { HapticFeedback.vibrate(); HapticFeedback.heavyImpact(); _addRecord('Ida ao Banheiro', 'banheiro'); },
                     child: Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -223,9 +250,12 @@ class _HealthPageState extends State<HealthPage> {
                       padding: const EdgeInsets.all(24),
                       itemCount: _timeline.length,
                       itemBuilder: (context, index) {
-                        return _TimelineItem(
-                          record: _timeline[index],
-                          isLast: index == _timeline.length - 1,
+                        return GestureDetector(
+                          onLongPress: () => _confirmDelete(index),
+                          child: _TimelineItem(
+                            record: _timeline[index],
+                            isLast: index == _timeline.length - 1,
+                          ),
                         );
                       },
                     ),

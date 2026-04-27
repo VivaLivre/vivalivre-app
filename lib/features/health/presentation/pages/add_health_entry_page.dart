@@ -18,6 +18,12 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
   String _notes = '';
 
   final List<String> _severityOptions = ['Leve', 'Moderada', 'Grave'];
+  
+  final List<String> _symptomsOptions = [
+    'Dor Abdominal', 'Diarreia', 'Sangue nas Fezes', 'Fadiga Extrema',
+    'Febre', 'Náusea/Vómito', 'Gases/Inchaço', 'Perda de Apetite', 'Dores Articulares'
+  ];
+  final List<String> _selectedSymptomsList = [];
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -49,6 +55,7 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
 
   @override
   Widget build(BuildContext context) {
+    FocusScope.of(context).unfocus();
     return Scaffold(
       appBar: AppBar(
         title: const Text('Registrar Novo Sintoma/Crise'),
@@ -75,11 +82,47 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
 
               const Text('Sintomas:', style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8.0),
-              TextFormField(
-                decoration: const InputDecoration(hintText: 'Descreva seus sintomas', border: OutlineInputBorder()),
-                onChanged: (value) => _symptoms = value,
-                validator: (value) => (value == null || value.isEmpty) ? 'Por favor, descreva os sintomas' : null,
-                maxLines: 3,
+              FormField<List<String>>(
+                initialValue: _selectedSymptomsList,
+                validator: (value) => (value == null || value.isEmpty) ? 'Selecione pelo menos um sintoma' : null,
+                builder: (FormFieldState<List<String>> state) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Wrap(
+                        spacing: 8.0,
+                        runSpacing: 8.0,
+                        children: _symptomsOptions.map((symptom) {
+                          return FilterChip(
+                            label: Text(symptom),
+                            selected: _selectedSymptomsList.contains(symptom),
+                            onSelected: (bool selected) {
+                              setState(() {
+                                if (selected) {
+                                  _selectedSymptomsList.add(symptom);
+                                } else {
+                                  _selectedSymptomsList.remove(symptom);
+                                }
+                                _symptoms = _selectedSymptomsList.join(', ');
+                              });
+                              state.didChange(_selectedSymptomsList);
+                            },
+                            selectedColor: const Color(0xFF2563EB).withValues(alpha: 0.2),
+                            checkmarkColor: const Color(0xFF2563EB),
+                          );
+                        }).toList(),
+                      ),
+                      if (state.hasError)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Text(
+                            state.errorText!,
+                            style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 12),
+                          ),
+                        ),
+                    ],
+                  );
+                },
               ),
               const SizedBox(height: 16.0),
 
