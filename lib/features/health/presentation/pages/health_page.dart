@@ -44,15 +44,42 @@ class _HealthPageState extends State<HealthPage> {
   final List<HealthRecord> _timeline = [];
   
   final List<String> _baseSymptoms = [
-    'Urgência evacuatória',
-    'Tenesmo (vontade constante)',
-    'Muco nas fezes',
-    'Sangue nas fezes',
-    'Dor em cólica',
-    'Fadiga extrema',
-    'Náusea',
+    'Dor Abdominal',
+    'Diarreia',
+    'Sangue nas Fezes',
+    'Fadiga Extrema',
     'Febre',
-    'Dor articular',
+    'Náusea/Vómito',
+    'Gases/Inchaço',
+    'Perda de Apetite',
+    'Dores Articulares',
+    'Cólica Intestinal',
+    'Urgência Evacuatória',
+    'Incontinência Fecal',
+    'Muco nas Fezes',
+    'Constipação/Prisão de Ventre',
+    'Azia',
+    'Refluxo',
+    'Dor de Cabeça',
+    'Enxaqueca',
+    'Tontura',
+    'Calafrios',
+    'Suores Noturnos',
+    'Aftas',
+    'Feridas na Boca',
+    'Lesões na Pele',
+    'Eritema Nodoso',
+    'Olhos Vermelhos/Irritados',
+    'Visão Embaçada',
+    'Perda de Peso',
+    'Anemia',
+    'Fraqueza',
+    'Desidratação',
+    'Boca Seca',
+    'Palpitações',
+    'Ansiedade',
+    'Insónia',
+    'Alterações de Humor',
   ];
   late List<String> _customSymptoms;
 
@@ -64,7 +91,7 @@ class _HealthPageState extends State<HealthPage> {
 
   // ── Lógica ──
   void _confirmDelete(int index) {
-    HapticFeedback.heavyImpact();
+    HapticFeedback.vibrate();
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -91,7 +118,6 @@ class _HealthPageState extends State<HealthPage> {
   }
 
   void _addRecord(String title, String type) {
-    Vibration.vibrate(duration: 30);
     setState(() {
       _timeline.insert(
         0,
@@ -130,11 +156,13 @@ class _HealthPageState extends State<HealthPage> {
       backgroundColor: Colors.transparent,
       builder: (context) => _SymptomSearchModal(
         availableSymptoms: _customSymptoms,
-        onAdd: (symptom) {
-          if (!_customSymptoms.contains(symptom)) {
-            setState(() => _customSymptoms.add(symptom));
+        onAdd: (List<String> symptoms) {
+          for (var symptom in symptoms) {
+            if (!_customSymptoms.contains(symptom)) {
+              setState(() => _customSymptoms.add(symptom));
+            }
+            _addRecord(symptom, 'sintoma');
           }
-          _addRecord(symptom, 'sintoma');
         },
       ),
     );
@@ -202,7 +230,10 @@ class _HealthPageState extends State<HealthPage> {
 
                   // -- Acesso Rapido: Banheiro --
                   GestureDetector(
-                    onTap: () { HapticFeedback.vibrate(); HapticFeedback.heavyImpact(); _addRecord('Ida ao Banheiro', 'banheiro'); },
+                    onTap: () async {
+                      Vibration.vibrate(duration: 150, amplitude: 255);
+                      _addRecord('Ida ao Banheiro', 'banheiro');
+                    },
                     child: Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -444,7 +475,7 @@ class _TimelineItem extends StatelessWidget {
 
 class _SymptomSearchModal extends StatefulWidget {
   final List<String> availableSymptoms;
-  final Function(String) onAdd;
+  final Function(List<String>) onAdd;
 
   const _SymptomSearchModal({
     required this.availableSymptoms,
@@ -458,6 +489,7 @@ class _SymptomSearchModal extends StatefulWidget {
 class _SymptomSearchModalState extends State<_SymptomSearchModal> {
   final TextEditingController _searchCtrl = TextEditingController();
   List<String> _filtered = [];
+  List<String> selectedSymptoms = [];
 
   @override
   void initState() {
@@ -510,7 +542,7 @@ class _SymptomSearchModalState extends State<_SymptomSearchModal> {
           const SizedBox(height: 16),
           
           const Text(
-            'Adicionar Sintoma',
+            'Adicionar Sintomas',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 16),
@@ -532,7 +564,7 @@ class _SymptomSearchModalState extends State<_SymptomSearchModal> {
                     child: TextField(
                       controller: _searchCtrl,
                       onChanged: _filter,
-                      autofocus: true,
+                      autofocus: false,
                       decoration: const InputDecoration(
                         hintText: 'Pesquisar sintoma...',
                         border: InputBorder.none,
@@ -545,6 +577,7 @@ class _SymptomSearchModalState extends State<_SymptomSearchModal> {
                       onTap: () {
                         _searchCtrl.clear();
                         _filter('');
+                        FocusScope.of(context).unfocus();
                       },
                       child: const Icon(Icons.close_rounded, color: Color(0xFF94A3B8), size: 20),
                     ),
@@ -556,68 +589,102 @@ class _SymptomSearchModalState extends State<_SymptomSearchModal> {
 
           // ── Lista de Resultados ──
           Expanded(
-            child: ListView.builder(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24),
-              itemCount: _filtered.length + (showCustomAdd ? 1 : 0),
-              itemBuilder: (context, index) {
-                if (index == _filtered.length) {
-                  // Botão "Outros" Customizado
-                  return Padding(
-                    padding: const EdgeInsets.only(top: 8, bottom: 24),
-                    child: GestureDetector(
-                      onTap: () {
-                        widget.onAdd(query);
-                        Navigator.pop(context);
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFEFF6FF),
-                          border: Border.all(color: const Color(0xFFBFDBFE)),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.add_circle_outline_rounded, color: Color(0xFF2563EB)),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                'Adicionar "$query" como novo',
-                                style: const TextStyle(
-                                  color: Color(0xFF2563EB),
-                                  fontWeight: FontWeight.w600,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Wrap(
+                    spacing: 8.0,
+                    runSpacing: 8.0,
+                    children: _filtered.map((symptom) {
+                      return FilterChip(
+                        label: Text(symptom),
+                        selected: selectedSymptoms.contains(symptom),
+                        onSelected: (bool selected) {
+                          setState(() {
+                            if (selected) {
+                              selectedSymptoms.add(symptom);
+                            } else {
+                              selectedSymptoms.remove(symptom);
+                            }
+                          });
+                        },
+                        selectedColor: const Color(0xFF2563EB).withValues(alpha: 0.2),
+                        checkmarkColor: const Color(0xFF2563EB),
+                      );
+                    }).toList(),
+                  ),
+                  if (showCustomAdd)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 16, bottom: 24),
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            selectedSymptoms.add(query);
+                            _searchCtrl.clear();
+                            _filter('');
+                            FocusScope.of(context).unfocus();
+                          });
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEFF6FF),
+                            border: Border.all(color: const Color(0xFFBFDBFE)),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.add_circle_outline_rounded, color: Color(0xFF2563EB)),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  'Adicionar "$query" como novo',
+                                  style: const TextStyle(
+                                    color: Color(0xFF2563EB),
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  );
-                }
-
-                final symptom = _filtered[index];
-                return ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFFFBEB),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(Icons.healing_rounded, size: 18, color: Color(0xFFF59E0B)),
+                ],
+              ),
+            ),
+          ),
+          
+          // ── Botão Salvar ──
+          Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: SizedBox(
+              width: double.infinity,
+              height: 54,
+              child: ElevatedButton(
+                onPressed: selectedSymptoms.isEmpty
+                    ? null
+                    : () async {
+                        HapticFeedback.vibrate();
+                        widget.onAdd(selectedSymptoms);
+                        Navigator.pop(context);
+                      },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2563EB),
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor: Colors.grey.shade300,
+                  disabledForegroundColor: Colors.grey.shade600,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  title: Text(
-                    symptom,
-                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
-                  ),
-                  trailing: const Icon(Icons.add_rounded, color: Color(0xFF94A3B8)),
-                  onTap: () {
-                    widget.onAdd(symptom);
-                    Navigator.pop(context);
-                  },
-                );
-              },
+                ),
+                child: const Text(
+                  'Salvar',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                ),
+              ),
             ),
           ),
         ],
