@@ -117,8 +117,6 @@ class _HealthPageState extends State<HealthPage> {
   }
 
   void _addRecord(String title, String type) {
-    HapticFeedback.vibrate();
-    HapticFeedback.heavyImpact();
     setState(() {
       _timeline.insert(
         0,
@@ -231,7 +229,11 @@ class _HealthPageState extends State<HealthPage> {
 
                   // -- Acesso Rapido: Banheiro --
                   GestureDetector(
-                    onTap: () => _addRecord('Ida ao Banheiro', 'banheiro'),
+                    onTap: () {
+                      HapticFeedback.vibrate();
+                      HapticFeedback.heavyImpact();
+                      _addRecord('Ida ao Banheiro', 'banheiro');
+                    },
                     child: Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -665,6 +667,8 @@ class _SymptomSearchModalState extends State<_SymptomSearchModal> {
                 onPressed: selectedSymptoms.isEmpty
                     ? null
                     : () {
+                        HapticFeedback.vibrate();
+                        HapticFeedback.heavyImpact();
                         widget.onAdd(selectedSymptoms);
                         Navigator.pop(context);
                       },
