@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:vibration/vibration.dart';
 import 'package:intl/intl.dart';
 import 'package:viva_livre_app/features/health/presentation/pages/health_dashboard_page.dart';
 
@@ -230,7 +231,7 @@ class _HealthPageState extends State<HealthPage> {
                   // -- Acesso Rapido: Banheiro --
                   GestureDetector(
                     onTap: () async {
-                      HapticFeedback.vibrate();
+                      Vibration.vibrate(duration: 150, amplitude: 255);
                       _addRecord('Ida ao Banheiro', 'banheiro');
                     },
                     child: Container(
