@@ -87,3 +87,6 @@ ios/.symlinks/
 ios/Flutter/Flutter.podspec
 ios/build/
 ios/DerivedData/
+
+# Documentação VivaLivre
+AGENTS.md
