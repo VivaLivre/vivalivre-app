@@ -31,17 +31,19 @@ class ProfilePage extends StatelessWidget {
               Center(
                 child: Column(
                   children: [
-                    // Avatar
+                    // Avatar com Foto do Google ou Gradiente
                     Container(
                       width: 88,
                       height: 88,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        gradient: const LinearGradient(
-                          colors: [_kBlue, Color(0xFF3B82F6)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
+                        gradient: user?.photoURL == null
+                            ? const LinearGradient(
+                                colors: [_kBlue, Color(0xFF3B82F6)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              )
+                            : null,
                         boxShadow: [
                           BoxShadow(
                             color: _kBlue.withValues(alpha: 0.3),
@@ -50,7 +52,19 @@ class ProfilePage extends StatelessWidget {
                           ),
                         ],
                       ),
-                      child: const Icon(Icons.person_rounded, size: 44, color: Colors.white),
+                      child: user?.photoURL != null
+                          ? ClipOval(
+                              child: Image.network(
+                                user!.photoURL!,
+                                width: 88,
+                                height: 88,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return const Icon(Icons.person_rounded, size: 44, color: Colors.white);
+                                },
+                              ),
+                            )
+                          : const Icon(Icons.person_rounded, size: 44, color: Colors.white),
                     ),
                     const SizedBox(height: 16),
                     // Nome e Email
