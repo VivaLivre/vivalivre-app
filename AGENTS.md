@@ -216,11 +216,15 @@ Após o commit, o agente deve apresentar:
 flutter run
 ```
 
-### Fase 4 — Liberação
+### Fase 4 — Liberação e Pull Request
 
 O push só é executado após o comando explícito do Gabriel:
 
 > `"Ok, está funcionando"` ou `"Pode dar push"`
+
+Após a conclusão do push, o agente **DEVE** obrigatoriamente:
+1. Fornecer o link direto para a criação do Pull Request no GitHub.
+2. Fornecer um **título** e uma **descrição breve formatada em Markdown** para o Gabriel copiar e colar no corpo do Pull Request, resumindo as alterações e o DoD cumprido.
 
 ---
 
