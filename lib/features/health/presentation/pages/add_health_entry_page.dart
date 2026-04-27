@@ -13,7 +13,7 @@ class AddHealthEntryPage extends StatefulWidget {
 class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
   final _formKey = GlobalKey<FormState>();
   DateTime _selectedDate = DateTime.now();
-  String _symptoms = '';
+  List<String> selectedSymptoms = [];
   String _severity = 'Leve';
   String _notes = '';
 
@@ -23,7 +23,6 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
     'Dor Abdominal', 'Diarreia', 'Sangue nas Fezes', 'Fadiga Extrema',
     'Febre', 'Náusea/Vómito', 'Gases/Inchaço', 'Perda de Apetite', 'Dores Articulares'
   ];
-  final List<String> _selectedSymptomsList = [];
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -44,7 +43,7 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
       final newEntry = HealthEntry(
         id: DateTime.now().toIso8601String(),
         date: _selectedDate,
-        symptoms: _symptoms,
+        symptoms: selectedSymptoms.join(', '),
         severity: _severity,
         notes: _notes,
       );
@@ -83,7 +82,7 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
               const Text('Sintomas:', style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8.0),
               FormField<List<String>>(
-                initialValue: _selectedSymptomsList,
+                initialValue: selectedSymptoms,
                 validator: (value) => (value == null || value.isEmpty) ? 'Selecione pelo menos um sintoma' : null,
                 builder: (FormFieldState<List<String>> state) {
                   return Column(
@@ -95,17 +94,16 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
                         children: _symptomsOptions.map((symptom) {
                           return FilterChip(
                             label: Text(symptom),
-                            selected: _selectedSymptomsList.contains(symptom),
+                            selected: selectedSymptoms.contains(symptom),
                             onSelected: (bool selected) {
                               setState(() {
                                 if (selected) {
-                                  _selectedSymptomsList.add(symptom);
+                                  selectedSymptoms.add(symptom);
                                 } else {
-                                  _selectedSymptomsList.remove(symptom);
+                                  selectedSymptoms.remove(symptom);
                                 }
-                                _symptoms = _selectedSymptomsList.join(', ');
                               });
-                              state.didChange(_selectedSymptomsList);
+                              state.didChange(selectedSymptoms);
                             },
                             selectedColor: const Color(0xFF2563EB).withValues(alpha: 0.2),
                             checkmarkColor: const Color(0xFF2563EB),
