@@ -83,33 +83,71 @@ class _HealthPageState extends State<HealthPage> {
 
   // ── Lógica ──
 
-  void _addBathroomRecord() {
+  /// Abre o modal "E mais alguma coisa?" antes de gravar a ida ao banheiro.
+  /// Sintomas adicionais são incluídos no MESMO documento Firestore —
+  /// um único .add() mantém o banco de dados leve.
+  Future<void> _showBathroomModal() async {
     final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
     if (uid.isEmpty) return;
 
-    Vibration.vibrate(duration: 150, amplitude: 255);
+    Vibration.vibrate(duration: 80);
+
+    final List<String>? extraSymptoms = await showModalBottomSheet<List<String>>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => const _BathroomExtrasModal(),
+    );
+
+    // null → fechou sem responder → registamos ida simples
+    // [] → clicou "Não, só isso" → ida simples
+    // [sintomas...] → ida enriquecida com sintomas
+    if (!mounted) return;
+
+    final symptoms = ['Ida ao Banheiro', ...?extraSymptoms];
+
+    // Calcula gravidade automaticamente com base nos sintomas extras
+    // Regra: 1 sintoma grave = Grave imediatamente
+    const severeSymptoms = [
+      'Sangue nas Fezes', 'Fadiga Extrema', 'Febre', 'Incontinência Fecal',
+      'Desidratação', 'Perda de Peso', 'Anemia', 'Desmaios', 'Convulsões',
+      'Dor Intensa no Peito', 'Dificuldade para Respirar', 'Febre Alta',
+    ];
+    final hasSevere = symptoms.any((s) => severeSymptoms.contains(s));
+    final severity = hasSevere
+        ? 'Grave'
+        : symptoms.length >= 4
+            ? 'Moderada'
+            : 'Leve';
 
     final entry = HealthEntry(
       id: '',
       userId: uid,
-      symptoms: ['Ida ao Banheiro'],
-      severity: 'Leve',
+      symptoms: symptoms,
+      severity: severity,
       notes: '',
       timestamp: DateTime.now(),
       type: 'banheiro',
     );
 
     context.read<HealthBloc>().add(AddHealthEntry(entry));
+    Vibration.vibrate(duration: 150, amplitude: 255);
 
     ScaffoldMessenger.of(context)
       ..clearSnackBars()
       ..showSnackBar(
         SnackBar(
-          content: const Row(
+          content: Row(
             children: [
-              Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
-              SizedBox(width: 12),
-              Expanded(child: Text('Ida ao Banheiro registada.')),
+              const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  symptoms.length > 1
+                      ? 'Registado com ${symptoms.length - 1} sintoma(s) adicional(is).'
+                      : 'Ida ao Banheiro registada.',
+                ),
+              ),
             ],
           ),
           backgroundColor: const Color(0xFF10B981),
@@ -245,7 +283,7 @@ class _HealthPageState extends State<HealthPage> {
 
                       // ── Botão Rápido: Banheiro ──
                       GestureDetector(
-                        onTap: _addBathroomRecord,
+                        onTap: _showBathroomModal,
                         child: Container(
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(vertical: 16),
@@ -382,10 +420,118 @@ class _TimelineItem extends StatelessWidget {
 
   const _TimelineItem({required this.entry, required this.isLast});
 
+  static Color _severityColor(String severity) {
+    return switch (severity) {
+      'Grave'    => const Color(0xFFEF4444),
+      'Moderada' => const Color(0xFFF59E0B),
+      _          => const Color(0xFF10B981),
+    };
+  }
+
+  void _showMenu(BuildContext context) {
+    final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40, height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 20),
+            // ── Ver Detalhes ──
+            ListTile(
+              leading: const CircleAvatar(
+                backgroundColor: Color(0xFFEFF6FF),
+                child: Icon(Icons.info_outline_rounded, color: Color(0xFF2563EB)),
+              ),
+              title: const Text('Ver Detalhes',
+                  style: TextStyle(fontWeight: FontWeight.w600)),
+              subtitle: const Text('Horário, sintomas e notas completas'),
+              onTap: () {
+                Navigator.pop(context);
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (_) => _EntryDetailSheet(entry: entry),
+                );
+              },
+            ),
+            const Divider(height: 1),
+            // ── Eliminar ──
+            ListTile(
+              leading: const CircleAvatar(
+                backgroundColor: Color(0xFFFEF2F2),
+                child: Icon(Icons.delete_outline_rounded, color: Color(0xFFEF4444)),
+              ),
+              title: const Text('Eliminar Registo',
+                  style: TextStyle(fontWeight: FontWeight.w600, color: Color(0xFFEF4444))),
+              subtitle: const Text('Esta acção não pode ser desfeita'),
+              onTap: () {
+                Navigator.pop(context);
+                showDialog(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    title: const Text('Eliminar registo?',
+                        style: TextStyle(fontWeight: FontWeight.w700)),
+                    content: const Text(
+                      'Este registo será removido permanentemente do seu histórico clínico.',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        child: const Text('Cancelar',
+                            style: TextStyle(color: Color(0xFF64748B))),
+                      ),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFEF4444),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 0,
+                        ),
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          context.read<HealthBloc>().add(
+                            DeleteHealthEntry(docId: entry.id, userId: uid),
+                          );
+                        },
+                        child: const Text('Eliminar',
+                            style: TextStyle(fontWeight: FontWeight.w700)),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final timeStr = DateFormat('HH:mm').format(entry.timestamp);
     final isBathroom = entry.type == 'banheiro';
+    final dotColor = _severityColor(entry.severity);
     final title = entry.symptoms.isNotEmpty
         ? entry.symptoms.join(', ')
         : 'Registo';
@@ -413,49 +559,37 @@ class _TimelineItem extends StatelessWidget {
           ),
           const SizedBox(width: 12),
 
-          // Coluna da linha e ponto — CORES ORIGINAIS MANTIDAS
+          // Ponto + linha — cor pela severidade
           Column(
             children: [
               const SizedBox(height: 18),
               Container(
-                width: 12,
-                height: 12,
+                width: 12, height: 12,
                 decoration: BoxDecoration(
-                  color: isBathroom ? const Color(0xFF2563EB) : const Color(0xFFF59E0B),
+                  color: dotColor,
                   shape: BoxShape.circle,
                   border: Border.all(color: Colors.white, width: 2),
                   boxShadow: [
-                    BoxShadow(
-                      color: (isBathroom
-                              ? const Color(0xFF2563EB)
-                              : const Color(0xFFF59E0B))
-                          .withValues(alpha: 0.3),
-                      blurRadius: 4,
-                    ),
+                    BoxShadow(color: dotColor.withValues(alpha: 0.35), blurRadius: 5),
                   ],
                 ),
               ),
               if (!isLast)
-                Expanded(
-                  child: Container(
-                    width: 2,
-                    color: const Color(0xFFE2E8F0),
-                  ),
-                ),
+                Expanded(child: Container(width: 2, color: const Color(0xFFE2E8F0))),
             ],
           ),
           const SizedBox(width: 16),
 
-          // Card do evento
+          // Card
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(bottom: 16),
               child: Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFF1F5F9)),
+                  border: Border.all(color: dotColor.withValues(alpha: 0.25)),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.02),
@@ -468,23 +602,46 @@ class _TimelineItem extends StatelessWidget {
                   children: [
                     Icon(
                       isBathroom ? Icons.wc_rounded : Icons.healing_rounded,
-                      color: isBathroom
-                          ? const Color(0xFF2563EB)
-                          : const Color(0xFFF59E0B),
-                      size: 20,
+                      color: dotColor, size: 20,
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         title,
                         style: const TextStyle(
-                          fontSize: 15,
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: Color(0xFF0F172A),
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
+                    ),
+                    if (entry.severity != 'Leve')
+                      Container(
+                        margin: const EdgeInsets.only(left: 6),
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: dotColor.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          entry.severity,
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: dotColor,
+                          ),
+                        ),
+                      ),
+                    // ── 3 pontos ──
+                    IconButton(
+                      icon: const Icon(Icons.more_vert_rounded,
+                          color: Color(0xFF94A3B8), size: 20),
+                      visualDensity: VisualDensity.compact,
+                      padding: EdgeInsets.zero,
+                      tooltip: 'Opções',
+                      onPressed: () => _showMenu(context),
                     ),
                   ],
                 ),
@@ -496,6 +653,315 @@ class _TimelineItem extends StatelessWidget {
     );
   }
 }
+
+// ═════════════════════════════════════════════════════════════════════════════
+//  _EntryDetailSheet — Detalhes completos de um registo clínico
+// ═════════════════════════════════════════════════════════════════════════════
+
+class _EntryDetailSheet extends StatelessWidget {
+  final HealthEntry entry;
+  const _EntryDetailSheet({required this.entry});
+
+  static Color _severityColor(String severity) {
+    return switch (severity) {
+      'Grave'    => const Color(0xFFEF4444),
+      'Moderada' => const Color(0xFFF59E0B),
+      _          => const Color(0xFF10B981),
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final dotColor = _severityColor(entry.severity);
+    final isBathroom = entry.type == 'banheiro';
+    final dateStr = DateFormat("dd 'de' MMMM 'de' yyyy", 'pt_BR').format(entry.timestamp);
+    final timeStr = DateFormat('HH:mm:ss').format(entry.timestamp);
+    final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.65,
+      minChildSize: 0.4,
+      maxChildSize: 0.95,
+      expand: false,
+      builder: (_, controller) => Container(
+        decoration: const BoxDecoration(
+          color: Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        child: Column(
+          children: [
+            // ── Alça ──
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              child: Container(
+                width: 40, height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+
+            // ── Header ──
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: dotColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Icon(
+                      isBathroom ? Icons.wc_rounded : Icons.healing_rounded,
+                      color: dotColor, size: 26,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          isBathroom ? 'Ida ao Banheiro' : 'Registo de Sintomas',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF0F172A),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '$dateStr às $timeStr',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFF64748B),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const Divider(height: 1),
+
+            // ── Conteúdo scrollável ──
+            Expanded(
+              child: ListView(
+                controller: controller,
+                padding: const EdgeInsets.all(24),
+                children: [
+
+                  // Gravidade
+                  _DetailSection(
+                    icon: Icons.speed_rounded,
+                    label: 'Gravidade',
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: dotColor.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: dotColor.withValues(alpha: 0.3)),
+                      ),
+                      child: Text(
+                        entry.severity,
+                        style: TextStyle(
+                          color: dotColor,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Sintomas
+                  _DetailSection(
+                    icon: Icons.list_alt_rounded,
+                    label: 'Sintomas registados (${entry.symptoms.length})',
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: entry.symptoms.map((s) => Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                        child: Text(
+                          s,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF0F172A),
+                          ),
+                        ),
+                      )).toList(),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Notas
+                  if (entry.notes.isNotEmpty) ...[
+                    _DetailSection(
+                      icon: Icons.notes_rounded,
+                      label: 'Observações',
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                        child: Text(
+                          entry.notes,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Color(0xFF334155),
+                            height: 1.5,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+
+                  // Hora exacta
+                  _DetailSection(
+                    icon: Icons.access_time_rounded,
+                    label: 'Horário exacto',
+                    child: Text(
+                      '$dateStr\n$timeStr',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF334155),
+                        height: 1.5,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Tipo
+                  _DetailSection(
+                    icon: isBathroom ? Icons.wc_rounded : Icons.healing_rounded,
+                    label: 'Tipo de registo',
+                    child: Text(
+                      isBathroom ? 'Ida ao Banheiro' : 'Registo de Sintomas',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF334155),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+
+                  // Botão Eliminar
+                  OutlinedButton.icon(
+                    icon: const Icon(Icons.delete_outline_rounded,
+                        color: Color(0xFFEF4444)),
+                    label: const Text('Eliminar este registo',
+                        style: TextStyle(
+                          color: Color(0xFFEF4444),
+                          fontWeight: FontWeight.w600,
+                        )),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      side: const BorderSide(color: Color(0xFFEF4444)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      showDialog(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          title: const Text('Eliminar registo?',
+                              style: TextStyle(fontWeight: FontWeight.w700)),
+                          content: const Text(
+                            'Este registo será removido permanentemente do seu histórico clínico.',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx),
+                              child: const Text('Cancelar',
+                                  style: TextStyle(color: Color(0xFF64748B))),
+                            ),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFEF4444),
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                elevation: 0,
+                              ),
+                              onPressed: () {
+                                Navigator.pop(ctx);
+                                context.read<HealthBloc>().add(
+                                  DeleteHealthEntry(docId: entry.id, userId: uid),
+                                );
+                              },
+                              child: const Text('Eliminar',
+                                  style: TextStyle(fontWeight: FontWeight.w700)),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DetailSection extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Widget child;
+  const _DetailSection({required this.icon, required this.label, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 16, color: const Color(0xFF94A3B8)),
+            const SizedBox(width: 6),
+            Text(
+              label.toUpperCase(),
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF94A3B8),
+                letterSpacing: 0.8,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        child,
+      ],
+    );
+  }
+}
+
 
 // ═════════════════════════════════════════════════════════════════════════════
 //  Modal de Pesquisa de Sintomas — ESTÉTICA ORIGINAL PRESERVADA
@@ -716,6 +1182,192 @@ class _SymptomSearchModalState extends State<_SymptomSearchModal> {
                 ),
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  } // fecha build()
+} // fecha _SymptomSearchModalState
+
+// ═════════════════════════════════════════════════════════════════════════════
+//  _BathroomExtrasModal — "E mais alguma coisa?"
+//  Modal compacto que permite registar sintomas comuns junto com a ida
+//  ao banheiro, tudo num único documento Firestore.
+// ═════════════════════════════════════════════════════════════════════════════
+
+class _BathroomExtrasModal extends StatefulWidget {
+  const _BathroomExtrasModal();
+
+  @override
+  State<_BathroomExtrasModal> createState() => _BathroomExtrasModalState();
+}
+
+class _BathroomExtrasModalState extends State<_BathroomExtrasModal> {
+  // Sintomas mais comuns associados a uma ida ao banheiro na DII
+  static const List<String> _quickSymptoms = [
+    'Dor Abdominal',
+    'Diarreia',
+    'Sangue nas Fezes',
+    'Urgência Evacuatória',
+    'Cólica Intestinal',
+    'Incontinência Fecal',
+    'Muco nas Fezes',
+    'Gases/Inchaço',
+    'Náusea/Vómito',
+    'Fadiga Extrema',
+  ];
+
+  final List<String> _selected = [];
+
+  static const Color _kBlue = Color(0xFF2563EB);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      padding: EdgeInsets.only(
+        left: 24,
+        right: 24,
+        top: 20,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Alça visual ──
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // ── Título ──
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEFF6FF),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.wc_rounded, color: _kBlue, size: 22),
+              ),
+              const SizedBox(width: 14),
+              const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'E mais alguma coisa?',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF0F172A),
+                    ),
+                  ),
+                  Text(
+                    'Opcional — tudo fica num registo só.',
+                    style: TextStyle(fontSize: 13, color: Color(0xFF64748B)),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // ── Chips de sintomas rápidos ──
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: _quickSymptoms.map((symptom) {
+              final isSelected = _selected.contains(symptom);
+              return FilterChip(
+                label: Text(symptom),
+                selected: isSelected,
+                onSelected: (val) {
+                  Vibration.vibrate(duration: 30);
+                  setState(() {
+                    if (val) {
+                      _selected.add(symptom);
+                    } else {
+                      _selected.remove(symptom);
+                    }
+                  });
+                },
+                selectedColor: _kBlue.withValues(alpha: 0.15),
+                checkmarkColor: _kBlue,
+                backgroundColor: Colors.white,
+                side: BorderSide(
+                  color: isSelected ? _kBlue : const Color(0xFFE2E8F0),
+                ),
+                labelStyle: TextStyle(
+                  color: isSelected ? _kBlue : const Color(0xFF0F172A),
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                  fontSize: 13,
+                ),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 24),
+
+          // ── Botões ──
+          Row(
+            children: [
+              // Botão: Não, só isso
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(context, <String>[]),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    side: const BorderSide(color: Color(0xFFE2E8F0)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  child: const Text(
+                    'Não, só isso',
+                    style: TextStyle(
+                      color: Color(0xFF64748B),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Botão: Adicionar
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {
+                    Vibration.vibrate(duration: 60);
+                    Navigator.pop(context, _selected);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _kBlue,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: Text(
+                    _selected.isEmpty ? 'Só a ida' : 'Adicionar (${_selected.length})',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),

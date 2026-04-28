@@ -34,3 +34,13 @@ class AddHealthEntry extends HealthEvent {
   @override
   List<Object> get props => [entry];
 }
+
+/// Elimina um registo clínico pelo seu ID de documento Firestore.
+class DeleteHealthEntry extends HealthEvent {
+  final String docId;
+  final String userId;
+  const DeleteHealthEntry({required this.docId, required this.userId});
+
+  @override
+  List<Object> get props => [docId, userId];
+}
