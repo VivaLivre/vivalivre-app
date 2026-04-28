@@ -79,7 +79,9 @@ class CartaoDIIPage extends StatelessWidget {
             }
 
             // ── Documento não existe ou sem dados ──
-            if (!snapshot.hasData || snapshot.data == null || !snapshot.data!.exists) {
+            // DEFESA: verificamos .hasData, .exists E se o documento tem conteúdo
+            final docSnapshot = snapshot.data;
+            if (!snapshot.hasData || docSnapshot == null || !docSnapshot.exists) {
               return Center(
                 child: Padding(
                   padding: const EdgeInsets.all(24),
@@ -111,10 +113,15 @@ class CartaoDIIPage extends StatelessWidget {
               );
             }
 
-            // ── Extração de Dados do Firestore ──
-            final data = snapshot.data!.data() as Map<String, dynamic>?;
-            final String? cid = data != null ? data['cid'] as String? : null;
-            final String? laudoUrl = data != null ? data['laudoUrl'] as String? : null;
+            // ── Extração de Dados do Firestore (programação defensiva) ──
+            // DEFESA: cast seguro com `as?` — se .data() retornar null ou tipo
+            // inesperado, `data` será null em vez de lançar TypeError.
+            final data = docSnapshot.data() as Map<String, dynamic>?;
+
+            // DEFESA: operador ?? garante um fallback para cada campo ausente
+            // ou com tipo diferente de String no banco de dados.
+            final String? cid = data?['cid'] as String?;
+            final String? laudoUrl = data?['laudoUrl'] as String?;
             final String userName = user.displayName ?? 'Usuário';
 
             // ── UI Principal ──
