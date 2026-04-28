@@ -16,7 +16,9 @@ void main() async {
   await Firebase.initializeApp();
 
   final firebaseAuth = FirebaseAuth.instance;
-  final healthRepository = HealthRepository();
+  // HealthRepositoryImpl: implementação real com Firestore.
+  // IHealthRepository: o BLoC depende apenas da interface, nunca da implementação.
+  final healthRepository = HealthRepositoryImpl();
   // O repositório é criado uma única vez e injetado no MapBloc via construtor.
   // Jamais use 'late' para dependências de ciclo de vida longo.
   final bathroomRepository = BathroomRepositoryImpl();
@@ -28,6 +30,8 @@ void main() async {
           create: (_) => AuthBloc(firebaseAuth: firebaseAuth)..add(AuthAppStarted()),
         ),
         BlocProvider<HealthBloc>(
+          // WatchHealthEntries será disparado dentro do initState da HealthPage
+          // após o utilizador estar autenticado e o uid disponível.
           create: (_) => HealthBloc(healthRepository: healthRepository),
         ),
         // MapBloc recebe o repositório via injeção de dependência no construtor.

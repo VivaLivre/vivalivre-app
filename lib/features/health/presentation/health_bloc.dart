@@ -1,45 +1,80 @@
+import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:viva_livre_app/features/health/domain/entities/health_entry.dart';
-import 'package:viva_livre_app/features/health/data/repositories/health_repository.dart';
+import 'package:viva_livre_app/features/health/domain/repositories/i_health_repository.dart';
 
 part 'health_event.dart';
 part 'health_state.dart';
 
 class HealthBloc extends Bloc<HealthEvent, HealthState> {
-  final HealthRepository _healthRepository;
+  final IHealthRepository _healthRepository;
 
-  HealthBloc({required HealthRepository healthRepository})
-    : _healthRepository = healthRepository,
-      super(HealthInitial()) {
-    on<FetchHealthEntries>(_onFetchHealthEntries);
+  /// Subscription ao Stream do Firestore — cancelada em [close()].
+  StreamSubscription<List<HealthEntry>>? _entriesSubscription;
+
+  HealthBloc({required IHealthRepository healthRepository})
+      : _healthRepository = healthRepository,
+        super(HealthInitial()) {
+    on<WatchHealthEntries>(_onWatchHealthEntries);
+    on<_HealthEntriesUpdated>(_onHealthEntriesUpdated);
     on<AddHealthEntry>(_onAddHealthEntry);
   }
 
-  Future<void> _onFetchHealthEntries(
-    FetchHealthEntries event,
+  /// Inicia (ou reinicia) a escuta do Stream de registos do Firestore.
+  Future<void> _onWatchHealthEntries(
+    WatchHealthEntries event,
     Emitter<HealthState> emit,
   ) async {
     emit(HealthLoading());
-    try {
-      final entries = await _healthRepository.getHealthEntries();
-      emit(HealthEntriesLoaded(entries));
-    } catch (e) {
-      emit(HealthError('Failed to load entries. Please try again.'));
-    }
+
+    // Cancela qualquer subscription anterior antes de criar uma nova.
+    await _entriesSubscription?.cancel();
+
+    _entriesSubscription = _healthRepository
+        .watchEntries(event.userId)
+        .listen(
+          (entries) => add(_HealthEntriesUpdated(entries)),
+          onError: (Object e) => add(
+            const _HealthEntriesUpdated([]),
+          ),
+        );
   }
 
+  /// Recebe as atualizações do Stream e emite o novo estado.
+  void _onHealthEntriesUpdated(
+    _HealthEntriesUpdated event,
+    Emitter<HealthState> emit,
+  ) {
+    emit(HealthEntriesLoaded(event.entries));
+  }
+
+  /// Grava um novo registo no Firestore.
   Future<void> _onAddHealthEntry(
     AddHealthEntry event,
     Emitter<HealthState> emit,
   ) async {
+    // Guarda o estado carregado para restaurar em caso de erro.
+    final previousState = state;
+
+    emit(HealthEntryAdding());
+
     try {
-      await _healthRepository.addHealthEntry(event.entry);
-      // After adding, refresh the list to show the new entry
-      add(FetchHealthEntries()); // Re-fetch entries to update the list
-      emit(HealthEntryAdded()); // Indicate that an entry was added successfully
+      await _healthRepository.addEntry(event.entry);
+      // Não precisamos emitir HealthEntriesLoaded aqui —
+      // o Stream do Firestore dispara automaticamente com o novo documento.
     } catch (e) {
-      emit(HealthError('Failed to add entry. Please try again.'));
+      emit(const HealthError('Não foi possível guardar o registo. Verifique a sua ligação.'));
+      // Restaura o estado anterior para que a UI não quebre.
+      if (previousState is HealthEntriesLoaded) {
+        emit(previousState);
+      }
     }
+  }
+
+  @override
+  Future<void> close() async {
+    await _entriesSubscription?.cancel();
+    return super.close();
   }
 }
