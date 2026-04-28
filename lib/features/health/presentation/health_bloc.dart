@@ -19,6 +19,7 @@ class HealthBloc extends Bloc<HealthEvent, HealthState> {
     on<WatchHealthEntries>(_onWatchHealthEntries);
     on<_HealthEntriesUpdated>(_onHealthEntriesUpdated);
     on<AddHealthEntry>(_onAddHealthEntry);
+    on<DeleteHealthEntry>(_onDeleteHealthEntry);
   }
 
   /// Inicia (ou reinicia) a escuta do Stream de registos do Firestore.
@@ -69,6 +70,22 @@ class HealthBloc extends Bloc<HealthEvent, HealthState> {
       if (previousState is HealthEntriesLoaded) {
         emit(previousState);
       }
+    }
+  }
+
+  /// Elimina um registo do Firestore.
+  /// Após a deleção, o Stream do Firestore actualiza a lista automaticamente.
+  Future<void> _onDeleteHealthEntry(
+    DeleteHealthEntry event,
+    Emitter<HealthState> emit,
+  ) async {
+    final previousState = state;
+    try {
+      await _healthRepository.deleteEntry(event.docId, event.userId);
+      // O Stream emite automaticamente a lista sem o documento eliminado.
+    } catch (e) {
+      emit(const HealthError('Não foi possível eliminar o registo. Verifique a sua ligação.'));
+      if (previousState is HealthEntriesLoaded) emit(previousState);
     }
   }
 
