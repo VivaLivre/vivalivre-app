@@ -107,14 +107,16 @@ class _HealthPageState extends State<HealthPage> {
     final symptoms = ['Ida ao Banheiro', ...?extraSymptoms];
 
     // Calcula gravidade automaticamente com base nos sintomas extras
+    // Regra: 1 sintoma grave = Grave imediatamente
     const severeSymptoms = [
       'Sangue nas Fezes', 'Fadiga Extrema', 'Febre', 'Incontinência Fecal',
-      'Desidratação', 'Perda de Peso', 'Anemia',
+      'Desidratação', 'Perda de Peso', 'Anemia', 'Desmaios', 'Convulsões',
+      'Dor Intensa no Peito', 'Dificuldade para Respirar', 'Febre Alta',
     ];
     final hasSevere = symptoms.any((s) => severeSymptoms.contains(s));
-    final severity = hasSevere || symptoms.length >= 5
+    final severity = hasSevere
         ? 'Grave'
-        : symptoms.length >= 3
+        : symptoms.length >= 4
             ? 'Moderada'
             : 'Leve';
 
@@ -418,10 +420,22 @@ class _TimelineItem extends StatelessWidget {
 
   const _TimelineItem({required this.entry, required this.isLast});
 
+  /// Retorna a cor correspondente à gravidade do registo.
+  /// O ponto da timeline e o ícone são coloridos pela SEVERIDADE,
+  /// enquanto o ícone de tipo (wc/healing) indica a categoria.
+  static Color _severityColor(String severity) {
+    return switch (severity) {
+      'Grave'    => const Color(0xFFEF4444), // vermelho
+      'Moderada' => const Color(0xFFF59E0B), // laranja
+      _          => const Color(0xFF10B981), // verde (Leve ou desconhecido)
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     final timeStr = DateFormat('HH:mm').format(entry.timestamp);
     final isBathroom = entry.type == 'banheiro';
+    final dotColor = _severityColor(entry.severity);
     final title = entry.symptoms.isNotEmpty
         ? entry.symptoms.join(', ')
         : 'Registo';
@@ -449,7 +463,7 @@ class _TimelineItem extends StatelessWidget {
           ),
           const SizedBox(width: 12),
 
-          // Coluna da linha e ponto — CORES ORIGINAIS MANTIDAS
+          // Coluna da linha e ponto — cor pela SEVERIDADE
           Column(
             children: [
               const SizedBox(height: 18),
@@ -457,16 +471,13 @@ class _TimelineItem extends StatelessWidget {
                 width: 12,
                 height: 12,
                 decoration: BoxDecoration(
-                  color: isBathroom ? const Color(0xFF2563EB) : const Color(0xFFF59E0B),
+                  color: dotColor,
                   shape: BoxShape.circle,
                   border: Border.all(color: Colors.white, width: 2),
                   boxShadow: [
                     BoxShadow(
-                      color: (isBathroom
-                              ? const Color(0xFF2563EB)
-                              : const Color(0xFFF59E0B))
-                          .withValues(alpha: 0.3),
-                      blurRadius: 4,
+                      color: dotColor.withValues(alpha: 0.35),
+                      blurRadius: 5,
                     ),
                   ],
                 ),
@@ -482,7 +493,7 @@ class _TimelineItem extends StatelessWidget {
           ),
           const SizedBox(width: 16),
 
-          // Card do evento
+          // Card do evento — borda sutil pela severidade
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(bottom: 16),
@@ -491,7 +502,9 @@ class _TimelineItem extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFF1F5F9)),
+                  border: Border.all(
+                    color: dotColor.withValues(alpha: 0.25),
+                  ),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.02),
@@ -502,11 +515,10 @@ class _TimelineItem extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
+                    // Ícone indica o TIPO (banheiro vs sintoma)
                     Icon(
                       isBathroom ? Icons.wc_rounded : Icons.healing_rounded,
-                      color: isBathroom
-                          ? const Color(0xFF2563EB)
-                          : const Color(0xFFF59E0B),
+                      color: dotColor,
                       size: 20,
                     ),
                     const SizedBox(width: 12),
@@ -522,6 +534,24 @@ class _TimelineItem extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
+                    // Badge de gravidade — só exibe se Moderada ou Grave
+                    if (entry.severity != 'Leve')
+                      Container(
+                        margin: const EdgeInsets.only(left: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: dotColor.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          entry.severity,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: dotColor,
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),

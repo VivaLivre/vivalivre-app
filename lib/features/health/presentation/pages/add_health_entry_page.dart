@@ -84,28 +84,30 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
 
   /// Calcula automaticamente a gravidade com base nos sintomas selecionados.
   /// É chamado sempre que o utilizador toca num chip de sintoma.
+  /// Regra principal: QUALQUER sintoma grave = Grave, independente da quantidade.
   /// O utilizador ainda pode ajustar manualmente no seletor de gravidade.
   void _autoCalculateSeverity() {
-    // Sintomas que disparam alerta "Grave" imediatamente
+    // Sintomas que disparam "Grave" imediatamente (mesmo que seja apenas 1)
     const severeSymptoms = [
       'Sangue nas Fezes', 'Fadiga Extrema', 'Febre', 'Incontinência Fecal',
-      'Desidratação', 'Perda de Peso', 'Anemia',
+      'Desidratação', 'Perda de Peso', 'Anemia', 'Desmaios', 'Convulsões',
+      'Dor Intensa no Peito', 'Dificuldade para Respirar', 'Febre Alta',
     ];
 
     final hasSevere = _selectedSymptoms.any((s) => severeSymptoms.contains(s));
 
-    String newSeverity;
-    if (hasSevere || _selectedSymptoms.length >= 5) {
+    final String newSeverity;
+    if (hasSevere) {
+      // 1 sintoma grave já é suficiente para Grave
       newSeverity = 'Grave';
     } else if (_selectedSymptoms.length >= 3) {
       newSeverity = 'Moderada';
     } else if (_selectedSymptoms.isNotEmpty) {
       newSeverity = 'Leve';
     } else {
-      newSeverity = 'Leve'; // fallback quando todos são desmarcados
+      newSeverity = 'Leve';
     }
 
-    // Só atualiza o estado se a gravidade realmente mudou (evita rebuild desnecessário)
     if (newSeverity != _severity) {
       setState(() => _severity = newSeverity);
     }
