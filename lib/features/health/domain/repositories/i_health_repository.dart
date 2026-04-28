@@ -9,6 +9,10 @@ abstract class IHealthRepository {
   /// Lança [Exception] em caso de falha de rede ou permissão negada.
   Future<void> addEntry(HealthEntry entry);
 
+  /// Elimina um registo pelo seu [docId].
+  /// O [userId] é passado para validação defensiva antes da operação.
+  Future<void> deleteEntry(String docId, String userId);
+
   /// Retorna um [Stream] que emite a lista de registos do utilizador
   /// sempre que houver alterações no Firestore (tempo real).
   ///

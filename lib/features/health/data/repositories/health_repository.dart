@@ -54,6 +54,21 @@ class HealthRepositoryImpl implements IHealthRepository {
   }
 
   @override
+  Future<void> deleteEntry(String docId, String userId) async {
+    if (docId.isEmpty || userId.isEmpty) {
+      throw Exception('docId e userId são obrigatórios para eliminar um registo.');
+    }
+
+    try {
+      await _collection.doc(docId).delete();
+      debugPrint('[HealthRepository] deleteEntry: doc $docId eliminado.');
+    } catch (e) {
+      debugPrint('[HealthRepository] deleteEntry ERROR: $e');
+      rethrow;
+    }
+  }
+
+  @override
   Stream<List<HealthEntry>> watchEntries(String userId) {
     if (userId.isEmpty) {
       debugPrint('[HealthRepository] watchEntries: userId vazio — Stream encerrado.');
