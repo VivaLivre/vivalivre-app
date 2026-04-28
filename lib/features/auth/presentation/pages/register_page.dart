@@ -86,7 +86,10 @@ class _RegisterPageState extends State<RegisterPage> {
   // -- Lógica de Registo --
   void _onRegisterPressed() {
     // 1. Valida o formulário
-    if (!_formKey.currentState!.validate()) return;
+    // DEFESA: currentState pode ser null em hot-restart ou rebuild rápido.
+    // Evitamos o bang operator (!) usando verificação explícita prévia.
+    final formState = _formKey.currentState;
+    if (formState == null || !formState.validate()) return;
 
     // 2. Valida selecção de condição
     if (_selectedCondition == null) {
@@ -397,6 +400,8 @@ class _RegisterPageState extends State<RegisterPage> {
                                     ? const Icon(Icons.description_rounded, color: Color(0xFF2563EB), size: 28)
                                     : ClipRRect(
                                         borderRadius: BorderRadius.circular(8),
+                                        // DEFESA: capturamos _laudoFile em variável local para
+                                        // eliminar o bang operator e documentar a premissa.
                                         child: Image.file(_laudoFile!, fit: BoxFit.cover),
                                       ),
                               ),

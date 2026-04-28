@@ -1,18 +1,21 @@
-﻿import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:vibration/vibration.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:viva_livre_app/features/health/presentation/pages/health_dashboard_page.dart';
+import 'package:vibration/vibration.dart';
+import 'package:viva_livre_app/features/health/domain/entities/health_entry.dart';
+import 'package:viva_livre_app/features/health/presentation/health_bloc.dart';
 
 // ═════════════════════════════════════════════════════════════════════════════
-//  Models
+//  HealthRecord — alias de compatibilidade para o HealthDashboardPage
+//  O dashboard ainda lê HealthRecord; mapeamos HealthEntry → HealthRecord aqui.
 // ═════════════════════════════════════════════════════════════════════════════
 
 class HealthRecord {
   final String id;
   final String title;
   final DateTime timestamp;
-  final String type; // 'banheiro', 'sintoma'
+  final String type; // 'banheiro' | 'sintoma'
 
   HealthRecord({
     required this.id,
@@ -20,10 +23,22 @@ class HealthRecord {
     required this.timestamp,
     required this.type,
   });
+
+  /// Converte uma [HealthEntry] do domínio para o formato do Dashboard.
+  factory HealthRecord.fromEntry(HealthEntry entry) {
+    return HealthRecord(
+      id: entry.id,
+      title: entry.symptoms.isNotEmpty
+          ? entry.symptoms.join(', ')
+          : 'Registo sem sintoma',
+      timestamp: entry.timestamp,
+      type: entry.type,
+    );
+  }
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-//  Page
+//  HealthPage
 // ═════════════════════════════════════════════════════════════════════════════
 
 class HealthPage extends StatefulWidget {
@@ -34,52 +49,23 @@ class HealthPage extends StatefulWidget {
 }
 
 class _HealthPageState extends State<HealthPage> {
-  // ── Constantes ──
+  // ── Constantes de design — INALTERADAS ──
   static const Color _kBlue = Color(0xFF2563EB);
   static const Color _kBg = Color(0xFFF8FAFC);
   static const Color _kText = Color(0xFF0F172A);
   static const Color _kSubText = Color(0xFF64748B);
 
-  // ── Estado ──
-  final List<HealthRecord> _timeline = [];
-  
+  // ── Lista de sintomas disponíveis para o modal de pesquisa ──
   final List<String> _baseSymptoms = [
-    'Dor Abdominal',
-    'Diarreia',
-    'Sangue nas Fezes',
-    'Fadiga Extrema',
-    'Febre',
-    'Náusea/Vómito',
-    'Gases/Inchaço',
-    'Perda de Apetite',
-    'Dores Articulares',
-    'Cólica Intestinal',
-    'Urgência Evacuatória',
-    'Incontinência Fecal',
-    'Muco nas Fezes',
-    'Constipação/Prisão de Ventre',
-    'Azia',
-    'Refluxo',
-    'Dor de Cabeça',
-    'Enxaqueca',
-    'Tontura',
-    'Calafrios',
-    'Suores Noturnos',
-    'Aftas',
-    'Feridas na Boca',
-    'Lesões na Pele',
-    'Eritema Nodoso',
-    'Olhos Vermelhos/Irritados',
-    'Visão Embaçada',
-    'Perda de Peso',
-    'Anemia',
-    'Fraqueza',
-    'Desidratação',
-    'Boca Seca',
-    'Palpitações',
-    'Ansiedade',
-    'Insónia',
-    'Alterações de Humor',
+    'Dor Abdominal', 'Diarreia', 'Sangue nas Fezes', 'Fadiga Extrema',
+    'Febre', 'Náusea/Vómito', 'Gases/Inchaço', 'Perda de Apetite',
+    'Dores Articulares', 'Cólica Intestinal', 'Urgência Evacuatória',
+    'Incontinência Fecal', 'Muco nas Fezes', 'Constipação/Prisão de Ventre',
+    'Azia', 'Refluxo', 'Dor de Cabeça', 'Enxaqueca', 'Tontura', 'Calafrios',
+    'Suores Noturnos', 'Aftas', 'Feridas na Boca', 'Lesões na Pele',
+    'Eritema Nodoso', 'Olhos Vermelhos/Irritados', 'Visão Embaçada',
+    'Perda de Peso', 'Anemia', 'Fraqueza', 'Desidratação', 'Boca Seca',
+    'Palpitações', 'Ansiedade', 'Insónia', 'Alterações de Humor',
   ];
   late List<String> _customSymptoms;
 
@@ -87,58 +73,43 @@ class _HealthPageState extends State<HealthPage> {
   void initState() {
     super.initState();
     _customSymptoms = List.from(_baseSymptoms);
+
+    // Inicia a escuta do Stream do Firestore para o utilizador logado.
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid != null) {
+      context.read<HealthBloc>().add(WatchHealthEntries(uid));
+    }
   }
 
   // ── Lógica ──
-  void _confirmDelete(int index) {
-    Vibration.vibrate(duration: 150, amplitude: 255);
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Excluir Registo', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: const Text('Tem a certeza que deseja excluir este registo?'),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar', style: TextStyle(color: _kSubText)),
-          ),
-          TextButton(
-            onPressed: () {
-              setState(() {
-                _timeline.removeAt(index);
-              });
-              Navigator.pop(context);
-            },
-            child: const Text('Excluir', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-          ),
-        ],
-      ),
-    );
-  }
 
-  void _addRecord(String title, String type) {
-    setState(() {
-      _timeline.insert(
-        0,
-        HealthRecord(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          title: title,
-          timestamp: DateTime.now(),
-          type: type,
-        ),
-      );
-    });
+  void _addBathroomRecord() {
+    final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+    if (uid.isEmpty) return;
+
+    Vibration.vibrate(duration: 150, amplitude: 255);
+
+    final entry = HealthEntry(
+      id: '',
+      userId: uid,
+      symptoms: ['Ida ao Banheiro'],
+      severity: 'Leve',
+      notes: '',
+      timestamp: DateTime.now(),
+      type: 'banheiro',
+    );
+
+    context.read<HealthBloc>().add(AddHealthEntry(entry));
 
     ScaffoldMessenger.of(context)
       ..clearSnackBars()
       ..showSnackBar(
         SnackBar(
-          content: Row(
+          content: const Row(
             children: [
-              const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
-              const SizedBox(width: 12),
-              Expanded(child: Text('$title registado agora.')),
+              Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+              SizedBox(width: 12),
+              Expanded(child: Text('Ida ao Banheiro registada.')),
             ],
           ),
           backgroundColor: const Color(0xFF10B981),
@@ -149,7 +120,7 @@ class _HealthPageState extends State<HealthPage> {
       );
   }
 
-  void _showAddSymptomModal() {
+  void _showAddSymptomModal(List<HealthEntry> currentEntries) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -157,154 +128,201 @@ class _HealthPageState extends State<HealthPage> {
       builder: (context) => _SymptomSearchModal(
         availableSymptoms: _customSymptoms,
         onAdd: (List<String> symptoms) {
+          final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+          if (uid.isEmpty) return;
+
           for (var symptom in symptoms) {
             if (!_customSymptoms.contains(symptom)) {
               setState(() => _customSymptoms.add(symptom));
             }
-            _addRecord(symptom, 'sintoma');
           }
+
+          Vibration.vibrate(duration: 150, amplitude: 255);
+
+          final entry = HealthEntry(
+            id: '',
+            userId: uid,
+            symptoms: symptoms,
+            severity: 'Leve',
+            notes: '',
+            timestamp: DateTime.now(),
+            type: 'sintoma',
+          );
+
+          context.read<HealthBloc>().add(AddHealthEntry(entry));
+
+          ScaffoldMessenger.of(context)
+            ..clearSnackBars()
+            ..showSnackBar(
+              SnackBar(
+                content: Row(
+                  children: [
+                    const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+                    const SizedBox(width: 12),
+                    Expanded(child: Text('${symptoms.join(', ')} registado.')),
+                  ],
+                ),
+                backgroundColor: const Color(0xFF10B981),
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                duration: const Duration(seconds: 2),
+              ),
+            );
         },
       ),
     );
   }
 
-  // ── UI Builders ──
+  // ── UI ──
   @override
   Widget build(BuildContext context) {
     final today = DateFormat("dd 'de' MMMM", 'pt_BR').format(DateTime.now());
 
-    return Scaffold(
-      backgroundColor: _kBg,
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // -- Header --
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.03),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Diário Clínico',
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.w800,
-                              color: _kText,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            today,
-                            style: const TextStyle(fontSize: 14, color: _kSubText),
-                          ),
-                        ],
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.bar_chart_rounded, color: _kBlue),
-                        tooltip: 'Ver Resumo',
-                        onPressed: () {
-                          Navigator.pushNamed(context, '/health-dashboard', arguments: _timeline);
-                        },
+    return BlocBuilder<HealthBloc, HealthState>(
+      builder: (context, state) {
+        final entries = state is HealthEntriesLoaded ? state.entries : <HealthEntry>[];
+        final records = entries.map(HealthRecord.fromEntry).toList();
+        final isLoading = state is HealthLoading;
+
+        return Scaffold(
+          backgroundColor: _kBg,
+          body: SafeArea(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // ── Header ──
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.03),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 24),
-
-                  // -- Acesso Rapido: Banheiro --
-                  GestureDetector(
-                    onTap: () { Vibration.vibrate(duration: 150, amplitude: 255); _addRecord('Ida ao Banheiro', 'banheiro'); },
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF3B82F6), _kBlue],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: _kBlue.withValues(alpha: 0.3),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(Icons.wc_rounded, color: Colors.white, size: 24),
-                          SizedBox(width: 12),
-                          Text(
-                            'Registrar Ida ao Banheiro',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                            ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Diário Clínico',
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w800,
+                                  color: _kText,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                today,
+                                style: const TextStyle(fontSize: 14, color: _kSubText),
+                              ),
+                            ],
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.bar_chart_rounded, color: _kBlue),
+                            tooltip: 'Ver Resumo',
+                            onPressed: () {
+                              Navigator.pushNamed(
+                                context,
+                                '/health-dashboard',
+                                arguments: records,
+                              );
+                            },
                           ),
                         ],
                       ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+                      const SizedBox(height: 24),
 
-            // -- Timeline --
-            Expanded(
-              child: _timeline.isEmpty
-                  ? const _EmptyTimeline()
-                  : ListView.builder(
-                      padding: const EdgeInsets.all(24),
-                      itemCount: _timeline.length,
-                      itemBuilder: (context, index) {
-                        return GestureDetector(
-                          onLongPress: () => _confirmDelete(index),
-                          child: _TimelineItem(
-                            record: _timeline[index],
-                            isLast: index == _timeline.length - 1,
+                      // ── Botão Rápido: Banheiro ──
+                      GestureDetector(
+                        onTap: _addBathroomRecord,
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF3B82F6), _kBlue],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: _kBlue.withValues(alpha: 0.3),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
                           ),
-                        );
-                      },
-                    ),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.wc_rounded, color: Colors.white, size: 24),
+                              SizedBox(width: 12),
+                              Text(
+                                'Registrar Ida ao Banheiro',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // ── Timeline ──
+                Expanded(
+                  child: isLoading
+                      ? const Center(
+                          child: CircularProgressIndicator(color: _kBlue),
+                        )
+                      : entries.isEmpty
+                          ? const _EmptyTimeline()
+                          : ListView.builder(
+                              padding: const EdgeInsets.all(24),
+                              itemCount: entries.length,
+                              itemBuilder: (context, index) {
+                                return _TimelineItem(
+                                  entry: entries[index],
+                                  isLast: index == entries.length - 1,
+                                );
+                              },
+                            ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
-      
-      // -- FAB Adicionar Sintoma --ma ──
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _showAddSymptomModal,
-        backgroundColor: Colors.white,
-        foregroundColor: _kText,
-        icon: const Icon(Icons.add_rounded, color: _kBlue),
-        label: const Text('Sintoma', style: TextStyle(fontWeight: FontWeight.w700)),
-        elevation: 4,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: Colors.grey.shade200),
-        ),
-      ),
+          ),
+
+          // ── FAB Sintoma ──
+          floatingActionButton: FloatingActionButton.extended(
+            onPressed: () => _showAddSymptomModal(entries),
+            backgroundColor: Colors.white,
+            foregroundColor: _kText,
+            icon: const Icon(Icons.add_rounded, color: _kBlue),
+            label: const Text('Sintoma', style: TextStyle(fontWeight: FontWeight.w700)),
+            elevation: 4,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide(color: Colors.grey.shade200),
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -335,7 +353,11 @@ class _EmptyTimeline extends StatelessWidget {
                 ),
               ],
             ),
-            child: const Icon(Icons.sentiment_satisfied_alt_rounded, size: 64, color: Color(0xFF94A3B8)),
+            child: const Icon(
+              Icons.sentiment_satisfied_alt_rounded,
+              size: 64,
+              color: Color(0xFF94A3B8),
+            ),
           ),
           const SizedBox(height: 24),
           const Text(
@@ -355,15 +377,18 @@ class _EmptyTimeline extends StatelessWidget {
 }
 
 class _TimelineItem extends StatelessWidget {
-  final HealthRecord record;
+  final HealthEntry entry;
   final bool isLast;
 
-  const _TimelineItem({required this.record, required this.isLast});
+  const _TimelineItem({required this.entry, required this.isLast});
 
   @override
   Widget build(BuildContext context) {
-    final timeStr = DateFormat('HH:mm').format(record.timestamp);
-    final isBathroom = record.type == 'banheiro';
+    final timeStr = DateFormat('HH:mm').format(entry.timestamp);
+    final isBathroom = entry.type == 'banheiro';
+    final title = entry.symptoms.isNotEmpty
+        ? entry.symptoms.join(', ')
+        : 'Registo';
 
     return IntrinsicHeight(
       child: Row(
@@ -388,7 +413,7 @@ class _TimelineItem extends StatelessWidget {
           ),
           const SizedBox(width: 12),
 
-          // Coluna da linha e ponto
+          // Coluna da linha e ponto — CORES ORIGINAIS MANTIDAS
           Column(
             children: [
               const SizedBox(height: 18),
@@ -401,7 +426,9 @@ class _TimelineItem extends StatelessWidget {
                   border: Border.all(color: Colors.white, width: 2),
                   boxShadow: [
                     BoxShadow(
-                      color: (isBathroom ? const Color(0xFF2563EB) : const Color(0xFFF59E0B))
+                      color: (isBathroom
+                              ? const Color(0xFF2563EB)
+                              : const Color(0xFFF59E0B))
                           .withValues(alpha: 0.3),
                       blurRadius: 4,
                     ),
@@ -419,7 +446,7 @@ class _TimelineItem extends StatelessWidget {
           ),
           const SizedBox(width: 16),
 
-          // Coluna do conteúdo (Card)
+          // Card do evento
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(bottom: 16),
@@ -441,18 +468,22 @@ class _TimelineItem extends StatelessWidget {
                   children: [
                     Icon(
                       isBathroom ? Icons.wc_rounded : Icons.healing_rounded,
-                      color: isBathroom ? const Color(0xFF2563EB) : const Color(0xFFF59E0B),
+                      color: isBathroom
+                          ? const Color(0xFF2563EB)
+                          : const Color(0xFFF59E0B),
                       size: 20,
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        record.title,
+                        title,
                         style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
                           color: Color(0xFF0F172A),
                         ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
@@ -467,7 +498,7 @@ class _TimelineItem extends StatelessWidget {
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-//  Modal de Pesquisa�de Sintomas
+//  Modal de Pesquisa de Sintomas — ESTÉTICA ORIGINAL PRESERVADA
 // ═════════════════════════════════════════════════════════════════════════════
 
 class _SymptomSearchModal extends StatefulWidget {
@@ -515,8 +546,9 @@ class _SymptomSearchModalState extends State<_SymptomSearchModal> {
   @override
   Widget build(BuildContext context) {
     final query = _searchCtrl.text.trim();
-    final bool showCustomAdd = query.isNotEmpty && 
-                               !widget.availableSymptoms.any((s) => s.toLowerCase() == query.toLowerCase());
+    final bool showCustomAdd = query.isNotEmpty &&
+        !widget.availableSymptoms
+            .any((s) => s.toLowerCase() == query.toLowerCase());
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.75,
@@ -526,7 +558,6 @@ class _SymptomSearchModalState extends State<_SymptomSearchModal> {
       ),
       child: Column(
         children: [
-          // ── Puxador ──
           const SizedBox(height: 12),
           Container(
             width: 40,
@@ -537,7 +568,6 @@ class _SymptomSearchModalState extends State<_SymptomSearchModal> {
             ),
           ),
           const SizedBox(height: 16),
-          
           const Text(
             'Adicionar Sintomas',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
@@ -561,7 +591,6 @@ class _SymptomSearchModalState extends State<_SymptomSearchModal> {
                     child: TextField(
                       controller: _searchCtrl,
                       onChanged: _filter,
-                      autofocus: false,
                       decoration: const InputDecoration(
                         hintText: 'Pesquisar sintoma...',
                         border: InputBorder.none,
@@ -576,7 +605,8 @@ class _SymptomSearchModalState extends State<_SymptomSearchModal> {
                         _filter('');
                         FocusScope.of(context).unfocus();
                       },
-                      child: const Icon(Icons.close_rounded, color: Color(0xFF94A3B8), size: 20),
+                      child: const Icon(Icons.close_rounded,
+                          color: Color(0xFF94A3B8), size: 20),
                     ),
                 ],
               ),
@@ -584,7 +614,7 @@ class _SymptomSearchModalState extends State<_SymptomSearchModal> {
           ),
           const SizedBox(height: 16),
 
-          // ── Lista de Resultados ──
+          // ── Lista de Chips ──
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -607,7 +637,9 @@ class _SymptomSearchModalState extends State<_SymptomSearchModal> {
                             }
                           });
                         },
-                        selectedColor: const Color(0xFF2563EB).withValues(alpha: 0.2),
+                        // ── CORES ORIGINAIS PRESERVADAS ──
+                        selectedColor:
+                            const Color(0xFF2563EB).withValues(alpha: 0.2),
                         checkmarkColor: const Color(0xFF2563EB),
                       );
                     }).toList(),
@@ -633,7 +665,8 @@ class _SymptomSearchModalState extends State<_SymptomSearchModal> {
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.add_circle_outline_rounded, color: Color(0xFF2563EB)),
+                              const Icon(Icons.add_circle_outline_rounded,
+                                  color: Color(0xFF2563EB)),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Text(
@@ -653,7 +686,7 @@ class _SymptomSearchModalState extends State<_SymptomSearchModal> {
               ),
             ),
           ),
-          
+
           // ── Botão Salvar ──
           Padding(
             padding: const EdgeInsets.all(24.0),
