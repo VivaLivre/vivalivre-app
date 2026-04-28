@@ -63,7 +63,6 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
-<<<<<<< HEAD
         appBar: AppBar(
           title: const Text('Registrar Novo Sintoma/Crise'),
           actions: [
@@ -131,75 +130,6 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
                   },
                 ),
                 const SizedBox(height: 16.0),
-=======
-      appBar: AppBar(
-        title: const Text('Registrar Novo Sintoma/Crise'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.save),
-            onPressed: _submitForm,
-          )
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: <Widget>[
-              const Text('Data:', style: TextStyle(fontWeight: FontWeight.bold)),
-              ListTile(
-                title: Text('${_selectedDate.toLocal().toString().split(' ')[0]}'),
-                trailing: const Icon(Icons.calendar_today),
-                onTap: () => _selectDate(context),
-              ),
-              const SizedBox(height: 16.0),
-
-              const Text('Sintomas:', style: TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8.0),
-              FormField<List<String>>(
-                initialValue: selectedSymptoms,
-                validator: (value) => (value == null || value.isEmpty) ? 'Selecione pelo menos um sintoma' : null,
-                builder: (FormFieldState<List<String>> state) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Wrap(
-                        spacing: 8.0,
-                        runSpacing: 8.0,
-                        children: _symptomsOptions.map((symptom) {
-                          return FilterChip(
-                            label: Text(symptom),
-                            selected: selectedSymptoms.contains(symptom),
-                            onSelected: (bool selected) {
-                              setState(() {
-                                if (selected) {
-                                  selectedSymptoms.add(symptom);
-                                } else {
-                                  selectedSymptoms.remove(symptom);
-                                }
-                              });
-                              state.didChange(selectedSymptoms);
-                            },
-                            selectedColor: const Color(0xFF2563EB).withValues(alpha: 0.2),
-                            checkmarkColor: const Color(0xFF2563EB),
-                          );
-                        }).toList(),
-                      ),
-                      if (state.hasError)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8.0),
-                          child: Text(
-                            state.errorText!,
-                            style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 12),
-                          ),
-                        ),
-                    ],
-                  );
-                },
-              ),
-              const SizedBox(height: 16.0),
->>>>>>> 9424c7e810028a60c0013b539f8b41a8093a27a1
 
                 const Text('Gravidade:', style: TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8.0),
@@ -234,7 +164,6 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
               ],
             ),
           ),
-        ),
         ),
       ),
     );

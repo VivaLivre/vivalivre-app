@@ -91,11 +91,7 @@ class _HealthPageState extends State<HealthPage> {
 
   // ── Lógica ──
   void _confirmDelete(int index) {
-<<<<<<< HEAD
     Vibration.vibrate(duration: 150, amplitude: 255);
-=======
-    HapticFeedback.vibrate();
->>>>>>> 9424c7e810028a60c0013b539f8b41a8093a27a1
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -234,14 +230,7 @@ class _HealthPageState extends State<HealthPage> {
 
                   // -- Acesso Rapido: Banheiro --
                   GestureDetector(
-<<<<<<< HEAD
                     onTap: () { Vibration.vibrate(duration: 150, amplitude: 255); _addRecord('Ida ao Banheiro', 'banheiro'); },
-=======
-                    onTap: () async {
-                      Vibration.vibrate(duration: 150, amplitude: 255);
-                      _addRecord('Ida ao Banheiro', 'banheiro');
-                    },
->>>>>>> 9424c7e810028a60c0013b539f8b41a8093a27a1
                     child: Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -674,13 +663,8 @@ class _SymptomSearchModalState extends State<_SymptomSearchModal> {
               child: ElevatedButton(
                 onPressed: selectedSymptoms.isEmpty
                     ? null
-<<<<<<< HEAD
                     : () {
                         Vibration.vibrate(duration: 150, amplitude: 255);
-=======
-                    : () async {
-                        HapticFeedback.vibrate();
->>>>>>> 9424c7e810028a60c0013b539f8b41a8093a27a1
                         widget.onAdd(selectedSymptoms);
                         Navigator.pop(context);
                       },
