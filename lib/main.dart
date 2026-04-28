@@ -5,8 +5,6 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:viva_livre_app/features/auth/presentation/auth_bloc.dart';
 import 'package:viva_livre_app/features/health/presentation/health_bloc.dart';
 import 'package:viva_livre_app/features/health/data/repositories/health_repository.dart';
-import 'package:viva_livre_app/features/map/presentation/map_bloc.dart';
-import 'package:viva_livre_app/features/map/data/repositories/bathroom_repository.dart';
 import 'package:viva_livre_app/app.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -17,7 +15,6 @@ void main() async {
 
   final firebaseAuth = FirebaseAuth.instance;
   final healthRepository = HealthRepository();
-  final bathroomRepository = BathroomRepository();
 
   runApp(
     MultiBlocProvider(
@@ -27,9 +24,6 @@ void main() async {
         ),
         BlocProvider<HealthBloc>(
           create: (_) => HealthBloc(healthRepository: healthRepository),
-        ),
-        BlocProvider<MapBloc>(
-          create: (_) => MapBloc(repository: bathroomRepository)..add(const MapLoadBathrooms()),
         ),
       ],
       child: App(firebaseAuth: firebaseAuth),
