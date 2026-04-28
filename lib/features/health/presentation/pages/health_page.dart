@@ -83,33 +83,69 @@ class _HealthPageState extends State<HealthPage> {
 
   // ── Lógica ──
 
-  void _addBathroomRecord() {
+  /// Abre o modal "E mais alguma coisa?" antes de gravar a ida ao banheiro.
+  /// Sintomas adicionais são incluídos no MESMO documento Firestore —
+  /// um único .add() mantém o banco de dados leve.
+  Future<void> _showBathroomModal() async {
     final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
     if (uid.isEmpty) return;
 
-    Vibration.vibrate(duration: 150, amplitude: 255);
+    Vibration.vibrate(duration: 80);
+
+    final List<String>? extraSymptoms = await showModalBottomSheet<List<String>>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => const _BathroomExtrasModal(),
+    );
+
+    // null → fechou sem responder → registamos ida simples
+    // [] → clicou "Não, só isso" → ida simples
+    // [sintomas...] → ida enriquecida com sintomas
+    if (!mounted) return;
+
+    final symptoms = ['Ida ao Banheiro', ...?extraSymptoms];
+
+    // Calcula gravidade automaticamente com base nos sintomas extras
+    const severeSymptoms = [
+      'Sangue nas Fezes', 'Fadiga Extrema', 'Febre', 'Incontinência Fecal',
+      'Desidratação', 'Perda de Peso', 'Anemia',
+    ];
+    final hasSevere = symptoms.any((s) => severeSymptoms.contains(s));
+    final severity = hasSevere || symptoms.length >= 5
+        ? 'Grave'
+        : symptoms.length >= 3
+            ? 'Moderada'
+            : 'Leve';
 
     final entry = HealthEntry(
       id: '',
       userId: uid,
-      symptoms: ['Ida ao Banheiro'],
-      severity: 'Leve',
+      symptoms: symptoms,
+      severity: severity,
       notes: '',
       timestamp: DateTime.now(),
       type: 'banheiro',
     );
 
     context.read<HealthBloc>().add(AddHealthEntry(entry));
+    Vibration.vibrate(duration: 150, amplitude: 255);
 
     ScaffoldMessenger.of(context)
       ..clearSnackBars()
       ..showSnackBar(
         SnackBar(
-          content: const Row(
+          content: Row(
             children: [
-              Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
-              SizedBox(width: 12),
-              Expanded(child: Text('Ida ao Banheiro registada.')),
+              const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  symptoms.length > 1
+                      ? 'Registado com ${symptoms.length - 1} sintoma(s) adicional(is).'
+                      : 'Ida ao Banheiro registada.',
+                ),
+              ),
             ],
           ),
           backgroundColor: const Color(0xFF10B981),
@@ -245,7 +281,7 @@ class _HealthPageState extends State<HealthPage> {
 
                       // ── Botão Rápido: Banheiro ──
                       GestureDetector(
-                        onTap: _addBathroomRecord,
+                        onTap: _showBathroomModal,
                         child: Container(
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(vertical: 16),
@@ -716,6 +752,192 @@ class _SymptomSearchModalState extends State<_SymptomSearchModal> {
                 ),
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  } // fecha build()
+} // fecha _SymptomSearchModalState
+
+// ═════════════════════════════════════════════════════════════════════════════
+//  _BathroomExtrasModal — "E mais alguma coisa?"
+//  Modal compacto que permite registar sintomas comuns junto com a ida
+//  ao banheiro, tudo num único documento Firestore.
+// ═════════════════════════════════════════════════════════════════════════════
+
+class _BathroomExtrasModal extends StatefulWidget {
+  const _BathroomExtrasModal();
+
+  @override
+  State<_BathroomExtrasModal> createState() => _BathroomExtrasModalState();
+}
+
+class _BathroomExtrasModalState extends State<_BathroomExtrasModal> {
+  // Sintomas mais comuns associados a uma ida ao banheiro na DII
+  static const List<String> _quickSymptoms = [
+    'Dor Abdominal',
+    'Diarreia',
+    'Sangue nas Fezes',
+    'Urgência Evacuatória',
+    'Cólica Intestinal',
+    'Incontinência Fecal',
+    'Muco nas Fezes',
+    'Gases/Inchaço',
+    'Náusea/Vómito',
+    'Fadiga Extrema',
+  ];
+
+  final List<String> _selected = [];
+
+  static const Color _kBlue = Color(0xFF2563EB);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      padding: EdgeInsets.only(
+        left: 24,
+        right: 24,
+        top: 20,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Alça visual ──
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // ── Título ──
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEFF6FF),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.wc_rounded, color: _kBlue, size: 22),
+              ),
+              const SizedBox(width: 14),
+              const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'E mais alguma coisa?',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF0F172A),
+                    ),
+                  ),
+                  Text(
+                    'Opcional — tudo fica num registo só.',
+                    style: TextStyle(fontSize: 13, color: Color(0xFF64748B)),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // ── Chips de sintomas rápidos ──
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: _quickSymptoms.map((symptom) {
+              final isSelected = _selected.contains(symptom);
+              return FilterChip(
+                label: Text(symptom),
+                selected: isSelected,
+                onSelected: (val) {
+                  Vibration.vibrate(duration: 30);
+                  setState(() {
+                    if (val) {
+                      _selected.add(symptom);
+                    } else {
+                      _selected.remove(symptom);
+                    }
+                  });
+                },
+                selectedColor: _kBlue.withValues(alpha: 0.15),
+                checkmarkColor: _kBlue,
+                backgroundColor: Colors.white,
+                side: BorderSide(
+                  color: isSelected ? _kBlue : const Color(0xFFE2E8F0),
+                ),
+                labelStyle: TextStyle(
+                  color: isSelected ? _kBlue : const Color(0xFF0F172A),
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                  fontSize: 13,
+                ),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 24),
+
+          // ── Botões ──
+          Row(
+            children: [
+              // Botão: Não, só isso
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(context, <String>[]),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    side: const BorderSide(color: Color(0xFFE2E8F0)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  child: const Text(
+                    'Não, só isso',
+                    style: TextStyle(
+                      color: Color(0xFF64748B),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Botão: Adicionar
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {
+                    Vibration.vibrate(duration: 60);
+                    Navigator.pop(context, _selected);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _kBlue,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: Text(
+                    _selected.isEmpty ? 'Só a ida' : 'Adicionar (${_selected.length})',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),

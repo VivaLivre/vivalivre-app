@@ -82,6 +82,35 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
     Navigator.pop(context);
   }
 
+  /// Calcula automaticamente a gravidade com base nos sintomas selecionados.
+  /// É chamado sempre que o utilizador toca num chip de sintoma.
+  /// O utilizador ainda pode ajustar manualmente no seletor de gravidade.
+  void _autoCalculateSeverity() {
+    // Sintomas que disparam alerta "Grave" imediatamente
+    const severeSymptoms = [
+      'Sangue nas Fezes', 'Fadiga Extrema', 'Febre', 'Incontinência Fecal',
+      'Desidratação', 'Perda de Peso', 'Anemia',
+    ];
+
+    final hasSevere = _selectedSymptoms.any((s) => severeSymptoms.contains(s));
+
+    String newSeverity;
+    if (hasSevere || _selectedSymptoms.length >= 5) {
+      newSeverity = 'Grave';
+    } else if (_selectedSymptoms.length >= 3) {
+      newSeverity = 'Moderada';
+    } else if (_selectedSymptoms.isNotEmpty) {
+      newSeverity = 'Leve';
+    } else {
+      newSeverity = 'Leve'; // fallback quando todos são desmarcados
+    }
+
+    // Só atualiza o estado se a gravidade realmente mudou (evita rebuild desnecessário)
+    if (newSeverity != _severity) {
+      setState(() => _severity = newSeverity);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -219,6 +248,8 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
                                 } else {
                                   _selectedSymptoms.remove(symptom);
                                 }
+                                // Recalcula a gravidade automaticamente a cada toque.
+                                _autoCalculateSeverity();
                               });
                               state.didChange(_selectedSymptoms);
                             },
