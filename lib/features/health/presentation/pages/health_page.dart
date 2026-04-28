@@ -95,6 +95,7 @@ class _HealthPageState extends State<HealthPage> {
     final List<String>? extraSymptoms = await showModalBottomSheet<List<String>>(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) => const _BathroomExtrasModal(),
     );
@@ -162,6 +163,7 @@ class _HealthPageState extends State<HealthPage> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (context) => _SymptomSearchModal(
         availableSymptoms: _customSymptoms,
@@ -432,13 +434,16 @@ class _TimelineItem extends StatelessWidget {
     final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
     showModalBottomSheet(
       context: context,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+      builder: (_) => SafeArea(
+        bottom: true,
+        child: Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -464,6 +469,7 @@ class _TimelineItem extends StatelessWidget {
                 showModalBottomSheet(
                   context: context,
                   isScrollControlled: true,
+                  useSafeArea: true,
                   backgroundColor: Colors.transparent,
                   builder: (_) => _EntryDetailSheet(entry: entry),
                 );
@@ -523,7 +529,8 @@ class _TimelineItem extends StatelessWidget {
             ),
           ],
         ),
-      ),
+      ),   // fecha Container
+      ),   // fecha SafeArea
     );
   }
 
@@ -1154,31 +1161,34 @@ class _SymptomSearchModalState extends State<_SymptomSearchModal> {
           ),
 
           // ── Botão Salvar ──
-          Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: SizedBox(
-              width: double.infinity,
-              height: 54,
-              child: ElevatedButton(
-                onPressed: selectedSymptoms.isEmpty
-                    ? null
-                    : () {
-                        Vibration.vibrate(duration: 150, amplitude: 255);
-                        widget.onAdd(selectedSymptoms);
-                        Navigator.pop(context);
-                      },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2563EB),
-                  foregroundColor: Colors.white,
-                  disabledBackgroundColor: Colors.grey.shade300,
-                  disabledForegroundColor: Colors.grey.shade600,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+          SafeArea(
+            bottom: true,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+              child: SizedBox(
+                width: double.infinity,
+                height: 54,
+                child: ElevatedButton(
+                  onPressed: selectedSymptoms.isEmpty
+                      ? null
+                      : () {
+                          Vibration.vibrate(duration: 150, amplitude: 255);
+                          widget.onAdd(selectedSymptoms);
+                          Navigator.pop(context);
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF2563EB),
+                    foregroundColor: Colors.white,
+                    disabledBackgroundColor: Colors.grey.shade300,
+                    disabledForegroundColor: Colors.grey.shade600,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
-                ),
-                child: const Text(
-                  'Salvar',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  child: const Text(
+                    'Salvar',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  ),
                 ),
               ),
             ),
@@ -1232,7 +1242,10 @@ class _BathroomExtrasModalState extends State<_BathroomExtrasModal> {
         left: 24,
         right: 24,
         top: 20,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+        // viewInsets.bottom = teclado; viewPadding.bottom = barra de navegação
+        bottom: MediaQuery.of(context).viewInsets.bottom +
+            MediaQuery.of(context).viewPadding.bottom +
+            24,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
