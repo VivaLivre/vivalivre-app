@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:http/http.dart' as http;
 import 'package:viva_livre_app/features/map/domain/entities/bathroom.dart';
 import 'package:viva_livre_app/features/map/domain/repositories/i_bathroom_repository.dart';
 
@@ -172,30 +174,57 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     }
   }
 
-  void _onSearchLocation(
+  Future<void> _onSearchLocation(
     SearchLocation event,
     Emitter<MapState> emit,
-  ) {
+  ) async {
     if (state is MapLoaded) {
       final currentState = state as MapLoaded;
-      final query = event.query.toLowerCase().trim();
+      final query = event.query.trim();
       
       if (query.isEmpty) return;
 
-      // Busca simples na base mockada para simular a pesquisa (como "Mauá")
       try {
-        final result = currentState.bathrooms.firstWhere(
-          (b) => b.name.toLowerCase().contains(query) || b.tags.any((t) => t.toLowerCase().contains(query)),
+        final uri = Uri.parse(
+          'https://nominatim.openstreetmap.org/search?q=${Uri.encodeComponent(query)}&format=json&limit=1'
         );
-        
-        // Move o currentPosition para o local encontrado e limpa a selecção
-        emit(currentState.copyWith(
-          currentPosition: result.location,
-          clearSelection: true,
-          clearNearest: true,
-        ));
-      } catch (e) {
-        emit(const MapError('Local não encontrado. Tente pesquisar por um banheiro existente (ex: "Mauá").'));
+
+        // Cabeçalho obrigatório com User-Agent para a API Nominatim
+        final response = await http.get(
+          uri,
+          headers: {'User-Agent': 'VivaLivreApp/1.0 (suporte@vivalivre.com)'},
+        );
+
+        if (response.statusCode == 200) {
+          final List<dynamic> data = json.decode(response.body);
+
+          if (data.isNotEmpty) {
+            final lat = double.parse(data[0]['lat'].toString());
+            final lon = double.parse(data[0]['lon'].toString());
+            final newPos = LatLng(lat, lon);
+
+            // Move a câmara (atualizando currentPosition) e limpa os pinos selecionados
+            emit(currentState.copyWith(
+              currentPosition: newPos,
+              clearSelection: true,
+              clearNearest: true,
+            ));
+          } else {
+            emit(const MapError('Não foi possível encontrar o local. Verifique o nome e tente novamente.'));
+            emit(currentState); // Re-emite o estado carregado para garantir que a UI se mantém
+          }
+        } else {
+          emit(const MapError('Não foi possível encontrar o local. Problema na comunicação com o servidor.'));
+          emit(currentState);
+        }
+      } on http.ClientException catch (_) {
+        emit(const MapError('Erro de conexão: Verifique a sua internet.'));
+        emit(currentState);
+      } on FormatException catch (_) {
+        emit(const MapError('Erro ao processar dados do local. Tente novamente mais tarde.'));
+        emit(currentState);
+      } catch (_) {
+        emit(const MapError('Não foi possível encontrar o local.'));
         emit(currentState);
       }
     }

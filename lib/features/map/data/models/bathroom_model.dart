@@ -12,13 +12,19 @@ class BathroomModel extends Bathroom {
   });
 
   factory BathroomModel.fromMap(Map<String, dynamic> map) {
+    // DEFESA: usamos casts seguros (as Tipo?) com fallback ?? para cada campo.
+    // Quando o mock for substituído por dados reais do Firestore, um campo
+    // ausente ou com tipo inesperado não irá causar um crash de tipagem.
     return BathroomModel(
-      id: map['id'] as int,
-      name: map['name'] as String,
-      location: LatLng(map['lat'] as double, map['lng'] as double),
-      rating: (map['rating'] as num).toDouble(),
-      tags: List<String>.from(map['tags'] as List),
-      isOpen: map['open'] as bool,
+      id: (map['id'] as int?) ?? 0,
+      name: (map['name'] as String?) ?? 'Sem nome',
+      location: LatLng(
+        (map['lat'] as num?)?.toDouble() ?? 0.0,
+        (map['lng'] as num?)?.toDouble() ?? 0.0,
+      ),
+      rating: (map['rating'] as num?)?.toDouble() ?? 0.0,
+      tags: (map['tags'] as List?)?.map((e) => e.toString()).toList() ?? [],
+      isOpen: (map['open'] as bool?) ?? false,
     );
   }
 
