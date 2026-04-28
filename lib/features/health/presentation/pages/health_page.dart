@@ -466,12 +466,9 @@ class _TimelineItem extends StatelessWidget {
               subtitle: const Text('Horário, sintomas e notas completas'),
               onTap: () {
                 Navigator.pop(context);
-                showModalBottomSheet(
+                showDialog(
                   context: context,
-                  isScrollControlled: true,
-                  useSafeArea: true,
-                  backgroundColor: Colors.transparent,
-                  builder: (_) => _EntryDetailSheet(entry: entry),
+                  builder: (_) => _EntryDetailDialog(entry: entry),
                 );
               },
             ),
@@ -662,12 +659,12 @@ class _TimelineItem extends StatelessWidget {
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-//  _EntryDetailSheet — Detalhes completos de um registo clínico
+//  _EntryDetailDialog — Detalhes completos de um registo clínico (Dialog)
 // ═════════════════════════════════════════════════════════════════════════════
 
-class _EntryDetailSheet extends StatelessWidget {
+class _EntryDetailDialog extends StatelessWidget {
   final HealthEntry entry;
-  const _EntryDetailSheet({required this.entry});
+  const _EntryDetailDialog({required this.entry});
 
   static Color _severityColor(String severity) {
     return switch (severity) {
@@ -679,267 +676,168 @@ class _EntryDetailSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dotColor = _severityColor(entry.severity);
+    final dotColor   = _severityColor(entry.severity);
     final isBathroom = entry.type == 'banheiro';
-    final dateStr = DateFormat("dd 'de' MMMM 'de' yyyy", 'pt_BR').format(entry.timestamp);
-    final timeStr = DateFormat('HH:mm:ss').format(entry.timestamp);
-    final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+    final dateStr    = DateFormat("dd 'de' MMMM 'de' yyyy", 'pt_BR').format(entry.timestamp);
+    final timeStr    = DateFormat('HH:mm:ss').format(entry.timestamp);
+    final uid        = FirebaseAuth.instance.currentUser?.uid ?? '';
 
-    return DraggableScrollableSheet(
-      initialChildSize: 0.65,
-      minChildSize: 0.4,
-      maxChildSize: 0.95,
-      expand: false,
-      builder: (_, controller) => Container(
-        decoration: const BoxDecoration(
-          color: Color(0xFFF8FAFC),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-        ),
-        child: Column(
-          children: [
-            // ── Alça ──
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              child: Container(
-                width: 40, height: 4,
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      backgroundColor: const Color(0xFFF8FAFC),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Header colorido
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(20, 20, 12, 20),
+            decoration: BoxDecoration(
+              color: dotColor.withValues(alpha: 0.08),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              border: Border(bottom: BorderSide(color: dotColor.withValues(alpha: 0.15))),
+            ),
+            child: Row(children: [
+              Container(
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2),
+                  color: dotColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
                 ),
+                child: Icon(isBathroom ? Icons.wc_rounded : Icons.healing_rounded, color: dotColor, size: 22),
               ),
-            ),
-
-            // ── Header ──
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: dotColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Icon(
-                      isBathroom ? Icons.wc_rounded : Icons.healing_rounded,
-                      color: dotColor, size: 26,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          isBathroom ? 'Ida ao Banheiro' : 'Registo de Sintomas',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFF0F172A),
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          '$dateStr às $timeStr',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: Color(0xFF64748B),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const Divider(height: 1),
-
-            // ── Conteúdo scrollável ──
-            Expanded(
-              child: ListView(
-                controller: controller,
-                // O padding bottom soma viewPadding.bottom (barra de navegação nativa)
-                // para que o botão Eliminar nunca fique atrás dos botões do sistema.
-                padding: EdgeInsets.fromLTRB(
-                  24, 24, 24,
-                  24 + MediaQuery.of(context).viewPadding.bottom,
+              const SizedBox(width: 12),
+              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(isBathroom ? 'Ida ao Banheiro' : 'Registo de Sintomas',
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Color(0xFF0F172A))),
+                const SizedBox(height: 2),
+                Text(dateStr + ' às ' + timeStr,
+                  style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+              ])),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: dotColor.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: dotColor.withValues(alpha: 0.4)),
                 ),
-
-                children: [
-
-                  // Gravidade
-                  _DetailSection(
-                    icon: Icons.speed_rounded,
-                    label: 'Gravidade',
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                child: Text(entry.severity,
+                  style: TextStyle(color: dotColor, fontWeight: FontWeight.w700, fontSize: 12)),
+              ),
+              const SizedBox(width: 4),
+            ]),
+          ),
+          // Corpo scrollável
+          Flexible(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                _DetailSection(
+                  icon: Icons.list_alt_rounded,
+                  label: 'Sintomas (' + entry.symptoms.length.toString() + ')',
+                  child: Wrap(spacing: 6, runSpacing: 6,
+                    children: entry.symptoms.map((s) => Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                       decoration: BoxDecoration(
-                        color: dotColor.withValues(alpha: 0.1),
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: dotColor.withValues(alpha: 0.3)),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
                       ),
-                      child: Text(
-                        entry.severity,
-                        style: TextStyle(
-                          color: dotColor,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
+                      child: Text(s, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Color(0xFF0F172A))),
+                    )).toList(),
                   ),
-                  const SizedBox(height: 20),
-
-                  // Sintomas
+                ),
+                const SizedBox(height: 16),
+                if (entry.notes.isNotEmpty) ...[
                   _DetailSection(
-                    icon: Icons.list_alt_rounded,
-                    label: 'Sintomas registados (${entry.symptoms.length})',
-                    child: Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: entry.symptoms.map((s) => Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: const Color(0xFFE2E8F0)),
-                        ),
-                        child: Text(
-                          s,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                            color: Color(0xFF0F172A),
-                          ),
-                        ),
-                      )).toList(),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Notas
-                  if (entry.notes.isNotEmpty) ...[
-                    _DetailSection(
-                      icon: Icons.notes_rounded,
-                      label: 'Observações',
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: const Color(0xFFE2E8F0)),
-                        ),
-                        child: Text(
-                          entry.notes,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Color(0xFF334155),
-                            height: 1.5,
-                          ),
-                        ),
+                    icon: Icons.notes_rounded,
+                    label: 'Observações',
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
                       ),
-                    ),
-                    const SizedBox(height: 20),
-                  ],
-
-                  // Hora exacta
-                  _DetailSection(
-                    icon: Icons.access_time_rounded,
-                    label: 'Horário exacto',
-                    child: Text(
-                      '$dateStr\n$timeStr',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFF334155),
-                        height: 1.5,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Tipo
-                  _DetailSection(
-                    icon: isBathroom ? Icons.wc_rounded : Icons.healing_rounded,
-                    label: 'Tipo de registo',
-                    child: Text(
-                      isBathroom ? 'Ida ao Banheiro' : 'Registo de Sintomas',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFF334155),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-
-                  // Botão Eliminar — SafeArea garante visibilidade em qualquer dispositivo
-                  SafeArea(
-                    bottom: true,
-                    child: OutlinedButton.icon(
-                      icon: const Icon(Icons.delete_outline_rounded,
-                          color: Color(0xFFEF4444)),
-                      label: const Text('Eliminar este registo',
-                          style: TextStyle(
-                            color: Color(0xFFEF4444),
-                            fontWeight: FontWeight.w600,
-                          )),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        side: const BorderSide(color: Color(0xFFEF4444)),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                      onPressed: () {
-                        Navigator.pop(context);
-                        showDialog(
-                          context: context,
-                          builder: (ctx) => AlertDialog(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            title: const Text('Eliminar registo?',
-                                style: TextStyle(fontWeight: FontWeight.w700)),
-                            content: const Text(
-                              'Este registo será removido permanentemente do seu histórico clínico.',
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(ctx),
-                                child: const Text('Cancelar',
-                                    style: TextStyle(color: Color(0xFF64748B))),
-                              ),
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFEF4444),
-                                  foregroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  elevation: 0,
-                                ),
-                                onPressed: () {
-                                  Navigator.pop(ctx);
-                                  context.read<HealthBloc>().add(
-                                    DeleteHealthEntry(docId: entry.id, userId: uid),
-                                  );
-                                },
-                                child: const Text('Eliminar',
-                                    style: TextStyle(fontWeight: FontWeight.w700)),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
+                      child: Text(entry.notes,
+                        style: const TextStyle(fontSize: 13, color: Color(0xFF334155), height: 1.5)),
                     ),
                   ),
                   const SizedBox(height: 16),
                 ],
-              ),
+                _DetailSection(
+                  icon: isBathroom ? Icons.wc_rounded : Icons.healing_rounded,
+                  label: 'Tipo de registo',
+                  child: Text(isBathroom ? 'Ida ao Banheiro' : 'Registo de Sintomas',
+                    style: const TextStyle(fontSize: 13, color: Color(0xFF334155))),
+                ),
+                const SizedBox(height: 8),
+              ]),
             ),
-          ],
-        ),
+          ),
+          // Rodapé com ações
+          Container(
+            decoration: const BoxDecoration(border: Border(top: BorderSide(color: Color(0xFFE2E8F0)))),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+            child: Row(children: [
+              Expanded(child: OutlinedButton(
+                onPressed: () => Navigator.pop(context),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  side: const BorderSide(color: Color(0xFFE2E8F0)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text('Fechar', style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600)),
+              )),
+              const SizedBox(width: 12),
+              Expanded(child: ElevatedButton.icon(
+                icon: const Icon(Icons.delete_outline_rounded, size: 18),
+                label: const Text('Eliminar', style: TextStyle(fontWeight: FontWeight.w700)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFEF4444),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: () {
+                  Navigator.pop(context);
+                  showDialog(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      title: const Text('Eliminar registo?', style: TextStyle(fontWeight: FontWeight.w700)),
+                      content: const Text('Este registo será removido permanentemente do seu histórico clínico.'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          child: const Text('Cancelar', style: TextStyle(color: Color(0xFF64748B))),
+                        ),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFEF4444),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            elevation: 0,
+                          ),
+                          onPressed: () {
+                            Navigator.pop(ctx);
+                            context.read<HealthBloc>().add(
+                              DeleteHealthEntry(docId: entry.id, userId: uid),
+                            );
+                          },
+                          child: const Text('Eliminar', style: TextStyle(fontWeight: FontWeight.w700)),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              )),
+            ]),
+          ),
+        ],
       ),
     );
   }
