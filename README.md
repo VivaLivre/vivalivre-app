@@ -17,16 +17,6 @@
 
 Existem aproximadamente **200 mil brasileiros diagnosticados com DII**. A imprevisibilidade dos sintomas intestinais gera ansiedade severa e isolamento social. O VivaLivre resolve essa dor conectando os usuários a uma rede colaborativa de banheiros acessíveis via GPS nativo, além de oferecer um controle unificado de saúde e o **Cartão Digital de Prioridade DII**.
 
-### 📊 Validação de Mercado
-
-| Indicador | Resultado |
-|---|---|
-| Usuários que consideraram útil | **92%** |
-| Usariam diariamente | **88%** |
-| Apontaram necessidade crítica do mapa | **95%** |
-| NPS Preliminar | **67** (excelente para fase de descoberta) |
-| Pagariam R$10–15/mês pelo premium | **65%** |
-
 ---
 
 ## ✨ Principais Funcionalidades

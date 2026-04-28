@@ -320,10 +320,11 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
             ),
             children: [
               // ── Tile Layer ─────────────────────────────────────────────────
-              // BUG-3 FIX: userAgentPackageName obrigatório no flutter_map v8.
+              // CartoDB Positron: Design minimalista e médico, tons de cinza suaves.
+              // Base de dados: OpenStreetMap (mesmas ruas), renderização limpa.
               TileLayer(
-                // OSM padrão — sem {r}, sem retina, funciona em todos os dispositivos.
-                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+                subdomains: const ['a', 'b', 'c', 'd'],
                 userAgentPackageName: 'com.vivalivre.app',
 
                 // Cache agressivo: evita re-downloads e garante que tiles
