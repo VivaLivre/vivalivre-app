@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:viva_livre_app/features/auth/presentation/auth_bloc.dart';
+import 'package:viva_livre_app/features/auth/presentation/pages/auth_wrapper.dart';
 import 'package:viva_livre_app/features/auth/presentation/pages/splash_page.dart';
 import 'package:viva_livre_app/features/auth/presentation/pages/onboarding_page.dart';
 import 'package:viva_livre_app/features/auth/presentation/pages/login_page.dart';
@@ -9,7 +8,6 @@ import 'package:viva_livre_app/features/auth/presentation/pages/register_page.da
 import 'package:viva_livre_app/features/home/presentation/pages/main_shell.dart';
 import 'package:viva_livre_app/features/health/presentation/pages/health_dashboard_page.dart';
 import 'package:viva_livre_app/features/health/presentation/pages/add_health_entry_page.dart';
-import 'package:viva_livre_app/features/health/presentation/health_bloc.dart';
 import 'package:viva_livre_app/features/health/presentation/pages/health_page.dart';
 
 class App extends StatelessWidget {
@@ -71,9 +69,12 @@ class App extends StatelessWidget {
           ),
         ),
       ),
-      initialRoute: '/',
+      // ── Rota raiz protegida pelo AuthWrapper ──
+      // AuthWrapper escuta FirebaseAuth.authStateChanges() e encaminha
+      // para MainShell (logado) ou LoginPage (deslogado) sem crash de UID nulo.
+      home: const AuthWrapper(),
       routes: {
-        '/': (_) => const SplashPage(),
+        '/splash': (_) => const SplashPage(),
         '/onboarding': (_) => const OnboardingPage(),
         '/login': (_) => const LoginPage(),
         '/register': (_) => const RegisterPage(),

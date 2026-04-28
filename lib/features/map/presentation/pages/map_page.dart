@@ -1,4 +1,4 @@
-﻿// ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
 // map_page.dart — VivaLivre
 // Flutter 3.x  |  flutter_map ^8.3.0  |  latlong2 ^0.9.1
 // ─────────────────────────────────────────────────────────────────────────────
@@ -274,7 +274,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
               Positioned(
                 left: 16,
                 right: 16,
-                bottom: 12,
+                bottom: MediaQuery.of(context).padding.bottom + 12,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [

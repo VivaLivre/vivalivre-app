@@ -323,43 +323,46 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
               const SizedBox(height: 32),
 
               // ── Botão Guardar ──
-              BlocBuilder<HealthBloc, HealthState>(
-                builder: (context, state) {
-                  final isSaving = state is HealthEntryAdding;
-                  return SizedBox(
-                    height: 56,
-                    child: ElevatedButton(
-                      onPressed: isSaving ? null : _submitForm,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _kBlue,
-                        disabledBackgroundColor: Colors.grey.shade300,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+              SafeArea(
+                bottom: true,
+                child: BlocBuilder<HealthBloc, HealthState>(
+                  builder: (context, state) {
+                    final isSaving = state is HealthEntryAdding;
+                    return SizedBox(
+                      height: 56,
+                      child: ElevatedButton(
+                        onPressed: isSaving ? null : _submitForm,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _kBlue,
+                          disabledBackgroundColor: Colors.grey.shade300,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          elevation: 0,
                         ),
-                        elevation: 0,
+                        child: isSaving
+                            ? const SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Text(
+                                'Guardar Registo',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
+                              ),
                       ),
-                      child: isSaving
-                          ? const SizedBox(
-                              width: 22,
-                              height: 22,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.5,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Text(
-                              'Guardar Registo',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
-                              ),
-                            ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 8),
             ],
           ),
         ),
