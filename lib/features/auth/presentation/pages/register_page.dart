@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:viva_livre_app/core/presentation/widgets/custom_primary_button.dart';
+import 'package:viva_livre_app/core/presentation/widgets/custom_text_field.dart';
 import 'package:viva_livre_app/features/auth/presentation/auth_bloc.dart';
-import 'package:viva_livre_app/features/auth/presentation/widgets/auth_widgets.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -189,10 +190,11 @@ class _RegisterPageState extends State<RegisterPage> {
                       const _SectionTitle('Dados Pessoais'),
                       const SizedBox(height: 16),
 
-                      TextFormField(
+                      CustomTextField(
                         controller: _nameController,
                         enabled: !isLoading,
-                        decoration: _inputDecoration('Nome Completo', Icons.person_outline),
+                        hintText: 'Nome Completo',
+                        prefixIcon: const Icon(Icons.person_outline, color: Color(0xFF94A3B8)),
                         textInputAction: TextInputAction.next,
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
@@ -206,11 +208,12 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       const SizedBox(height: 12),
 
-                      TextFormField(
+                      CustomTextField(
                         controller: _emailController,
                         enabled: !isLoading,
                         keyboardType: TextInputType.emailAddress,
-                        decoration: _inputDecoration('E-mail', Icons.email_outlined),
+                        hintText: 'E-mail',
+                        prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFF94A3B8)),
                         textInputAction: TextInputAction.next,
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
@@ -224,24 +227,18 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       const SizedBox(height: 12),
 
-                      TextFormField(
+                      CustomTextField(
                         controller: _passwordController,
                         enabled: !isLoading,
                         obscureText: _obscurePassword,
-                        decoration: InputDecoration(
-                          hintText: 'Palavra-passe (mín. 6 caracteres)',
-                          hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
-                          prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF94A3B8)),
-                          filled: true,
-                          fillColor: Colors.white,
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                              color: const Color(0xFF94A3B8),
-                            ),
-                            onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                        hintText: 'Palavra-passe (mín. 6 caracteres)',
+                        prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF94A3B8)),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                            color: const Color(0xFF94A3B8),
                           ),
+                          onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                         ),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
@@ -317,10 +314,11 @@ class _RegisterPageState extends State<RegisterPage> {
                       // Campo customizado para "Outra"
                       if (_selectedCondition == 'Outra') ...[
                         const SizedBox(height: 12),
-                        TextFormField(
+                        CustomTextField(
                           controller: _customConditionController,
                           enabled: !isLoading,
-                          decoration: _inputDecoration('Descreva a sua condição', Icons.edit_outlined),
+                          hintText: 'Descreva a sua condição',
+                          prefixIcon: const Icon(Icons.edit_outlined, color: Color(0xFF94A3B8)),
                           textInputAction: TextInputAction.done,
                           validator: (value) {
                             if (_selectedCondition == 'Outra' && (value == null || value.trim().isEmpty)) {
@@ -436,39 +434,48 @@ class _RegisterPageState extends State<RegisterPage> {
                       const SizedBox(height: 40),
 
                       // -- Botão Finalizar (com loading inline) --
-                      ElevatedButton(
-                        onPressed: canSubmit ? _onRegisterPressed : null,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF2563EB),
-                          disabledBackgroundColor: const Color(0xFFCBD5E1),
-                          padding: const EdgeInsets.symmetric(vertical: 18),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                          elevation: canSubmit ? 4 : 0,
+                      Theme(
+                        data: Theme.of(context).copyWith(
+                          elevatedButtonTheme: ElevatedButtonThemeData(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF2563EB),
+                              disabledBackgroundColor: const Color(0xFFCBD5E1),
+                              padding: const EdgeInsets.symmetric(vertical: 18),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              elevation: canSubmit ? 4 : 0,
+                            ),
+                          ),
                         ),
-                        child: isLoading
-                            ? const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2.5,
-                                      color: Colors.white,
+                        child: CustomPrimaryButton(
+                          onPressed: canSubmit ? _onRegisterPressed : null,
+                          label: 'Finalizar Registo',
+                          isLoading: isLoading,
+                          loadingLabel: 'A criar conta...',
+                          child: isLoading
+                              ? const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2.5,
+                                        color: Colors.white,
+                                      ),
                                     ),
-                                  ),
-                                  SizedBox(width: 12),
-                                  Text(
-                                    'A criar conta...',
-                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white),
-                                  ),
-                                ],
-                              )
-                            : const Text(
-                                'Finalizar Registo',
-                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white),
-                              ),
+                                    SizedBox(width: 12),
+                                    Text(
+                                      'A criar conta...',
+                                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white),
+                                    ),
+                                  ],
+                                )
+                              : const Text(
+                                  'Finalizar Registo',
+                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white),
+                                ),
+                        ),
                       ),
                       const SizedBox(height: 24),
                     ],
@@ -482,17 +489,6 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  // Helper para reutilizar decoração dos inputs
-  InputDecoration _inputDecoration(String hint, IconData icon) {
-    return InputDecoration(
-      hintText: hint,
-      hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
-      prefixIcon: Icon(icon, color: const Color(0xFF94A3B8)),
-      filled: true,
-      fillColor: Colors.white,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-    );
-  }
 }
 
 // -- Widget auxiliar para títulos de secção --

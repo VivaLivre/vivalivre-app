@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'package:viva_livre_app/core/presentation/widgets/custom_loading_indicator.dart';
+import 'package:viva_livre_app/core/presentation/widgets/custom_text_field.dart';
+
 const _kBlue = Color(0xFF2563EB);
 const _kSlate = Color(0xFF94A3B8);
 const _kSurface = Color(0xFFF1F5F9);
@@ -56,20 +59,20 @@ class MapSearchBar extends StatelessWidget {
                           const Icon(Icons.search_rounded, color: _kSlate, size: 22),
                           const SizedBox(width: 10),
                           Expanded(
-                            child: TextField(
-                              controller: searchController,
-                              textInputAction: TextInputAction.search,
-                              onSubmitted: onSearch,
-                              decoration: const InputDecoration(
-                                hintText: 'Buscar banheiros...',
-                                hintStyle: TextStyle(color: _kSlate, fontSize: 15),
-                                border: InputBorder.none,
-                                filled: false,
-                                contentPadding: EdgeInsets.zero,
+                            child: Theme(
+                              data: Theme.of(context).copyWith(
+                                inputDecorationTheme: const InputDecorationTheme(
+                                  hintStyle: TextStyle(color: _kSlate, fontSize: 15),
+                                  border: InputBorder.none,
+                                  filled: false,
+                                  contentPadding: EdgeInsets.zero,
+                                ),
                               ),
-                              style: const TextStyle(
-                                fontSize: 15,
-                                color: Color(0xFF1E293B),
+                              child: CustomTextField(
+                                controller: searchController,
+                                hintText: 'Buscar banheiros...',
+                                textInputAction: TextInputAction.search,
+                                onFieldSubmitted: onSearch,
                               ),
                             ),
                           ),
@@ -110,7 +113,7 @@ class MapSearchBar extends StatelessWidget {
                       child: isLocating
                           ? const Padding(
                               padding: EdgeInsets.all(14),
-                              child: CircularProgressIndicator(
+                              child: CustomLoadingIndicator(
                                 strokeWidth: 2,
                                 color: _kBlue,
                               ),

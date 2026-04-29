@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:viva_livre_app/core/presentation/widgets/custom_primary_button.dart';
+import 'package:viva_livre_app/core/presentation/widgets/custom_text_field.dart';
 import 'package:viva_livre_app/features/auth/presentation/auth_bloc.dart';
 import 'package:viva_livre_app/features/auth/presentation/widgets/auth_widgets.dart';
 
@@ -100,15 +102,13 @@ class _LoginPageState extends State<LoginPage> {
                       // -- Email --
                       const FieldLabel('Email'),
                       const SizedBox(height: 8),
-                      TextFormField(
+                      CustomTextField(
                         controller: _emailController,
                         enabled: !isLoading,
-                        decoration: const InputDecoration(
-                          hintText: 'seu@email.com',
-                          prefixIcon: Icon(
-                            Icons.email_outlined,
-                            color: Color(0xFF94A3B8),
-                          ),
+                        hintText: 'seu@email.com',
+                        prefixIcon: const Icon(
+                          Icons.email_outlined,
+                          color: Color(0xFF94A3B8),
                         ),
                         keyboardType: TextInputType.emailAddress,
                         textInputAction: TextInputAction.next,
@@ -127,27 +127,25 @@ class _LoginPageState extends State<LoginPage> {
                       // -- Senha --
                       const FieldLabel('Senha'),
                       const SizedBox(height: 8),
-                      TextFormField(
+                      CustomTextField(
                         controller: _passwordController,
                         enabled: !isLoading,
                         obscureText: _obscurePassword,
                         onFieldSubmitted: (_) => _onLoginPressed(),
-                        decoration: InputDecoration(
-                          hintText: 'Sua senha',
-                          prefixIcon: const Icon(
-                            Icons.lock_outline,
-                            color: Color(0xFF94A3B8),
+                        hintText: 'Sua senha',
+                        prefixIcon: const Icon(
+                          Icons.lock_outline,
+                          color: Color(0xFF94A3B8),
+                        ),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword
+                                ? Icons.visibility_off_outlined
+                                : Icons.visibility_outlined,
+                            color: const Color(0xFF94A3B8),
                           ),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _obscurePassword
-                                  ? Icons.visibility_off_outlined
-                                  : Icons.visibility_outlined,
-                              color: const Color(0xFF94A3B8),
-                            ),
-                            onPressed: () => setState(
-                              () => _obscurePassword = !_obscurePassword,
-                            ),
+                          onPressed: () => setState(
+                            () => _obscurePassword = !_obscurePassword,
                           ),
                         ),
                         validator: (value) {
@@ -178,26 +176,11 @@ class _LoginPageState extends State<LoginPage> {
                       const SizedBox(height: 28),
 
                       // -- Botao Entrar (com loading inline) --
-                      ElevatedButton(
-                        onPressed: isLoading ? null : _onLoginPressed,
-                        child: isLoading
-                            ? const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2.5,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  SizedBox(width: 12),
-                                  Text('A entrar...'),
-                                ],
-                              )
-                            : const Text('Entrar'),
+                      CustomPrimaryButton(
+                        onPressed: _onLoginPressed,
+                        label: 'Entrar',
+                        isLoading: isLoading,
+                        loadingLabel: 'A entrar...',
                       ),
                       const SizedBox(height: 28),
 

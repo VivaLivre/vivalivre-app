@@ -1,8 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vibration/vibration.dart';
+import 'package:viva_livre_app/core/presentation/widgets/custom_loading_indicator.dart';
+import 'package:viva_livre_app/core/presentation/widgets/custom_primary_button.dart';
+import 'package:viva_livre_app/core/presentation/widgets/custom_text_field.dart';
 import 'package:viva_livre_app/features/health/domain/entities/health_entry.dart';
 import 'package:viva_livre_app/features/health/presentation/health_bloc.dart';
 
@@ -294,30 +296,25 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
                 style: TextStyle(fontSize: 13, color: Color(0xFF64748B)),
               ),
               const SizedBox(height: 12),
-              TextFormField(
+              CustomTextField(
                 controller: _notesController,
                 maxLines: 5,
-                // SANITIZAÇÃO: limite de 500 caracteres enforçado no input
-                maxLength: 500,
-                maxLengthEnforcement: MaxLengthEnforcement.enforced,
-                decoration: InputDecoration(
-                  hintText: 'Descreva como se sente, contexto, etc.',
-                  hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(color: _kBlue, width: 2),
-                  ),
-                  counterStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 11),
+                hintText: 'Descreva como se sente, contexto, etc.',
+              ),
+              Align(
+                alignment: Alignment.centerRight,
+                child: ValueListenableBuilder<TextEditingValue>(
+                  valueListenable: _notesController,
+                  builder: (context, value, _) {
+                    final count = value.text.length;
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: Text(
+                        '$count/500',
+                        style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 11),
+                      ),
+                    );
+                  },
                 ),
               ),
               const SizedBox(height: 32),
@@ -330,33 +327,34 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
                     final isSaving = state is HealthEntryAdding;
                     return SizedBox(
                       height: 56,
-                      child: ElevatedButton(
-                        onPressed: isSaving ? null : _submitForm,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: _kBlue,
-                          disabledBackgroundColor: Colors.grey.shade300,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          elevation: 0,
-                        ),
-                        child: isSaving
-                            ? const SizedBox(
-                                width: 22,
-                                height: 22,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2.5,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : const Text(
-                                'Guardar Registo',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                ),
+                      child: Theme(
+                        data: Theme.of(context).copyWith(
+                          elevatedButtonTheme: ElevatedButtonThemeData(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: _kBlue,
+                              disabledBackgroundColor: Colors.grey.shade300,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
                               ),
+                              elevation: 0,
+                            ),
+                          ),
+                        ),
+                        child: CustomPrimaryButton(
+                          onPressed: _submitForm,
+                          label: 'Guardar Registo',
+                          isLoading: isSaving,
+                          child: isSaving
+                              ? const CustomLoadingIndicator(size: 22)
+                              : const Text(
+                                  'Guardar Registo',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                        ),
                       ),
                     );
                   },
