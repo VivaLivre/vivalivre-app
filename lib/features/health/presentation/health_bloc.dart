@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:viva_livre_app/features/health/domain/entities/health_entry.dart';
 import 'package:viva_livre_app/features/health/domain/repositories/i_health_repository.dart';
 
@@ -9,6 +10,7 @@ part 'health_state.dart';
 
 class HealthBloc extends Bloc<HealthEvent, HealthState> {
   final IHealthRepository _healthRepository;
+  final FirebaseAnalytics _analytics = FirebaseAnalytics.instance;
 
   /// Subscription ao Stream do Firestore — cancelada em [close()].
   StreamSubscription<List<HealthEntry>>? _entriesSubscription;
@@ -62,6 +64,14 @@ class HealthBloc extends Bloc<HealthEvent, HealthState> {
 
     try {
       await _healthRepository.addEntry(event.entry);
+      await _analytics.logEvent(
+        name: 'health_entry_added',
+        parameters: {
+          'type': event.entry.type,
+          'severity': event.entry.severity,
+          'symptoms_count': event.entry.symptoms.length,
+        },
+      );
       // Não precisamos emitir HealthEntriesLoaded aqui —
       // o Stream do Firestore dispara automaticamente com o novo documento.
     } catch (e) {
