@@ -17,6 +17,7 @@ class App extends StatelessWidget {
     return MaterialApp(
       title: 'VivaLivre',
       debugShowCheckedModeBanner: false,
+      navigatorObservers: [observer],
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(

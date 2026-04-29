@@ -47,7 +47,8 @@ class HealthPage extends StatefulWidget {
   State<HealthPage> createState() => _HealthPageState();
 }
 
-class _HealthPageState extends State<HealthPage> {
+class _HealthPageState extends State<HealthPage>
+    with AutomaticKeepAliveClientMixin {
   // ── Constantes de design — INALTERADAS ──
   static const Color _kBlue = Color(0xFF2563EB);
   static const Color _kBg = Color(0xFFF8FAFC);
@@ -67,6 +68,9 @@ class _HealthPageState extends State<HealthPage> {
     'Palpitações', 'Ansiedade', 'Insónia', 'Alterações de Humor',
   ];
   late List<String> _customSymptoms;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -203,6 +207,7 @@ class _HealthPageState extends State<HealthPage> {
   // ── UI ──
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final today = DateFormat("dd 'de' MMMM", 'pt_BR').format(DateTime.now());
 
     return BlocBuilder<HealthBloc, HealthState>(

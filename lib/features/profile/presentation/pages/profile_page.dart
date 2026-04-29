@@ -2,8 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:viva_livre_app/features/auth/presentation/auth_bloc.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage>
+    with AutomaticKeepAliveClientMixin {
 
   // ── Paleta de Cores (Design System Médico) ──
   static const Color _kBg = Color(0xFFF8FAFC);
@@ -13,6 +20,9 @@ class ProfilePage extends StatelessWidget {
   static const Color _kText = Color(0xFF1E293B);
   static const Color _kSubText = Color(0xFF64748B);
   static const Color _kCardBorder = Color(0xFFF1F5F9);
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   Widget build(BuildContext context) {

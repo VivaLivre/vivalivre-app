@@ -11,7 +11,8 @@ class HealthDashboardPage extends StatefulWidget {
   State<HealthDashboardPage> createState() => _HealthDashboardPageState();
 }
 
-class _HealthDashboardPageState extends State<HealthDashboardPage> {
+class _HealthDashboardPageState extends State<HealthDashboardPage>
+    with AutomaticKeepAliveClientMixin {
   String _selectedFilter = 'Hoje';
   final List<String> _filters = ['Hoje', 'Últimos 7 dias', 'Mês'];
 
@@ -20,7 +21,11 @@ class _HealthDashboardPageState extends State<HealthDashboardPage> {
   static const Color _kText = Color(0xFF0F172A);
 
   @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       backgroundColor: _kBg,
       appBar: AppBar(
