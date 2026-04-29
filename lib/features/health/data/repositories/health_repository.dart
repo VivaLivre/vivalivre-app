@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'package:viva_livre_app/core/network/retry_helper.dart';
 import 'package:viva_livre_app/features/health/data/models/health_entry_model.dart';
 import 'package:viva_livre_app/features/health/domain/entities/health_entry.dart';
 import 'package:viva_livre_app/features/health/domain/repositories/i_health_repository.dart';
@@ -43,7 +44,11 @@ class HealthRepositoryImpl implements IHealthRepository {
 
       // O campo userId é gravado DENTRO do documento para permitir
       // a query por utilizador e as regras de segurança Firestore.
-      await _collection.add(model.toFirestore());
+      await retryOperation<void>(
+        operation: () async {
+          await _collection.add(model.toFirestore());
+        },
+      );
 
       debugPrint('[HealthRepository] addEntry: sucesso para userId=${entry.userId}');
     } catch (e) {

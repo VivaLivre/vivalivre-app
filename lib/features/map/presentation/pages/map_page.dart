@@ -25,10 +25,14 @@ class MapPage extends StatefulWidget {
   State<MapPage> createState() => _MapPageState();
 }
 
-class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
+class _MapPageState extends State<MapPage>
+    with TickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   final MapController _mapController = MapController();
   final TextEditingController _searchController = TextEditingController();
   bool _showEmergency = false;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -147,6 +151,7 @@ class _MapPageState extends State<MapPage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       body: BlocConsumer<MapBloc, MapState>(
         listener: (context, state) {
