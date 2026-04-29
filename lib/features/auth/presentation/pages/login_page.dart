@@ -37,9 +37,6 @@ class _LoginPageState extends State<LoginPage> {
     context.read<AuthBloc>().add(AuthLoginRequested(email, password));
   }
 
-  void _onGoogleLoginPressed() {
-    context.read<AuthBloc>().add(AuthGoogleSignInRequested());
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -188,11 +185,6 @@ class _LoginPageState extends State<LoginPage> {
                       const OrDivider(),
                       const SizedBox(height: 24),
 
-                      // -- Botao Google --
-                      GoogleSignInButton(
-                        onPressed: isLoading ? null : _onGoogleLoginPressed,
-                      ),
-                      const SizedBox(height: 32),
 
                       // -- Link Criar Conta --
                       Row(

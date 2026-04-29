@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:viva_livre_app/features/auth/presentation/pages/auth_wrapper.dart';
 import 'package:viva_livre_app/features/auth/presentation/pages/splash_page.dart';
 import 'package:viva_livre_app/features/auth/presentation/pages/onboarding_page.dart';
@@ -11,9 +10,7 @@ import 'package:viva_livre_app/features/health/presentation/pages/add_health_ent
 import 'package:viva_livre_app/features/health/presentation/pages/health_page.dart';
 
 class App extends StatelessWidget {
-  final FirebaseAuth firebaseAuth;
-
-  const App({super.key, required this.firebaseAuth});
+  const App({super.key});
 
   @override
   Widget build(BuildContext context) {

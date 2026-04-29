@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -74,11 +73,8 @@ class _HealthPageState extends State<HealthPage> {
     super.initState();
     _customSymptoms = List.from(_baseSymptoms);
 
-    // Inicia a escuta do Stream do Firestore para o utilizador logado.
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid != null) {
-      context.read<HealthBloc>().add(WatchHealthEntries(uid));
-    }
+    // No novo backend, o userId é inferido do Token JWT.
+    context.read<HealthBloc>().add(const WatchHealthEntries(''));
   }
 
   // ── Lógica ──
@@ -87,9 +83,6 @@ class _HealthPageState extends State<HealthPage> {
   /// Sintomas adicionais são incluídos no MESMO documento Firestore —
   /// um único .add() mantém o banco de dados leve.
   Future<void> _showBathroomModal() async {
-    final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
-    if (uid.isEmpty) return;
-
     Vibration.vibrate(duration: 80);
 
     final List<String>? extraSymptoms = await showModalBottomSheet<List<String>>(
@@ -100,9 +93,6 @@ class _HealthPageState extends State<HealthPage> {
       builder: (ctx) => const _BathroomExtrasModal(),
     );
 
-    // null → fechou sem responder → registamos ida simples
-    // [] → clicou "Não, só isso" → ida simples
-    // [sintomas...] → ida enriquecida com sintomas
     if (!mounted) return;
 
     final symptoms = ['Ida ao Banheiro', ...?extraSymptoms];
@@ -123,7 +113,7 @@ class _HealthPageState extends State<HealthPage> {
 
     final entry = HealthEntry(
       id: '',
-      userId: uid,
+      userId: '',
       symptoms: symptoms,
       severity: severity,
       notes: '',
@@ -168,9 +158,6 @@ class _HealthPageState extends State<HealthPage> {
       builder: (context) => _SymptomSearchModal(
         availableSymptoms: _customSymptoms,
         onAdd: (List<String> symptoms) {
-          final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
-          if (uid.isEmpty) return;
-
           for (var symptom in symptoms) {
             if (!_customSymptoms.contains(symptom)) {
               setState(() => _customSymptoms.add(symptom));
@@ -181,7 +168,7 @@ class _HealthPageState extends State<HealthPage> {
 
           final entry = HealthEntry(
             id: '',
-            userId: uid,
+            userId: '',
             symptoms: symptoms,
             severity: 'Leve',
             notes: '',
@@ -431,7 +418,6 @@ class _TimelineItem extends StatelessWidget {
   }
 
   void _showMenu(BuildContext context) {
-    final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
     showModalBottomSheet(
       context: context,
       useSafeArea: true,
@@ -513,7 +499,7 @@ class _TimelineItem extends StatelessWidget {
                         onPressed: () {
                           Navigator.pop(ctx);
                           context.read<HealthBloc>().add(
-                            DeleteHealthEntry(docId: entry.id, userId: uid),
+                            DeleteHealthEntry(docId: entry.id, userId: ''),
                           );
                         },
                         child: const Text('Eliminar',
@@ -680,7 +666,6 @@ class _EntryDetailDialog extends StatelessWidget {
     final isBathroom = entry.type == 'banheiro';
     final dateStr    = DateFormat("dd 'de' MMMM 'de' yyyy", 'pt_BR').format(entry.timestamp);
     final timeStr    = DateFormat('HH:mm:ss').format(entry.timestamp);
-    final uid        = FirebaseAuth.instance.currentUser?.uid ?? '';
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
@@ -825,7 +810,7 @@ class _EntryDetailDialog extends StatelessWidget {
                           onPressed: () {
                             Navigator.pop(ctx);
                             context.read<HealthBloc>().add(
-                              DeleteHealthEntry(docId: entry.id, userId: uid),
+                              DeleteHealthEntry(docId: entry.id, userId: ''),
                             );
                           },
                           child: const Text('Eliminar', style: TextStyle(fontWeight: FontWeight.w700)),
