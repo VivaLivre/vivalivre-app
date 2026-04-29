@@ -51,7 +51,7 @@ git checkout -b feature/mapa-gps-real
 git checkout -b feature/diario-sintomas
 git checkout -b feature/cartao-dii
 git checkout -b fix/splash-auth-check
-git checkout -b chore/atualizar-firebase
+git checkout -b chore/atualizar-api-rest
 ```
 
 ### 2. Desenvolver e commitar
@@ -62,7 +62,7 @@ Use mensagens de commit no padrão **Conventional Commits**:
 git add .
 git commit -m "feat: adiciona mapa com GPS nativo e pinos de banheiro"
 git commit -m "fix: corrige erro de Provider na navegação do onboarding"
-git commit -m "chore: atualiza firebase_auth para 6.4.0"
+git commit -m "chore: atualiza dio para 5.4.0"
 git commit -m "docs: adiciona guia de contribuição"
 git commit -m "style: padroniza botão Google nas telas de auth"
 git commit -m "refactor: extrai widgets de auth para auth_widgets.dart"
@@ -182,9 +182,9 @@ cd vivalivre-app
 # 2. Instalar dependências Flutter
 flutter pub get
 
-# 3. Configurar Firebase
-# → Adicionar android/app/google-services.json (obtido no Firebase Console)
-# → Ativar Email/Senha em Authentication > Sign-in method
+# 3. Configurar Backend
+# → Certifique-se que o backend Go está rodando localmente (http://localhost:8080)
+# → O ApiClient do app detectará automaticamente o host correto (10.0.2.2 para Android Emulator)
 
 # 4. Confirmar que está na branch develop
 git checkout develop

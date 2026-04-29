@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:viva_livre_app/features/auth/presentation/auth_bloc.dart';
 
@@ -27,100 +26,88 @@ class _ProfilePageState extends State<ProfilePage>
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
-    final user = FirebaseAuth.instance.currentUser;
+    return BlocBuilder<AuthBloc, AuthState>(
+      builder: (context, state) {
+        final user = state is AuthAuthenticated ? state.user : null;
 
-    return Scaffold(
-      backgroundColor: _kBg,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // ── 1. Cabeçalho do Paciente ──
-              Center(
-                child: Column(
-                  children: [
-                    // Avatar com Foto do Google ou Gradiente
-                    Container(
-                      width: 88,
-                      height: 88,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: user?.photoURL == null
-                            ? const LinearGradient(
-                                colors: [_kBlue, Color(0xFF3B82F6)],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              )
-                            : null,
-                        boxShadow: [
-                          BoxShadow(
-                            color: _kBlue.withValues(alpha: 0.3),
-                            blurRadius: 20,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
-                      ),
-                      child: user?.photoURL != null
-                          ? ClipOval(
-                              child: Image.network(
-                                user!.photoURL!,
-                                width: 88,
-                                height: 88,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return const Icon(Icons.person_rounded, size: 44, color: Colors.white);
-                                },
-                              ),
-                            )
-                          : const Icon(Icons.person_rounded, size: 44, color: Colors.white),
-                    ),
-                    const SizedBox(height: 16),
-                    // Nome e Email
-                    Text(
-                      user?.displayName ?? 'Usuário',
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
-                        color: _kText,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      user?.email ?? '',
-                      style: const TextStyle(fontSize: 14, color: _kSubText),
-                    ),
-                    const SizedBox(height: 12),
-                    // Chip "Paciente DII - Conta Ativa"
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: _kGreenBg,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.verified_user_rounded, size: 14, color: _kGreenText),
-                          SizedBox(width: 6),
-                          Text(
-                            'Paciente DII - Conta Ativa',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: _kGreenText,
+        return Scaffold(
+          backgroundColor: _kBg,
+          body: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // ── 1. Cabeçalho do Paciente ──
+                  Center(
+                    child: Column(
+                      children: [
+                        // Avatar com Foto ou Gradiente
+                        Container(
+                          width: 88,
+                          height: 88,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: const LinearGradient(
+                              colors: [_kBlue, Color(0xFF3B82F6)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
                             ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: _kBlue.withValues(alpha: 0.3),
+                                blurRadius: 20,
+                                offset: const Offset(0, 8),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
+                          child: const Icon(Icons.person_rounded, size: 44, color: Colors.white),
+                        ),
+                        const SizedBox(height: 16),
+                        // Nome e Email
+                        Text(
+                          user?.name ?? 'Usuário',
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800,
+                            color: _kText,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          user?.email ?? '',
+                          style: const TextStyle(fontSize: 14, color: _kSubText),
+                        ),
+                        const SizedBox(height: 12),
+                        // Chip "Paciente DII - Conta Ativa"
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: _kGreenBg,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.verified_user_rounded, size: 14, color: _kGreenText),
+                              SizedBox(width: 6),
+                              Text(
+                                'Paciente DII - Conta Ativa',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: _kGreenText,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
+                  ),
 
-              const SizedBox(height: 32),
+                  const SizedBox(height: 32),
+                  // ... remaining UI ...
 
               // ── 2. Card de Resumo Clínico ──
               Container(
@@ -241,6 +228,8 @@ class _ProfilePageState extends State<ProfilePage>
         ),
       ),
     );
+  },
+);
   }
 }
 

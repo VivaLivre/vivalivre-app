@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:viva_livre_app/features/auth/presentation/auth_bloc.dart';
 
 class CartaoDIIPage extends StatelessWidget {
   const CartaoDIIPage({super.key});
@@ -28,104 +28,26 @@ class CartaoDIIPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
+    return BlocBuilder<AuthBloc, AuthState>(
+      builder: (context, state) {
+        if (state is! AuthAuthenticated) {
+          return Scaffold(
+            backgroundColor: _kBg,
+            body: const Center(
+              child: Text('Usuário não autenticado', style: TextStyle(color: _kSubText)),
+            ),
+          );
+        }
 
-    if (user == null) {
-      return Scaffold(
-        backgroundColor: _kBg,
-        body: const Center(
-          child: Text('Usuário não autenticado', style: TextStyle(color: _kSubText)),
-        ),
-      );
-    }
+        final user = state.user;
+        const String? cid = null;
+        const String? laudoUrl = null;
+        final String userName = user.name;
 
-    return Scaffold(
-      backgroundColor: _kBg,
-      body: SafeArea(
-        child: FutureBuilder<DocumentSnapshot>(
-          future: FirebaseFirestore.instance.collection('users').doc(user.uid).get(),
-          builder: (context, snapshot) {
-            // ── Estado de Carregamento ──
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(
-                child: CircularProgressIndicator(color: _kBlue),
-              );
-            }
-
-            // ── Estado de Erro ──
-            if (snapshot.hasError) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.error_outline_rounded, size: 64, color: Colors.red),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Erro ao carregar dados',
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: _kText),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        snapshot.error.toString(),
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(fontSize: 14, color: _kSubText),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }
-
-            // ── Documento não existe ou sem dados ──
-            // DEFESA: verificamos .hasData, .exists E se o documento tem conteúdo
-            final docSnapshot = snapshot.data;
-            if (!snapshot.hasData || docSnapshot == null || !docSnapshot.exists) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFFEF3C7),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.warning_amber_rounded, size: 48, color: Color(0xFFF59E0B)),
-                      ),
-                      const SizedBox(height: 20),
-                      const Text(
-                        'Dados não encontrados',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: _kText),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Complete o seu perfil para visualizar o cartão DII.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 14, color: _kSubText),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }
-
-            // ── Extração de Dados do Firestore (programação defensiva) ──
-            // DEFESA: cast seguro com `as?` — se .data() retornar null ou tipo
-            // inesperado, `data` será null em vez de lançar TypeError.
-            final data = docSnapshot.data() as Map<String, dynamic>?;
-
-            // DEFESA: operador ?? garante um fallback para cada campo ausente
-            // ou com tipo diferente de String no banco de dados.
-            final String? cid = data?['cid'] as String?;
-            final String? laudoUrl = data?['laudoUrl'] as String?;
-            final String userName = user.displayName ?? 'Usuário';
-
-            // ── UI Principal ──
-            return SingleChildScrollView(
+        return Scaffold(
+          backgroundColor: _kBg,
+          body: SafeArea(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -365,16 +287,16 @@ class CartaoDIIPage extends StatelessWidget {
                   ),
 
                   if (laudoUrl == null || laudoUrl.isEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 12),
+                    const Padding(
+                      padding: EdgeInsets.only(top: 12),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.info_outline_rounded, size: 14, color: _kSubText),
-                          const SizedBox(width: 6),
+                          Icon(Icons.info_outline_rounded, size: 14, color: _kSubText),
+                          SizedBox(width: 6),
                           Text(
                             'Laudo não encontrado. Complete o seu perfil.',
-                            style: const TextStyle(fontSize: 12, color: _kSubText),
+                            style: TextStyle(fontSize: 12, color: _kSubText),
                           ),
                         ],
                       ),
@@ -425,10 +347,10 @@ class CartaoDIIPage extends StatelessWidget {
                   const SizedBox(height: 24),
                 ],
               ),
-            );
-          },
-        ),
-      ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
