@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:viva_livre_app/features/auth/presentation/pages/auth_wrapper.dart';
 import 'package:viva_livre_app/features/auth/presentation/pages/splash_page.dart';
 import 'package:viva_livre_app/features/auth/presentation/pages/onboarding_page.dart';
@@ -12,6 +13,9 @@ import 'package:viva_livre_app/features/health/presentation/pages/health_page.da
 
 class App extends StatelessWidget {
   final FirebaseAuth firebaseAuth;
+  static final FirebaseAnalytics analytics = FirebaseAnalytics.instance;
+  static final FirebaseAnalyticsObserver observer =
+      FirebaseAnalyticsObserver(analytics: analytics);
 
   const App({super.key, required this.firebaseAuth});
 
@@ -20,6 +24,7 @@ class App extends StatelessWidget {
     return MaterialApp(
       title: 'VivaLivre',
       debugShowCheckedModeBanner: false,
+      navigatorObservers: [observer],
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
