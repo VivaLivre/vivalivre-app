@@ -17,7 +17,6 @@ class App extends StatelessWidget {
     return MaterialApp(
       title: 'VivaLivre',
       debugShowCheckedModeBanner: false,
-      navigatorObservers: [observer],
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
@@ -68,8 +67,8 @@ class App extends StatelessWidget {
         ),
       ),
       // ── Rota raiz protegida pelo AuthWrapper ──
-      // AuthWrapper escuta FirebaseAuth.authStateChanges() e encaminha
-      // para MainShell (logado) ou LoginPage (deslogado) sem crash de UID nulo.
+      // AuthWrapper escuta o estado de autenticação e encaminha
+      // para MainShell (logado) ou LoginPage (deslogado).
       home: const AuthWrapper(),
       routes: {
         '/splash': (_) => const SplashPage(),

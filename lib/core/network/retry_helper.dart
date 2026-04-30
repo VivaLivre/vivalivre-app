@@ -1,6 +1,5 @@
 import 'dart:async';
-
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:dio/dio.dart';
 
 Future<T> retryOperation<T>({
   required Future<T> Function() operation,
@@ -12,14 +11,14 @@ Future<T> retryOperation<T>({
   for (var attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       return await operation();
-    } on FirebaseException catch (e) {
+    } on DioException catch (e) {
       lastError = e;
-      final isRetryable = e.code == 'unavailable' ||
-          e.code == 'deadline-exceeded' ||
-          e.code == 'aborted' ||
-          e.code == 'resource-exhausted' ||
-          e.code == 'internal' ||
-          e.code == 'network-request-failed';
+      // Retry on network errors, timeouts, and 5xx server errors
+      final isRetryable = e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.sendTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.connectionError ||
+          (e.response?.statusCode != null && e.response!.statusCode! >= 500);
 
       if (!isRetryable || attempt == maxAttempts) {
         rethrow;

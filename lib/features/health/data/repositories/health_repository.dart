@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:viva_livre_app/core/network/retry_helper.dart';
 import 'package:viva_livre_app/features/health/data/models/health_entry_model.dart';
 import 'package:viva_livre_app/features/health/domain/entities/health_entry.dart';
 import 'package:viva_livre_app/features/health/domain/repositories/i_health_repository.dart';

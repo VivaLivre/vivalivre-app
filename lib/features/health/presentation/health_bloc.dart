@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:viva_livre_app/features/health/domain/entities/health_entry.dart';
 import 'package:viva_livre_app/features/health/domain/repositories/i_health_repository.dart';
 
@@ -10,9 +9,8 @@ part 'health_state.dart';
 
 class HealthBloc extends Bloc<HealthEvent, HealthState> {
   final IHealthRepository _healthRepository;
-  final FirebaseAnalytics _analytics = FirebaseAnalytics.instance;
 
-  /// Subscription ao Stream do Firestore — cancelada em [close()].
+  /// Subscription ao Stream do repositório — cancelada em [close()].
   StreamSubscription<List<HealthEntry>>? _entriesSubscription;
 
   HealthBloc({required IHealthRepository healthRepository})
@@ -24,7 +22,7 @@ class HealthBloc extends Bloc<HealthEvent, HealthState> {
     on<DeleteHealthEntry>(_onDeleteHealthEntry);
   }
 
-  /// Inicia (ou reinicia) a escuta do Stream de registos do Firestore.
+  /// Inicia (ou reinicia) a escuta do Stream de registos do repositório.
   Future<void> _onWatchHealthEntries(
     WatchHealthEntries event,
     Emitter<HealthState> emit,
@@ -64,16 +62,8 @@ class HealthBloc extends Bloc<HealthEvent, HealthState> {
 
     try {
       await _healthRepository.addEntry(event.entry);
-      await _analytics.logEvent(
-        name: 'health_entry_added',
-        parameters: {
-          'type': event.entry.type,
-          'severity': event.entry.severity,
-          'symptoms_count': event.entry.symptoms.length,
-        },
-      );
       // Não precisamos emitir HealthEntriesLoaded aqui —
-      // o Stream do Firestore dispara automaticamente com o novo documento.
+      // o Stream do repositório dispara automaticamente com o novo documento.
     } catch (e) {
       emit(const HealthError('Não foi possível guardar o registo. Verifique a sua ligação.'));
       // Restaura o estado anterior para que a UI não quebre.
@@ -83,8 +73,8 @@ class HealthBloc extends Bloc<HealthEvent, HealthState> {
     }
   }
 
-  /// Elimina um registo do Firestore.
-  /// Após a deleção, o Stream do Firestore actualiza a lista automaticamente.
+  /// Elimina um registo do repositório.
+  /// Após a deleção, o Stream do repositório actualiza a lista automaticamente.
   Future<void> _onDeleteHealthEntry(
     DeleteHealthEntry event,
     Emitter<HealthState> emit,
