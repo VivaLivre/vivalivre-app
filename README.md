@@ -4,9 +4,8 @@
 
 [![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?style=flat-square&logo=flutter&logoColor=white)](https://flutter.dev)
 [![Dart](https://img.shields.io/badge/Dart-3.x-0175C2?style=flat-square&logo=dart&logoColor=white)](https://dart.dev)
-[![Firebase](https://img.shields.io/badge/Firebase-Auth-FFCA28?style=flat-square&logo=firebase&logoColor=black)](https://firebase.google.com)
-[![Node.js](https://img.shields.io/badge/Node.js-LTS-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org)
-[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?style=flat-square&logo=mongodb&logoColor=white)](https://www.mongodb.com/atlas)
+[![Go](https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat-square&logo=go&logoColor=white)](https://go.dev)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-PostGIS-336791?style=flat-square&logo=postgresql&logoColor=white)](https://www.postgresql.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
 
 ---
@@ -15,71 +14,49 @@
 
 **VivaLivre** é uma plataforma mobile nativa desenvolvida com **Flutter/Dart**, projetada para oferecer segurança, autonomia e qualidade de vida para pessoas que vivem com doenças autoimunes intestinais, como **Doença de Crohn** e **Retocolite Ulcerativa (RCU)**.
 
-Existem aproximadamente **200 mil brasileiros diagnosticados com DII**. A imprevisibilidade dos sintomas intestinais gera ansiedade severa e isolamento social. O VivaLivre resolve essa dor conectando os usuários a uma rede colaborativa de banheiros acessíveis via GPS nativo, além de oferecer um controle unificado de saúde e o **Cartão Digital de Prioridade DII**.
+O projeto utiliza um ecossistema desacoplado, com um aplicativo Flutter de alta performance conectado a um **Backend próprio desenvolvido em Go**, garantindo total autonomia e soberania dos dados.
 
 ---
 
 ## ✨ Principais Funcionalidades
 
-- **⚡ Botão de Emergência** — Localiza o banheiro mais próximo e bem avaliado em um toque, com integração de rotas (Google Maps / Apple Maps).
-- **🗺️ Mapeamento Colaborativo** — Usuários adicionam e avaliam banheiros por limpeza, acessibilidade e outros critérios, estilo Waze.
-- **🩺 Diário de Saúde** — Controle diário de sintomas, humor, evacuações e lembretes de medicação com gráficos evolutivos via `fl_chart`.
-- **🪪 Cartão Digital DII** — Validação visual rápida para uso em filas e banheiros preferenciais, garantindo os direitos legais do portador.
-- **🔔 Lembretes Push** — Notificações de medicação via Firebase Cloud Messaging integradas a cron jobs no back-end.
-- **📄 Relatório PDF** — Exportação do histórico de sintomas para compartilhamento com profissionais de saúde.
+- **⚡ Botão de Emergência** — Localiza o banheiro mais próximo e bem avaliado em um toque, com integração de rotas.
+- **🗺️ Mapeamento Colaborativo** — Busca de banheiros adaptados via geolocalização avançada com **PostGIS**.
+- **🩺 Diário de Saúde** — Controle diário de sintomas, humor e evacuações com persistência em API REST.
+- **🪪 Cartão Digital DII** — Validação visual rápida para uso em filas e banheiros preferenciais.
+- **📄 Relatório PDF** — Exportação do histórico de sintomas para profissionais de saúde.
 
 ---
 
 ## 🛠️ Stack Tecnológico
 
-O aplicativo foi construído focado em alta performance e resposta rápida (60fps):
-
 | Camada | Tecnologia |
 |---|---|
-| **Front-end (Mobile)** | Flutter & Dart — compilação nativa iOS/Android |
+| **Front-end (Mobile)** | Flutter & Dart |
 | **Gerenciamento de Estado** | BLoC (`flutter_bloc`) |
-| **Back-end & API** | Node.js com Express |
-| **Banco de Dados** | MongoDB Atlas (queries geoespaciais `$near`) |
-| **Autenticação** | Firebase Authentication (e-mail/senha + Google Sign-In) |
-| **Notificações Push** | Firebase Cloud Messaging (FCM) |
-| **Mapa** | `flutter_map` + `geolocator` (GPS nativo) |
-| **Armazenamento Seguro** | `flutter_secure_storage` (JWT no Keychain/Keystore) |
+| **Back-end & API** | Go (Golang) com Gin Gonic |
+| **Banco de Dados** | PostgreSQL + PostGIS |
+| **Autenticação** | JWT Proprietário (JSON Web Token) |
+| **Persistência Local** | `flutter_secure_storage` |
+| **Comunicação HTTP** | `Dio` |
 
 ---
 
 ## 🏗️ Arquitetura
 
-O projeto segue o padrão **Three-Tier + BLoC**, com separação clara entre UI, lógica de negócio e acesso a dados:
+O projeto segue princípios de **Clean Architecture**, com separação entre as camadas de apresentação, domínio e dados:
 
 ```
 lib/
-├── main.dart
-├── app.dart                    # MaterialApp root + rotas nomeadas
+├── core/                       # Utils, API Client, Temas, Modelos Globais
 ├── features/
-│   ├── auth/                   # Login, Cadastro, Onboarding
-│   │   └── presentation/       # AuthBloc, LoginPage, RegisterPage
-│   ├── map/                    # Mapa de Banheiros
-│   │   └── presentation/       # MapPage (GPS + pins + emergência)
-│   ├── health/                 # Diário de Saúde
-│   ├── home/                   # Shell principal + Bottom Navigation
-│   └── profile/                # Perfil do Usuário
-└── shared/
-    └── widgets/                # Componentes reutilizáveis
+│   ├── auth/                   # Login, Cadastro, Gestão de Tokens (JWT)
+│   ├── map/                    # Mapa de Banheiros via PostGIS
+│   ├── health/                 # Diário de Saúde e Sintomas
+│   ├── home/                   # Shell principal + Navegação
+│   └── profile/                # Perfil e Configurações
+└── main.dart                   # Inicialização e Injeção de Dependência
 ```
-
----
-
-## 📱 Telas do Aplicativo
-
-| Onboarding | Login | Mapa Principal |
-|:---:|:---:|:---:|
-| *(screenshot)* | *(screenshot)* | *(screenshot)* |
-
-| Botão de Emergência | Card de Banheiro | Perfil |
-|:---:|:---:|:---:|
-| *(screenshot)* | *(screenshot)* | *(screenshot)* |
-
-> 💡 Substitua os placeholders acima pelos prints reais do app ou exports do Figma.
 
 ---
 
@@ -87,16 +64,14 @@ lib/
 
 ### Pré-requisitos
 
-- [Flutter SDK 3.x](https://docs.flutter.dev/get-started/install) instalado e no `PATH`
-- [Android Studio](https://developer.android.com/studio) ou [VS Code](https://code.visualstudio.com/) com extensão Flutter
-- Conta no [Firebase](https://console.firebase.google.com/) com projeto criado
-- Dispositivo físico ou emulador Android/iOS
+- [Flutter SDK 3.x](https://docs.flutter.dev/get-started/install)
+- [Backend VivaLivre Go](https://github.com/VivaLivre/vivalivre-backend) rodando localmente
 
 ### Passo a Passo
 
 **1. Clone o repositório**
 ```bash
-git clone https://github.com/SEU-USUARIO/vivalivre-app.git
+git clone https://github.com/VivaLivre/vivalivre-app.git
 cd vivalivre-app/viva_livre_app
 ```
 
@@ -105,29 +80,14 @@ cd vivalivre-app/viva_livre_app
 flutter pub get
 ```
 
-**3. Configure o Firebase**
-
-- Acesse o [Firebase Console](https://console.firebase.google.com/) e crie um projeto
-- Ative o método de autenticação **Email/Senha** em *Authentication → Sign-in method*
-- Baixe o arquivo `google-services.json` e coloque em `android/app/`
-- *(Para iOS)* Baixe o `GoogleService-Info.plist` e adicione via Xcode em `ios/Runner/`
+**3. Configure o Host da API**
+O aplicativo detecta automaticamente o ambiente:
+- **Android Emulator**: Aponta para `http://10.0.2.2:8080`
+- **iOS/Web/Físico**: Aponta para `http://localhost:8080` (ajustável no `ApiClient`)
 
 **4. Execute o aplicativo**
 ```bash
 flutter run
-```
-
----
-
-## 🗂️ Variáveis de Ambiente (Back-end)
-
-Crie um arquivo `.env` na raiz do back-end com:
-
-```env
-PORT=3000
-MONGODB_URI=mongodb+srv://usuario:senha@cluster.mongodb.net/vivalivre
-FIREBASE_PROJECT_ID=seu-projeto-id
-FCM_SERVER_KEY=sua-chave-fcm
 ```
 
 ---

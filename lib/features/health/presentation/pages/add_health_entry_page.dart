@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vibration/vibration.dart';
@@ -59,20 +58,9 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
     // Validação extra: pelo menos 1 sintoma selecionado
     if (_selectedSymptoms.isEmpty) return;
 
-    final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
-    if (userId.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Sessão expirada. Por favor, faça login novamente.'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
     final entry = HealthEntry(
-      id: '', // Firestore gera o ID via .add()
-      userId: userId,
+      id: '',
+      userId: '',
       symptoms: List<String>.from(_selectedSymptoms),
       severity: _severity,
       notes: _notesController.text.trim(),
