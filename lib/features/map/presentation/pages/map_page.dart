@@ -10,6 +10,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:viva_livre_app/features/map/domain/entities/bathroom.dart';
 import 'package:viva_livre_app/features/map/presentation/bloc/map_bloc.dart';
+import 'package:viva_livre_app/features/map/presentation/bloc/add_bathroom_bloc.dart';
 import 'package:viva_livre_app/features/map/presentation/pages/add_bathroom_page.dart';
 import 'package:viva_livre_app/features/map/presentation/widgets/bathroom_card.dart';
 import 'package:viva_livre_app/features/map/presentation/widgets/emergency_button.dart';
@@ -327,11 +328,22 @@ class _MapPageState extends State<MapPage>
                      ],
                     EmergencyButton(
                       onEmergency: _handleFindNearest,
-                      onAddBathroom: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const AddBathroomPage(),
-                        ),
-                      ),
+                      onAddBathroom: () {
+                        final mapState = context.read<MapBloc>().state;
+                        final pos = mapState is MapLoaded
+                            ? mapState.currentPosition
+                            : const LatLng(-23.660704, -46.430891);
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => BlocProvider(
+                              create: (_) => AddBathroomBloc(
+                                repository: context.read<MapBloc>().repository,
+                              ),
+                              child: AddBathroomPage(initialPosition: pos),
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),

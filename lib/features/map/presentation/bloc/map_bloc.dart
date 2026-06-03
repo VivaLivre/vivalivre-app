@@ -14,6 +14,9 @@ part 'map_state.dart';
 
 class MapBloc extends Bloc<MapEvent, MapState> {
   final IBathroomRepository _repository;
+
+  /// Exposes the repository for use by child BLoCs (e.g. AddBathroomBloc).
+  IBathroomRepository get repository => _repository;
   
   // Posição de fallback original da map_page
   static const LatLng _kFallbackPosition = LatLng(-23.66070438587852, -46.43089117960558);

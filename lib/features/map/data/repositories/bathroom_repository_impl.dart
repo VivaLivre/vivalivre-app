@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:dio/dio.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:viva_livre_app/features/map/data/models/bathroom_model.dart';
 import 'package:viva_livre_app/features/map/domain/entities/bathroom.dart';
@@ -57,5 +59,47 @@ class BathroomRepositoryImpl implements IBathroomRepository {
   @override
   double calculateDistance(LatLng from, LatLng to) {
     return _distance.as(LengthUnit.Meter, from, to);
+  }
+
+  @override
+  Future<void> addBathroomRequest({
+    required String name,
+    required String address,
+    required double latitude,
+    required double longitude,
+    required bool isAccessible,
+    required bool hasChangingTable,
+    required bool isFree,
+    String? comment,
+    required File photo,
+  }) async {
+    final formData = FormData.fromMap({
+      'name': name,
+      'address': address,
+      'latitude': latitude.toString(),
+      'longitude': longitude.toString(),
+      'is_accessible': isAccessible.toString(),
+      'has_changing_table': hasChangingTable.toString(),
+      'is_free': isFree.toString(),
+      if (comment != null && comment.isNotEmpty) 'comment': comment,
+      'photo': await MultipartFile.fromFile(
+        photo.path,
+        filename: photo.path.split(Platform.pathSeparator).last,
+      ),
+    });
+
+    final response = await _apiClient.dio.post(
+      '/api/bathrooms/request',
+      data: formData,
+      options: Options(
+        contentType: 'multipart/form-data',
+        sendTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 30),
+      ),
+    );
+
+    if (response.statusCode != 201) {
+      throw Exception(response.data?['error'] ?? 'Erro ao enviar sugestão.');
+    }
   }
 }
