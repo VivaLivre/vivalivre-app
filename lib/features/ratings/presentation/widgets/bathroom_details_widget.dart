@@ -98,33 +98,6 @@ class BathroomDetailsWidget extends StatelessWidget {
           ),
         ),
 
-        // Ratings Section
-        Padding(
-          padding: const EdgeInsets.only(bottom: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Avaliações Específicas',
-                style: theme.textTheme.labelMedium?.copyWith(
-                  color: theme.colorScheme.outline,
-                ),
-              ),
-              const SizedBox(height: 12),
-              _RatingRow(
-                label: 'Limpeza',
-                rating: bathroom.cleanlinessRating,
-                theme: theme,
-              ),
-              const SizedBox(height: 12),
-              _RatingRow(
-                label: 'Acessibilidade',
-                rating: bathroom.accessibilityRating,
-                theme: theme,
-              ),
-            ],
-          ),
-        ),
       ],
     );
   }
@@ -193,49 +166,3 @@ class _AmenityChip extends StatelessWidget {
   }
 }
 
-/// Rating row showing label and star rating.
-class _RatingRow extends StatelessWidget {
-  final String label;
-  final double rating;
-  final ThemeData theme;
-
-  const _RatingRow({
-    required this.label,
-    required this.rating,
-    required this.theme,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: theme.textTheme.bodyMedium,
-        ),
-        Row(
-          children: [
-            ...List.generate(5, (index) {
-              final isFilled = index < rating.toInt();
-              return Icon(
-                isFilled ? Icons.star : Icons.star_outline,
-                size: 18,
-                color: isFilled
-                    ? theme.colorScheme.primary
-                    : theme.colorScheme.outline,
-              );
-            }),
-            const SizedBox(width: 8),
-            Text(
-              rating.toStringAsFixed(1),
-              style: theme.textTheme.labelMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}

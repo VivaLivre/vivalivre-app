@@ -23,9 +23,9 @@ class BathroomReviewModel extends BathroomReview {
   /// Converte JSON para modelo
   factory BathroomReviewModel.fromJson(Map<String, dynamic> json) {
     return BathroomReviewModel(
-      id: json['id'] as String,
-      bathroomId: json['bathroom_id'] as String,
-      userId: json['user_id'] as String,
+      id: json['id'].toString(),
+      bathroomId: json['bathroom_id'].toString(),
+      userId: json['user_id'].toString(),
       rating: json['rating'] as int,
       title: json['title'] as String?,
       comment: json['comment'] as String?,
@@ -86,7 +86,7 @@ class BathroomRatingStatsModel extends BathroomRatingStats {
     }
 
     return BathroomRatingStatsModel(
-      bathroomId: json['bathroom_id'] as String,
+      bathroomId: json['bathroom_id'].toString(),
       totalReviews: json['total_reviews'] as int? ?? 0,
       averageRating: (json['average_rating'] as num?)?.toDouble() ?? 0.0,
       avgCleanliness: (json['avg_cleanliness'] as num?)?.toDouble() ?? 0.0,

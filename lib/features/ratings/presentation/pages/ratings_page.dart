@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:viva_livre_app/features/auth/presentation/auth_bloc.dart';
 import 'package:viva_livre_app/features/map/domain/entities/bathroom.dart';
 import '../bloc/rating_bloc.dart';
 import '../widgets/star_rating_widget.dart';
 import '../widgets/review_form_widget.dart';
 import '../widgets/review_list_widget.dart';
 import '../widgets/bathroom_details_widget.dart';
+import 'package:viva_livre_app/features/ratings/domain/entities/bathroom_review.dart';
 
 /// Page displaying bathroom ratings, statistics, and review functionality.
 class RatingsPage extends StatefulWidget {
@@ -25,7 +27,9 @@ class RatingsPage extends StatefulWidget {
 }
 
 class _RatingsPageState extends State<RatingsPage> {
-  late RatingBloc _ratingBloc;
+  late final RatingBloc _ratingBloc;
+  BathroomRatingStats? _stats;
+  List<BathroomReview>? _reviews;
 
   @override
   void initState() {
@@ -39,7 +43,7 @@ class _RatingsPageState extends State<RatingsPage> {
     _ratingBloc.add(LoadBathroomRatingStats(widget.bathroomId));
   }
 
-  void _showReviewModal() {
+  void _showReviewModal({BathroomReview? existingReview}) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -72,7 +76,7 @@ class _RatingsPageState extends State<RatingsPage> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Avaliar Banheiro',
+                      existingReview != null ? 'Editar Avaliação' : 'Avaliar Banheiro',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
@@ -92,10 +96,10 @@ class _RatingsPageState extends State<RatingsPage> {
                   padding: const EdgeInsets.all(16),
                   child: BlocListener<RatingBloc, RatingState>(
                     listener: (context, state) {
-                      if (state is ReviewCreated) {
+                      if (state is ReviewCreated || state is ReviewUpdated) {
                         Navigator.pop(context);
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Avaliação submetida com sucesso!')),
+                          SnackBar(content: Text(state is ReviewCreated ? 'Avaliação submetida com sucesso!' : 'Avaliação atualizada com sucesso!')),
                         );
                         _loadRatings();
                       } else if (state is RatingError) {
@@ -107,18 +111,35 @@ class _RatingsPageState extends State<RatingsPage> {
                     child: BlocBuilder<RatingBloc, RatingState>(
                       builder: (context, state) {
                         return ReviewFormWidget(
-                          isLoading: state is ReviewAdding,
+                          isLoading: state is ReviewAdding || state is ReviewUpdating,
+                          initialRating: existingReview?.rating.toString(),
+                          initialComment: existingReview?.comment,
+                          initialCleanlinessRating: existingReview?.cleanlinessRating,
+                          initialAccessibilityRating: existingReview?.accessibilityRating,
                           onSubmit: (rating, comment, cleanliness, accessibility) {
-                            _ratingBloc.add(
-                              CreateReview(
-                                bathroomId: widget.bathroomId,
-                                rating: rating,
-                                title: 'Avaliação',
-                                comment: comment,
-                                cleanlinessRating: cleanliness,
-                                accessibilityRating: accessibility,
-                              ),
-                            );
+                            if (existingReview != null) {
+                              _ratingBloc.add(
+                                UpdateReview(
+                                  reviewId: existingReview.id,
+                                  rating: rating,
+                                  title: 'Avaliação',
+                                  comment: comment,
+                                  cleanlinessRating: cleanliness,
+                                  accessibilityRating: accessibility,
+                                ),
+                              );
+                            } else {
+                              _ratingBloc.add(
+                                CreateReview(
+                                  bathroomId: widget.bathroomId,
+                                  rating: rating,
+                                  title: 'Avaliação',
+                                  comment: comment,
+                                  cleanlinessRating: cleanliness,
+                                  accessibilityRating: accessibility,
+                                ),
+                              );
+                            }
                           },
                         );
                       },
@@ -182,8 +203,32 @@ class _RatingsPageState extends State<RatingsPage> {
           ),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: () async => _loadRatings(),
+      body: BlocListener<RatingBloc, RatingState>(
+        listener: (context, state) {
+          if (state is BathroomRatingStatsLoaded) {
+            setState(() => _stats = state.stats);
+          } else if (state is BathroomReviewsLoaded) {
+            setState(() => _reviews = state.reviews);
+          } else if (state is HelpfulVoteRecorded) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Voto registado com sucesso')),
+            );
+          } else if (state is ReviewDeleted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Avaliação excluída com sucesso')),
+            );
+            _loadRatings();
+          } else if (state is RatingError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Theme.of(context).colorScheme.error,
+              ),
+            );
+          }
+        },
+        child: RefreshIndicator(
+          onRefresh: () async => _loadRatings(),
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           child: Column(
@@ -242,38 +287,45 @@ class _RatingsPageState extends State<RatingsPage> {
                 ),
 
               // Rating Stats Section
-              BlocBuilder<RatingBloc, RatingState>(
-                builder: (context, state) {
-                  if (state is RatingLoading) {
-                    return const Padding(
-                      padding: EdgeInsets.all(32),
-                      child: CircularProgressIndicator(),
-                    );
-                  }
-
-                  if (state is BathroomRatingStatsLoaded) {
-                    final stats = state.stats;
-                    return _RatingStatsSection(stats: stats);
-                  }
-
-                  return const SizedBox.shrink();
-                },
-              ),
+              if (_stats == null && _reviews == null)
+                const Padding(
+                  padding: EdgeInsets.all(32),
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              else if (_stats != null)
+                _RatingStatsSection(stats: _stats!),
 
               // Avaliar Button
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: _showReviewModal,
-                    icon: const Icon(Icons.rate_review),
-                    label: const Text('Avaliar este Banheiro'),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+              Builder(
+                builder: (context) {
+                  bool hasReviewed = false;
+                  BathroomReview? userReview;
+
+                  final authState = context.read<AuthBloc>().state;
+                  final currentUserId = authState is AuthAuthenticated ? authState.user.id.toString() : null;
+
+                  if (_reviews != null && currentUserId != null) {
+                    try {
+                      userReview = _reviews!.firstWhere((r) => r.userId == currentUserId);
+                      hasReviewed = true;
+                    } catch (_) {}
+                  }
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () => _showReviewModal(existingReview: userReview),
+                        icon: Icon(hasReviewed ? Icons.edit_note_rounded : Icons.rate_review),
+                        label: Text(hasReviewed ? 'Editar Avaliação' : 'Avaliar este Banheiro'),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
+                  );
+                },
               ),
 
               // Reviews List Section
@@ -289,41 +341,33 @@ class _RatingsPageState extends State<RatingsPage> {
                           ),
                     ),
                     const SizedBox(height: 16),
+                    if (_reviews != null)
+                      Builder(
+                        builder: (context) {
+                          final authState = context.read<AuthBloc>().state;
+                          final currentUserId = authState is AuthAuthenticated ? authState.user.id.toString() : null;
+
+                          return ReviewListWidget(
+                            reviews: _reviews!,
+                            currentUserId: currentUserId,
+                            onDeleteReview: (reviewId) {
+                              _ratingBloc.add(DeleteReview(reviewId));
+                            },
+                            onHelpfulVote: (reviewId, isHelpful) {
+                              _ratingBloc.add(
+                                VoteHelpful(
+                                  reviewId: reviewId,
+                                  isHelpful: isHelpful,
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      ),
+
                     BlocBuilder<RatingBloc, RatingState>(
                       builder: (context, state) {
-                        if (state is RatingLoading) {
-                          return const Center(
-                            child: Padding(
-                              padding: EdgeInsets.all(32),
-                              child: CircularProgressIndicator(),
-                            ),
-                          );
-                        }
-
-                        if (state is BathroomReviewsLoaded) {
-                          return BlocListener<RatingBloc, RatingState>(
-                            listener: (context, innerState) {
-                              if (innerState is HelpfulVoteRecorded) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Voto registado com sucesso')),
-                                );
-                              }
-                            },
-                            child: ReviewListWidget(
-                              reviews: state.reviews,
-                              onHelpfulVote: (reviewId, isHelpful) {
-                                _ratingBloc.add(
-                                  VoteHelpful(
-                                    reviewId: reviewId,
-                                    isHelpful: isHelpful,
-                                  ),
-                                );
-                              },
-                            ),
-                          );
-                        }
-
-                        if (state is RatingError) {
+                        if (state is RatingError && _reviews == null) {
                           return Center(
                             child: Padding(
                               padding: const EdgeInsets.all(32),
@@ -350,7 +394,6 @@ class _RatingsPageState extends State<RatingsPage> {
                             ),
                           );
                         }
-
                         return const SizedBox.shrink();
                       },
                     ),
@@ -361,6 +404,7 @@ class _RatingsPageState extends State<RatingsPage> {
             ],
           ),
         ),
+      ),
       ),
     );
   }
@@ -592,16 +636,18 @@ class _RatingStatsSection extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        Row(
+                        Wrap(
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          spacing: 12,
+                          runSpacing: 4,
                           children: [
                             StarRatingWidget(
                               initialRating: stats.averageRating,
                               readOnly: true,
                               size: 20,
                             ),
-                            const SizedBox(width: 12),
                             Text(
-                              '${stats.totalReviews} avaliação${stats.totalReviews != 1 ? 'ões' : ''}',
+                              '${stats.totalReviews} ${stats.totalReviews == 1 ? 'avaliação' : 'avaliações'}',
                               style: theme.textTheme.bodySmall?.copyWith(
                                 color: theme.colorScheme.outline,
                               ),
@@ -623,11 +669,6 @@ class _RatingStatsSection extends StatelessWidget {
                         _RatingBarItem(
                           label: 'Acessibilidade',
                           value: stats.avgAccessibility,
-                        ),
-                        const SizedBox(height: 12),
-                        _RatingBarItem(
-                          label: 'Espaço',
-                          value: stats.avgSpaciosuneness,
                         ),
                       ],
                     ),

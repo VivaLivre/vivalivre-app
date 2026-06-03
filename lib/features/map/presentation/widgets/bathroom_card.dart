@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:viva_livre_app/features/map/domain/entities/bathroom.dart';
+import 'package:viva_livre_app/features/ratings/presentation/bloc/rating_bloc.dart';
 
 const _kBlue = Color(0xFF2563EB);
 const _kBlueSoft = Color(0xFFEFF6FF);
@@ -8,7 +10,7 @@ const _kText = Color(0xFF111827);
 const _kSubText = Color(0xFF6B7280);
 const _kGray = Color(0xFF9CA3AF);
 
-class BathroomCard extends StatelessWidget {
+class BathroomCard extends StatefulWidget {
   final Bathroom bathroom;
   final String distanceText;
   final VoidCallback onClose;
@@ -23,9 +25,32 @@ class BathroomCard extends StatelessWidget {
   });
 
   @override
+  State<BathroomCard> createState() => _BathroomCardState();
+}
+
+class _BathroomCardState extends State<BathroomCard> {
+  @override
+  void initState() {
+    super.initState();
+    _loadRatings();
+  }
+
+  @override
+  void didUpdateWidget(BathroomCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.bathroom.id != widget.bathroom.id) {
+      _loadRatings();
+    }
+  }
+
+  void _loadRatings() {
+    context.read<RatingBloc>().add(LoadBathroomReviews(bathroomId: widget.bathroom.id.toString()));
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final isOpen = bathroom.isOpen;
-    final tags = bathroom.tags;
+    final isOpen = widget.bathroom.isOpen;
+    final tags = widget.bathroom.tags;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -45,13 +70,13 @@ class BathroomCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Photo Preview
-          if (bathroom.photoUrl != null && bathroom.photoUrl!.isNotEmpty)
+          if (widget.bathroom.photoUrl != null && widget.bathroom.photoUrl!.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: Image.network(
-                  bathroom.photoUrl!,
+                  widget.bathroom.photoUrl!,
                   height: 120,
                   width: double.infinity,
                   fit: BoxFit.cover,
@@ -127,17 +152,56 @@ class BathroomCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 6),
-                    Text(
-                      bathroom.name,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: _kText,
-                      ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            widget.bathroom.name,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: _kText,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        BlocBuilder<RatingBloc, RatingState>(
+                          builder: (context, state) {
+                            if (state is BathroomReviewsLoaded) {
+                              if (state.total == 0) return const SizedBox.shrink();
+                              return Row(
+                                children: [
+                                  const Icon(Icons.star_rounded, size: 14, color: Color(0xFFF59E0B)),
+                                  const SizedBox(width: 2),
+                                  Text(
+                                    '${state.averageRating.toStringAsFixed(1)} (${state.total})',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: _kSubText,
+                                    ),
+                                  ),
+                                ],
+                              );
+                            }
+                            if (state is RatingLoading) {
+                              return const SizedBox(
+                                width: 12,
+                                height: 12,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              );
+                            }
+                            return const SizedBox.shrink();
+                          },
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '$distanceText de distância',
+                      '${widget.distanceText} de distância',
                       style: const TextStyle(fontSize: 13, color: _kSubText),
                     ),
                   ],
@@ -145,7 +209,7 @@ class BathroomCard extends StatelessWidget {
               ),
               // Close button
               GestureDetector(
-                onTap: onClose,
+                onTap: widget.onClose,
                 child: Container(
                   width: 32,
                   height: 32,
@@ -164,8 +228,8 @@ class BathroomCard extends StatelessWidget {
           ),
 
           // Observations (admin notes)
-          if (bathroom.observations != null &&
-              bathroom.observations!.isNotEmpty) ...[
+          if (widget.bathroom.observations != null &&
+              widget.bathroom.observations!.isNotEmpty) ...[
             const SizedBox(height: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -182,7 +246,7 @@ class BathroomCard extends StatelessWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      bathroom.observations!,
+                      widget.bathroom.observations!,
                       style: const TextStyle(
                         fontSize: 12,
                         color: Color(0xFF92400E),
@@ -199,15 +263,39 @@ class BathroomCard extends StatelessWidget {
           // Tags
           Wrap(
             spacing: 6,
+            runSpacing: 6,
             children: [
-              _TagChip(
-                icon: Icons.star_rounded,
-                label: '${bathroom.rating}',
-                bg: const Color(0xFFFFFBEB),
-                border: const Color(0xFFFDE68A),
-                fg: const Color(0xFFB45309),
-              ),
-              ...tags.map(
+              if (widget.bathroom.isAccessible)
+                const _TagChip(
+                  icon: Icons.accessible_outlined,
+                  label: 'Acessível',
+                  bg: _kBlueSoft,
+                  border: _kBlueBorder,
+                  fg: _kBlue,
+                ),
+              if (widget.bathroom.hasChangingTable)
+                const _TagChip(
+                  icon: Icons.child_care_outlined,
+                  label: 'Trocador',
+                  bg: _kBlueSoft,
+                  border: _kBlueBorder,
+                  fg: _kBlue,
+                ),
+              if (widget.bathroom.isFree)
+                const _TagChip(
+                  icon: Icons.local_offer_outlined,
+                  label: 'Gratuito',
+                  bg: _kBlueSoft,
+                  border: _kBlueBorder,
+                  fg: _kBlue,
+                ),
+              ...tags
+                  .where((tag) => 
+                      tag.toLowerCase() != 'acessível' && 
+                      tag.toLowerCase() != 'acessivel' && 
+                      tag.toLowerCase() != 'trocador' && 
+                      tag.toLowerCase() != 'gratuito')
+                  .map(
                 (tag) => _TagChip(
                   label: tag,
                   bg: _kBlueSoft,
@@ -243,35 +331,37 @@ class BathroomCard extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: onDetails,
-                  icon: const Icon(
-                    Icons.info_outline_rounded,
-                    size: 18,
-                    color: Color(0xFF374151),
-                  ),
-                  label: const Text(
-                    'Detalhes',
-                    style: TextStyle(color: Color(0xFF374151)),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    side: const BorderSide(color: Color(0xFFE2E8F0)),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ),
             ],
           ),
+          const SizedBox(height: 10),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: widget.onDetails,
+              icon: const Icon(
+                Icons.info_outline_rounded,
+                size: 18,
+                color: Color(0xFF374151),
+              ),
+              label: const Text(
+                'Detalhes e Avaliações',
+                style: TextStyle(color: Color(0xFF374151)),
+              ),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                side: const BorderSide(color: Color(0xFFE2E8F0)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+          
+
         ],
       ),
     );
   }
-
 }
 
 class _TagChip extends StatelessWidget {
