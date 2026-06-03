@@ -1,5 +1,6 @@
-import 'dart:io';
+// Removed dart:io
 import 'package:dio/dio.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:viva_livre_app/features/map/data/models/bathroom_model.dart';
 import 'package:viva_livre_app/features/map/domain/entities/bathroom.dart';
@@ -71,7 +72,8 @@ class BathroomRepositoryImpl implements IBathroomRepository {
     required bool hasChangingTable,
     required bool isFree,
     String? comment,
-    required File photo,
+    required dynamic photo,
+    String? operatingHours,
   }) async {
     final formData = FormData.fromMap({
       'name': name,
@@ -82,9 +84,11 @@ class BathroomRepositoryImpl implements IBathroomRepository {
       'has_changing_table': hasChangingTable.toString(),
       'is_free': isFree.toString(),
       if (comment != null && comment.isNotEmpty) 'comment': comment,
-      'photo': await MultipartFile.fromFile(
-        photo.path,
-        filename: photo.path.split(Platform.pathSeparator).last,
+      if (operatingHours != null && operatingHours.isNotEmpty)
+        'operating_hours': operatingHours,
+      'photo': MultipartFile.fromBytes(
+        await (photo as XFile).readAsBytes(),
+        filename: photo.name,
       ),
     });
 

@@ -1,8 +1,9 @@
-import 'dart:io';
+// Removed dart:io
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:viva_livre_app/features/map/domain/repositories/i_bathroom_repository.dart';
 
 part 'add_bathroom_event.dart';
@@ -26,6 +27,9 @@ class AddBathroomBloc extends Bloc<AddBathroomEvent, AddBathroomState> {
     on<ToggleAccessible>(_onToggleAccessible);
     on<ToggleChangingTable>(_onToggleChangingTable);
     on<ToggleFree>(_onToggleFree);
+    on<SelectOperatingHours>(_onSelectOperatingHours);
+    on<ToggleDayEvent>(_onToggleDayEvent);
+    on<UpdateDayTimeEvent>(_onUpdateDayTimeEvent);
     on<SubmitBathroomRequest>(_onSubmitBathroomRequest);
   }
 
@@ -124,6 +128,29 @@ class AddBathroomBloc extends Bloc<AddBathroomEvent, AddBathroomState> {
     emit(state.copyWith(isFree: !state.isFree));
   }
 
+  void _onSelectOperatingHours(SelectOperatingHours event, Emitter<AddBathroomState> emit) {
+    emit(state.copyWith(operatingHoursType: event.type));
+  }
+
+  void _onToggleDayEvent(ToggleDayEvent event, Emitter<AddBathroomState> emit) {
+    final newSchedule = Map<int, Map<String, String>>.from(state.customSchedule);
+    if (event.isOpen) {
+      newSchedule[event.day] = {'open': '08:00', 'close': '18:00'};
+    } else {
+      newSchedule.remove(event.day);
+    }
+    emit(state.copyWith(customSchedule: newSchedule));
+  }
+
+  void _onUpdateDayTimeEvent(UpdateDayTimeEvent event, Emitter<AddBathroomState> emit) {
+    final newSchedule = Map<int, Map<String, String>>.from(state.customSchedule);
+    newSchedule[event.day] = {
+      'open': event.openTime,
+      'close': event.closeTime,
+    };
+    emit(state.copyWith(customSchedule: newSchedule));
+  }
+
   Future<void> _onSubmitBathroomRequest(
     SubmitBathroomRequest event,
     Emitter<AddBathroomState> emit,
@@ -156,6 +183,19 @@ class AddBathroomBloc extends Bloc<AddBathroomEvent, AddBathroomState> {
     emit(state.copyWith(submissionStatus: SubmissionStatus.loading));
 
     try {
+      // Build operating_hours JSON string
+      Map<String, dynamic> hoursMap = {'type': state.operatingHoursType};
+      
+      if (state.operatingHoursType == 'custom') {
+        final scheduleStrMap = <String, dynamic>{};
+        state.customSchedule.forEach((key, value) {
+          scheduleStrMap[key.toString()] = value;
+        });
+        hoursMap['schedule'] = scheduleStrMap;
+      }
+
+      final operatingHoursJson = json.encode(hoursMap);
+
       await _repository.addBathroomRequest(
         name: event.name.trim(),
         address: state.address,
@@ -166,6 +206,7 @@ class AddBathroomBloc extends Bloc<AddBathroomEvent, AddBathroomState> {
         isFree: state.isFree,
         comment: event.comment?.trim(),
         photo: state.photo!,
+        operatingHours: operatingHoursJson,
       );
 
       emit(state.copyWith(submissionStatus: SubmissionStatus.success));

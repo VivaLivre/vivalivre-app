@@ -141,6 +141,46 @@ class _RatingsPageState extends State<RatingsPage> {
       appBar: AppBar(
         title: Text(widget.bathroomName ?? 'Avaliações'),
         centerTitle: true,
+        actions: [
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert_rounded),
+            onSelected: (value) {
+              if (value == 'report') {
+                _showReportDialog(context);
+              } else if (value == 'suggest') {
+                if (widget.bathroom != null) {
+                  _showSuggestChangesSheet(context);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Dados insuficientes para propor alteração.')),
+                  );
+                }
+              }
+            },
+            itemBuilder: (_) => [
+              const PopupMenuItem(
+                value: 'report',
+                child: Row(
+                  children: [
+                    Icon(Icons.flag_outlined, size: 18, color: Color(0xFFEF4444)),
+                    SizedBox(width: 10),
+                    Text('Reportar banheiro', style: TextStyle(fontSize: 14)),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'suggest',
+                child: Row(
+                  children: [
+                    Icon(Icons.edit_note_rounded, size: 18, color: Color(0xFF2563EB)), // _kBlue equivalent
+                    SizedBox(width: 10),
+                    Text('Propor alteração', style: TextStyle(fontSize: 14)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: () async => _loadRatings(),
@@ -318,6 +358,192 @@ class _RatingsPageState extends State<RatingsPage> {
                 ),
               ),
               const SizedBox(height: 32),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ───────────────────────────────────────────────────────────────────────
+  //  Report Dialog
+  // ───────────────────────────────────────────────────────────────────────
+  void _showReportDialog(BuildContext context) {
+    String? selectedReason;
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Row(
+            children: [
+              Icon(Icons.flag_outlined, color: Color(0xFFEF4444), size: 22),
+              SizedBox(width: 10),
+              Text('Reportar Banheiro',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Por que deseja reportar este local?',
+                style: TextStyle(fontSize: 14, color: Colors.grey),
+              ),
+              const SizedBox(height: 16),
+              RadioGroup<String>(
+                groupValue: selectedReason ?? '',
+                onChanged: (val) => setDialogState(() => selectedReason = val),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    'Não existe mais',
+                    'Local impróprio / inseguro',
+                    'Informações incorretas',
+                    'Outro motivo',
+                  ].map((reason) => ListTile(
+                        title: Text(reason, style: const TextStyle(fontSize: 14)),
+                        leading: Radio<String>(
+                          value: reason,
+                        ),
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        onTap: () => setDialogState(() => selectedReason = reason),
+                      )).toList(),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancelar', style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              onPressed: selectedReason == null
+                  ? null
+                  : () {
+                      Navigator.pop(ctx);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: const Text('Reporte enviado. Obrigado pela contribuição!'),
+                          backgroundColor: const Color(0xFF10B981),
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          margin: const EdgeInsets.all(16),
+                        ),
+                      );
+                    },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFEF4444),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              child: const Text('Enviar Reporte'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ───────────────────────────────────────────────────────────────────────
+  //  Suggest Changes BottomSheet
+  // ───────────────────────────────────────────────────────────────────────
+  void _showSuggestChangesSheet(BuildContext context) {
+    if (widget.bathroom == null) return;
+    
+    bool suggestAccessible = widget.bathroom!.isAccessible;
+    bool suggestChangingTable = widget.bathroom!.hasChangingTable;
+    bool suggestFree = widget.bathroom!.isFree;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheetState) => Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE5E7EB),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Row(
+                children: [
+                  Icon(Icons.edit_note_rounded, color: Color(0xFF2563EB), size: 22),
+                  SizedBox(width: 10),
+                  Text('Propor Alteração',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+                ],
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'Marque as informações que deseja alterar',
+                style: TextStyle(fontSize: 13, color: Colors.grey),
+              ),
+              const SizedBox(height: 20),
+              CheckboxListTile(
+                title: const Text('♿ Acessível para PCD', style: TextStyle(fontSize: 14)),
+                value: suggestAccessible,
+                activeColor: const Color(0xFF2563EB),
+                onChanged: (val) => setSheetState(() => suggestAccessible = val ?? false),
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+              ),
+              CheckboxListTile(
+                title: const Text('🍼 Possui Trocador', style: TextStyle(fontSize: 14)),
+                value: suggestChangingTable,
+                activeColor: const Color(0xFF2563EB),
+                onChanged: (val) => setSheetState(() => suggestChangingTable = val ?? false),
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+              ),
+              CheckboxListTile(
+                title: const Text('🆓 Gratuito', style: TextStyle(fontSize: 14)),
+                value: suggestFree,
+                activeColor: const Color(0xFF2563EB),
+                onChanged: (val) => setSheetState(() => suggestFree = val ?? false),
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text('Sugestão de alteração enviada. Obrigado!'),
+                        backgroundColor: const Color(0xFF10B981),
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        margin: const EdgeInsets.all(16),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF2563EB),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text('Enviar Sugestão',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                ),
+              ),
             ],
           ),
         ),

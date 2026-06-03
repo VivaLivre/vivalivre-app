@@ -106,6 +106,8 @@ class _MapPageState extends State<MapPage>
 
   Marker _buildBathroomMarker(Bathroom bathroom, Bathroom? selectedPin) {
     final isSelected = selectedPin?.id == bathroom.id;
+    final isOpen = bathroom.isOpen;
+    final pinColor = isOpen ? _kBlue : const Color(0xFF9CA3AF);
     return Marker(
       point: bathroom.location,
       width: 44,
@@ -124,12 +126,12 @@ class _MapPageState extends State<MapPage>
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           decoration: BoxDecoration(
-            color: isSelected ? _kBlue : Colors.white,
+            color: isSelected ? pinColor : Colors.white,
             shape: BoxShape.circle,
-            border: Border.all(color: _kBlue, width: 3),
+            border: Border.all(color: pinColor, width: 3),
             boxShadow: [
               BoxShadow(
-                color: _kBlue.withValues(alpha: isSelected ? 0.35 : 0.15),
+                color: pinColor.withValues(alpha: isSelected ? 0.35 : 0.15),
                 blurRadius: isSelected ? 12 : 6,
                 offset: const Offset(0, 3),
               ),
@@ -138,7 +140,7 @@ class _MapPageState extends State<MapPage>
           child: Icon(
             Icons.wc,
             size: 20,
-            color: isSelected ? Colors.white : _kBlue,
+            color: isSelected ? Colors.white : pinColor,
           ),
         ),
       ),

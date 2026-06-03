@@ -42,7 +42,7 @@ class AddressEdited extends AddBathroomEvent {
 
 /// Fired when a photo is selected via image_picker.
 class PhotoSelected extends AddBathroomEvent {
-  final File photo;
+  final XFile photo;
 
   const PhotoSelected(this.photo);
 
@@ -80,3 +80,38 @@ class SubmitBathroomRequest extends AddBathroomEvent {
   @override
   List<Object?> get props => [name, comment];
 }
+
+/// Fired when the user selects an operating hours type ('unknown', '24h').
+class SelectOperatingHours extends AddBathroomEvent {
+  final String type;
+
+  const SelectOperatingHours(this.type);
+
+  @override
+  List<Object?> get props => [type];
+}
+
+/// Fired when the user toggles a specific day in the custom schedule.
+class ToggleDayEvent extends AddBathroomEvent {
+  final int day;
+  final bool isOpen;
+
+  const ToggleDayEvent(this.day, this.isOpen);
+
+  @override
+  List<Object?> get props => [day, isOpen];
+}
+
+/// Fired when the user updates the open/close time for a specific day.
+class UpdateDayTimeEvent extends AddBathroomEvent {
+  final int day;
+  final String openTime;
+  final String closeTime;
+
+  const UpdateDayTimeEvent(this.day, this.openTime, this.closeTime);
+
+  @override
+  List<Object?> get props => [day, openTime, closeTime];
+}
+
+

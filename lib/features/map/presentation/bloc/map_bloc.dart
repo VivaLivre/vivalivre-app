@@ -124,9 +124,14 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     if (state is MapLoaded) {
       final currentState = state as MapLoaded;
       
+      // Filter only open bathrooms for emergency
+      final openBathrooms = currentState.bathrooms
+          .where((b) => b.isOpen)
+          .toList();
+
       final nearest = _repository.findNearestBathroom(
         currentState.currentPosition,
-        currentState.bathrooms,
+        openBathrooms,
       );
 
       if (nearest != null) {
@@ -135,7 +140,7 @@ class MapBloc extends Bloc<MapEvent, MapState> {
           selectedBathroom: nearest,
         ));
       } else {
-        emit(const MapError('Nenhum banheiro encontrado na sua região.'));
+        emit(const MapError('Nenhum banheiro aberto encontrado na sua região.'));
         emit(currentState);
       }
     }

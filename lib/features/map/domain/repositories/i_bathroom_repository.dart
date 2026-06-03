@@ -1,4 +1,4 @@
-import 'dart:io';
+// Removed dart:io
 import 'package:latlong2/latlong.dart';
 import 'package:viva_livre_app/features/map/domain/entities/bathroom.dart';
 
@@ -17,6 +17,7 @@ abstract class IBathroomRepository {
     required bool hasChangingTable,
     required bool isFree,
     String? comment,
-    required File photo,
+    required dynamic photo,
+    String? operatingHours,
   });
 }

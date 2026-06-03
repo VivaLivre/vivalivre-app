@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:latlong2/latlong.dart';
 import 'package:viva_livre_app/features/map/domain/entities/bathroom.dart';
 
@@ -8,7 +9,6 @@ class BathroomModel extends Bathroom {
     required super.location,
     required super.rating,
     required super.tags,
-    required super.isOpen,
     super.address,
     super.isAccessible,
     super.hasChangingTable,
@@ -16,6 +16,8 @@ class BathroomModel extends Bathroom {
     super.cleanlinessRating,
     super.accessibilityRating,
     super.photoUrl,
+    super.operatingHours,
+    super.observations,
   });
 
   factory BathroomModel.fromMap(Map<String, dynamic> map) {
@@ -29,6 +31,19 @@ class BathroomModel extends Bathroom {
         0.0;
     final isAccessible = (map['is_accessible'] as bool?) ?? false;
 
+    // Parse operating_hours — can be a Map, a JSON string, or null
+    Map<String, dynamic> operatingHours = const {'type': 'unknown'};
+    final rawHours = map['operating_hours'];
+    if (rawHours is Map<String, dynamic>) {
+      operatingHours = rawHours;
+    } else if (rawHours is String && rawHours.isNotEmpty) {
+      try {
+        operatingHours = json.decode(rawHours) as Map<String, dynamic>;
+      } catch (_) {
+        // Keep default
+      }
+    }
+
     return BathroomModel(
       id: (map['id'] as int?) ?? 0,
       name: (map['name'] as String?) ?? 'Sem nome',
@@ -37,7 +52,6 @@ class BathroomModel extends Bathroom {
       tags:
           (map['tags'] as List?)?.map((e) => e.toString()).toList() ??
           [if (isAccessible) 'Acessivel'],
-      isOpen: (map['open'] as bool?) ?? false,
       address: (map['address'] as String?),
       isAccessible: isAccessible,
       hasChangingTable: (map['has_changing_table'] as bool?) ?? false,
@@ -45,6 +59,8 @@ class BathroomModel extends Bathroom {
       cleanlinessRating: (map['cleanliness_rating'] as num?)?.toDouble() ?? 0.0,
       accessibilityRating: (map['accessibility_rating'] as num?)?.toDouble() ?? 0.0,
       photoUrl: (map['photo_url'] as String?),
+      operatingHours: operatingHours,
+      observations: (map['observations'] as String?),
     );
   }
 
@@ -65,7 +81,8 @@ class BathroomModel extends Bathroom {
       'cleanliness_rating': cleanlinessRating,
       'accessibility_rating': accessibilityRating,
       'photo_url': photoUrl,
-      'open': isOpen,
+      'operating_hours': operatingHours,
+      'observations': observations,
     };
   }
 }

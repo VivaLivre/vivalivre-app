@@ -23,38 +23,6 @@ class BathroomDetailsWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Photo Section
-        if (bathroom.photoUrl != null && bathroom.photoUrl!.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 16),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.network(
-                bathroom.photoUrl!,
-                height: 200,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    height: 200,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Center(
-                      child: Icon(
-                        Icons.image_not_supported_outlined,
-                        size: 48,
-                        color: theme.colorScheme.outline,
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
-
         // Address Section
         if (bathroom.address != null && bathroom.address!.isNotEmpty)
           Padding(

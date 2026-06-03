@@ -4,6 +4,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -117,7 +118,7 @@ class _AddBathroomPageState extends State<AddBathroomPage>
       imageQuality: 85,
     );
     if (picked != null && mounted) {
-      context.read<AddBathroomBloc>().add(PhotoSelected(File(picked.path)));
+      context.read<AddBathroomBloc>().add(PhotoSelected(picked));
     }
   }
 
@@ -129,7 +130,7 @@ class _AddBathroomPageState extends State<AddBathroomPage>
       imageQuality: 85,
     );
     if (picked != null && mounted) {
-      context.read<AddBathroomBloc>().add(PhotoSelected(File(picked.path)));
+      context.read<AddBathroomBloc>().add(PhotoSelected(picked));
     }
   }
 
@@ -630,6 +631,60 @@ class _AddBathroomPageState extends State<AddBathroomPage>
                         ),
                         const SizedBox(height: 24),
 
+                        // ── Operating Hours ──
+                        const _SectionLabel(
+                            icon: Icons.schedule_rounded,
+                            label: 'Horário de Funcionamento'),
+                        const SizedBox(height: 4),
+                        const Text(
+                          'Selecione o tipo de horário',
+                          style: TextStyle(fontSize: 12, color: _kGray),
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _OperatingHoursChip(
+                                label: 'Não sei',
+                                icon: Icons.help_outline_rounded,
+                                isSelected:
+                                    state.operatingHoursType == 'unknown',
+                                onTap: () => context
+                                    .read<AddBathroomBloc>()
+                                    .add(const SelectOperatingHours(
+                                        'unknown')),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _OperatingHoursChip(
+                                label: '24 Horas',
+                                icon: Icons.all_inclusive_rounded,
+                                isSelected:
+                                    state.operatingHoursType == '24h',
+                                onTap: () => context
+                                    .read<AddBathroomBloc>()
+                                    .add(const SelectOperatingHours('24h')),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        _OperatingHoursChip(
+                          label: 'Personalizado',
+                          icon: Icons.edit_calendar_rounded,
+                          isSelected: state.operatingHoursType == 'custom',
+                          onTap: () => context
+                              .read<AddBathroomBloc>()
+                              .add(const SelectOperatingHours('custom')),
+                        ),
+                        if (state.operatingHoursType == 'custom') ...[
+                          const SizedBox(height: 16),
+                          _CustomScheduleWidget(
+                              customSchedule: state.customSchedule),
+                        ],
+                        const SizedBox(height: 24),
+
                         // ── Comment ──
                         Row(
                           children: [
@@ -849,7 +904,7 @@ class _ToggleRow extends StatelessWidget {
 }
 
 class _PhotoPicker extends StatelessWidget {
-  final File? photo;
+  final XFile? photo;
   final VoidCallback onAdd;
   final VoidCallback onRemove;
 
@@ -866,12 +921,19 @@ class _PhotoPicker extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(16),
-            child: Image.file(
-              photo!,
-              width: double.infinity,
-              height: 180,
-              fit: BoxFit.cover,
-            ),
+            child: kIsWeb
+                ? Image.network(
+                    photo!.path,
+                    width: double.infinity,
+                    height: 180,
+                    fit: BoxFit.cover,
+                  )
+                : Image.file(
+                    File(photo!.path),
+                    width: double.infinity,
+                    height: 180,
+                    fit: BoxFit.cover,
+                  ),
           ),
           // Gradient overlay
           Positioned.fill(
@@ -1014,6 +1076,249 @@ class _PhotoOptionTile extends StatelessWidget {
             const Spacer(),
             const Icon(Icons.chevron_right_rounded, color: _kGray, size: 20),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _OperatingHoursChip extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _OperatingHoursChip({
+    required this.label,
+    required this.icon,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: isSelected ? _kBlue.withValues(alpha: 0.08) : _kCardBg,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? _kBlue : _kBorder,
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 18,
+              color: isSelected ? _kBlue : _kGray,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: isSelected ? _kBlue : _kDark,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CustomScheduleWidget extends StatelessWidget {
+  final Map<int, Map<String, String>> customSchedule;
+
+  const _CustomScheduleWidget({required this.customSchedule});
+
+  static const _days = {
+    1: 'Segunda',
+    2: 'Terça',
+    3: 'Quarta',
+    4: 'Quinta',
+    5: 'Sexta',
+    6: 'Sábado',
+    7: 'Domingo',
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: _kBg,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _kBorder),
+      ),
+      child: Column(
+        children: _days.entries.map((entry) {
+          final day = entry.key;
+          final name = entry.value;
+          final isOpen = customSchedule.containsKey(day);
+          final openTime = isOpen ? customSchedule[day]!['open']! : '08:00';
+          final closeTime = isOpen ? customSchedule[day]!['close']! : '18:00';
+
+          return _DayRow(
+            day: day,
+            name: name,
+            isOpen: isOpen,
+            openTime: openTime,
+            closeTime: closeTime,
+            isLast: day == 7,
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
+class _DayRow extends StatelessWidget {
+  final int day;
+  final String name;
+  final bool isOpen;
+  final String openTime;
+  final String closeTime;
+  final bool isLast;
+
+  const _DayRow({
+    required this.day,
+    required this.name,
+    required this.isOpen,
+    required this.openTime,
+    required this.closeTime,
+    required this.isLast,
+  });
+
+  Future<void> _selectTime(BuildContext context, bool isStart) async {
+    if (!isOpen) return;
+
+    final initialTimeStr = isStart ? openTime : closeTime;
+    final initialParts = initialTimeStr.split(':');
+    final initialTime = TimeOfDay(
+      hour: int.tryParse(initialParts[0]) ?? 8,
+      minute: int.tryParse(initialParts[1]) ?? 0,
+    );
+
+    final selected = await showTimePicker(
+      context: context,
+      initialTime: initialTime,
+      builder: (context, child) {
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+          child: child!,
+        );
+      },
+    );
+
+    if (selected != null) {
+      final hour = selected.hour.toString().padLeft(2, '0');
+      final minute = selected.minute.toString().padLeft(2, '0');
+      final newTime = '$hour:$minute';
+
+      if (context.mounted) {
+        context.read<AddBathroomBloc>().add(UpdateDayTimeEvent(
+              day,
+              isStart ? newTime : openTime,
+              isStart ? closeTime : newTime,
+            ));
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        border: isLast
+            ? null
+            : const Border(bottom: BorderSide(color: _kBorder)),
+      ),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 32,
+            child: Checkbox(
+              value: isOpen,
+              activeColor: _kBlue,
+              onChanged: (val) {
+                if (val != null) {
+                  context.read<AddBathroomBloc>().add(ToggleDayEvent(day, val));
+                }
+              },
+            ),
+          ),
+          SizedBox(
+            width: 70,
+            child: Text(
+              name,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: isOpen ? _kDark : _kGray,
+              ),
+            ),
+          ),
+          const Spacer(),
+          _TimeButton(
+            time: openTime,
+            isEnabled: isOpen,
+            onTap: () => _selectTime(context, true),
+          ),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 8),
+            child: Text('-', style: TextStyle(color: _kGray)),
+          ),
+          _TimeButton(
+            time: closeTime,
+            isEnabled: isOpen,
+            onTap: () => _selectTime(context, false),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TimeButton extends StatelessWidget {
+  final String time;
+  final bool isEnabled;
+  final VoidCallback onTap;
+
+  const _TimeButton({
+    required this.time,
+    required this.isEnabled,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: isEnabled ? onTap : null,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isEnabled ? Colors.white : _kBg,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isEnabled ? _kBorder : Colors.transparent,
+          ),
+        ),
+        child: Text(
+          time,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: isEnabled ? _kDark : _kGray.withValues(alpha: 0.5),
+          ),
         ),
       ),
     );
