@@ -12,6 +12,8 @@ import 'package:viva_livre_app/features/ratings/data/datasources/rating_remote_d
 import 'package:viva_livre_app/app.dart';
 import 'package:viva_livre_app/core/api/api_client.dart';
 import 'package:viva_livre_app/features/auth/data/repositories/auth_repository.dart';
+import 'package:viva_livre_app/features/crowdsource/data/repositories/crowdsource_repository_impl.dart';
+import 'package:viva_livre_app/features/crowdsource/presentation/bloc/crowdsource_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,6 +28,7 @@ void main() async {
   final bathroomRepository = BathroomRepositoryImpl(apiClient: apiClient);
   final ratingRemoteDataSource = RatingRemoteDataSourceImpl(apiClient: apiClient);
   final ratingRepository = RatingRepositoryImpl(remoteDataSource: ratingRemoteDataSource);
+  final crowdsourceRepository = CrowdsourceRepositoryImpl(dio: apiClient.dio);
 
   runApp(
     MultiBlocProvider(
@@ -41,6 +44,9 @@ void main() async {
         ),
         BlocProvider<RatingBloc>(
           create: (_) => RatingBloc(ratingRepository: ratingRepository),
+        ),
+        BlocProvider<CrowdsourceBloc>(
+          create: (_) => CrowdsourceBloc(repository: crowdsourceRepository),
         ),
       ],
       child: const App(),

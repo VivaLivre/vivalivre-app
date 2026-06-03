@@ -8,6 +8,9 @@ import '../widgets/review_form_widget.dart';
 import '../widgets/review_list_widget.dart';
 import '../widgets/bathroom_details_widget.dart';
 import 'package:viva_livre_app/features/ratings/domain/entities/bathroom_review.dart';
+import 'package:viva_livre_app/features/crowdsource/presentation/bloc/crowdsource_bloc.dart';
+import 'package:viva_livre_app/features/crowdsource/presentation/bloc/crowdsource_event.dart';
+import 'package:viva_livre_app/features/crowdsource/presentation/bloc/crowdsource_state.dart';
 
 /// Page displaying bathroom ratings, statistics, and review functionality.
 class RatingsPage extends StatefulWidget {
@@ -414,11 +417,41 @@ class _RatingsPageState extends State<RatingsPage> {
   // ───────────────────────────────────────────────────────────────────────
   void _showReportDialog(BuildContext context) {
     String? selectedReason;
+    final otherReasonController = TextEditingController();
+    final bloc = context.read<CrowdsourceBloc>();
+
     showDialog(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      builder: (ctx) => BlocProvider.value(
+        value: bloc,
+        child: BlocListener<CrowdsourceBloc, CrowdsourceState>(
+          listener: (ctx, state) {
+            if (state is CrowdsourceSuccess) {
+              Navigator.pop(ctx);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text('Obrigado pela sua contribuição! A nossa equipa vai analisar.'),
+                  backgroundColor: const Color(0xFF10B981),
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  margin: const EdgeInsets.all(16),
+                ),
+              );
+            } else if (state is CrowdsourceError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: const Color(0xFFEF4444),
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  margin: const EdgeInsets.all(16),
+                ),
+              );
+            }
+          },
+          child: StatefulBuilder(
+            builder: (ctx, setDialogState) => AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: const Row(
             children: [
               Icon(Icons.flag_outlined, color: Color(0xFFEF4444), size: 22),
@@ -456,6 +489,21 @@ class _RatingsPageState extends State<RatingsPage> {
                       )).toList(),
                 ),
               ),
+              if (selectedReason == 'Outro motivo') ...[
+                const SizedBox(height: 16),
+                TextField(
+                  controller: otherReasonController,
+                  decoration: InputDecoration(
+                    hintText: 'Especifique o motivo...',
+                    hintStyle: const TextStyle(fontSize: 14, color: Colors.grey),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  ),
+                  maxLines: 2,
+                ),
+              ],
             ],
           ),
           actions: [
@@ -467,26 +515,36 @@ class _RatingsPageState extends State<RatingsPage> {
               onPressed: selectedReason == null
                   ? null
                   : () {
-                      Navigator.pop(ctx);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: const Text('Reporte enviado. Obrigado pela contribuição!'),
-                          backgroundColor: const Color(0xFF10B981),
-                          behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          margin: const EdgeInsets.all(16),
-                        ),
-                      );
+                      String reason = selectedReason!;
+                      String? desc = (reason == 'Outro motivo') ? otherReasonController.text : null;
+                      bloc.add(SubmitReportEvent(
+                        bathroomId: widget.bathroomId,
+                        reason: reason,
+                        description: desc,
+                      ));
                     },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFEF4444),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
-              child: const Text('Enviar Reporte'),
+              child: BlocBuilder<CrowdsourceBloc, CrowdsourceState>(
+                builder: (context, state) {
+                  if (state is CrowdsourceLoading) {
+                    return const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    );
+                  }
+                  return const Text('Enviar Reporte');
+                },
+              ),
             ),
           ],
         ),
+      ),
+      ),
       ),
     );
   }
@@ -501,12 +559,41 @@ class _RatingsPageState extends State<RatingsPage> {
     bool suggestChangingTable = widget.bathroom!.hasChangingTable;
     bool suggestFree = widget.bathroom!.isFree;
 
+    final bloc = context.read<CrowdsourceBloc>();
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setSheetState) => Container(
+      builder: (ctx) => BlocProvider.value(
+        value: bloc,
+        child: BlocListener<CrowdsourceBloc, CrowdsourceState>(
+          listener: (ctx, state) {
+            if (state is CrowdsourceSuccess) {
+              Navigator.pop(ctx);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text('Obrigado pela sua contribuição! A nossa equipa vai analisar.'),
+                  backgroundColor: const Color(0xFF10B981),
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  margin: const EdgeInsets.all(16),
+                ),
+              );
+            } else if (state is CrowdsourceError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: const Color(0xFFEF4444),
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  margin: const EdgeInsets.all(16),
+                ),
+              );
+            }
+          },
+          child: StatefulBuilder(
+            builder: (ctx, setSheetState) => Container(
           decoration: BoxDecoration(
             color: Theme.of(context).scaffoldBackgroundColor,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -568,29 +655,41 @@ class _RatingsPageState extends State<RatingsPage> {
                 height: 48,
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.pop(ctx);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: const Text('Sugestão de alteração enviada. Obrigado!'),
-                        backgroundColor: const Color(0xFF10B981),
-                        behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        margin: const EdgeInsets.all(16),
-                      ),
-                    );
+                    final updates = {
+                      "is_accessible": suggestAccessible,
+                      "has_changing_table": suggestChangingTable,
+                      "is_free": suggestFree,
+                    };
+                    bloc.add(SubmitSuggestionEvent(
+                      bathroomId: widget.bathroomId,
+                      suggestedUpdates: updates,
+                    ));
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF2563EB),
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: const Text('Enviar Sugestão',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                  child: BlocBuilder<CrowdsourceBloc, CrowdsourceState>(
+                    builder: (context, state) {
+                      if (state is CrowdsourceLoading) {
+                        return const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        );
+                      }
+                      return const Text('Enviar Sugestão',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700));
+                    },
+                  ),
                 ),
               ),
             ],
           ),
         ),
+      ),
+      ),
       ),
     );
   }
