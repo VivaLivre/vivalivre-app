@@ -91,13 +91,14 @@ class _ReviewFormWidgetState extends State<ReviewFormWidget> {
                       ),
                 ),
                 const SizedBox(height: 8),
-                StarRatingWidget(
-                  key: const Key('overall_rating_stars'),
-                  initialRating: _overallRating,
-                  onRatingChanged: (rating) {
-                    setState(() => _overallRating = rating);
-                  },
-                ),
+                 StarRatingWidget(
+                   key: const Key('overall_rating_stars'),
+                   initialRating: _overallRating,
+                   integerOnly: true,
+                   onRatingChanged: (rating) {
+                     setState(() => _overallRating = rating);
+                   },
+                 ),
               ],
             ),
           ),
