@@ -456,6 +456,7 @@ Antes de fazer PR, verifique:
 - **[CONTRIBUTING.md](./CONTRIBUTING.md)** — Guia detalhado de contribuição
 - **[docs/](./docs/)** — Documentação técnica, ADRs e guias de arquitetura
 - **[Backend VivaLivre](https://github.com/VivaLivre/vivalivre-backend)** — API REST em Go
+- **[Admin Portal VivaLivre](https://github.com/VivaLivre/vivalivre-admin)** — Painel Administrativo Web em Flutter
 
 ## 📞 Suporte e Comunidade
 

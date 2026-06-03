@@ -3,38 +3,22 @@ import 'package:viva_livre_app/features/ratings/domain/entities/bathroom_review.
 /// Modelo de avaliação de banheiro (JSON)
 class BathroomReviewModel extends BathroomReview {
   const BathroomReviewModel({
-    required String id,
-    required String bathroomId,
-    required String userId,
-    required int rating,
-    String? title,
-    String? comment,
-    int? cleanlinessRating,
-    int? accessibilityRating,
-    int? spaciosunessRating,
-    required int helpfulCount,
-    required int unhelpfulCount,
-    required String status,
-    required List<String> photos,
-    required DateTime createdAt,
-    required DateTime updatedAt,
-  }) : super(
-    id: id,
-    bathroomId: bathroomId,
-    userId: userId,
-    rating: rating,
-    title: title,
-    comment: comment,
-    cleanlinessRating: cleanlinessRating,
-    accessibilityRating: accessibilityRating,
-    spaciosunessRating: spaciosunessRating,
-    helpfulCount: helpfulCount,
-    unhelpfulCount: unhelpfulCount,
-    status: status,
-    photos: photos,
-    createdAt: createdAt,
-    updatedAt: updatedAt,
-  );
+    required super.id,
+    required super.bathroomId,
+    required super.userId,
+    required super.rating,
+    super.title,
+    super.comment,
+    super.cleanlinessRating,
+    super.accessibilityRating,
+    super.spaciosunessRating,
+    required super.helpfulCount,
+    required super.unhelpfulCount,
+    required super.status,
+    required super.photos,
+    required super.createdAt,
+    required super.updatedAt,
+  });
 
   /// Converte JSON para modelo
   factory BathroomReviewModel.fromJson(Map<String, dynamic> json) {
@@ -82,22 +66,14 @@ class BathroomReviewModel extends BathroomReview {
 /// Modelo de estatísticas de ratings
 class BathroomRatingStatsModel extends BathroomRatingStats {
   const BathroomRatingStatsModel({
-    required String bathroomId,
-    required int totalReviews,
-    required double averageRating,
-    required double avgCleanliness,
-    required double avgAccessibility,
-    required double avgSpaciosuneness,
-    required Map<int, int> ratingDistribution,
-  }) : super(
-    bathroomId: bathroomId,
-    totalReviews: totalReviews,
-    averageRating: averageRating,
-    avgCleanliness: avgCleanliness,
-    avgAccessibility: avgAccessibility,
-    avgSpaciosuneness: avgSpaciosuneness,
-    ratingDistribution: ratingDistribution,
-  );
+    required super.bathroomId,
+    required super.totalReviews,
+    required super.averageRating,
+    required super.avgCleanliness,
+    required super.avgAccessibility,
+    required super.avgSpaciosuneness,
+    required super.ratingDistribution,
+  });
 
   /// Converte JSON para modelo
   factory BathroomRatingStatsModel.fromJson(Map<String, dynamic> json) {
