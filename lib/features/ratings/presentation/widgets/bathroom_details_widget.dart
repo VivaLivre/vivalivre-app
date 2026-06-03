@@ -98,6 +98,27 @@ class BathroomDetailsWidget extends StatelessWidget {
           ),
         ),
 
+        // Operating Hours Section
+        Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Horário de Funcionamento',
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: theme.colorScheme.outline,
+                ),
+              ),
+              const SizedBox(height: 12),
+              _OperatingHoursWidget(
+                operatingHours: bathroom.operatingHours,
+                theme: theme,
+              ),
+            ],
+          ),
+        ),
+
       ],
     );
   }
@@ -166,3 +187,91 @@ class _AmenityChip extends StatelessWidget {
   }
 }
 
+class _OperatingHoursWidget extends StatelessWidget {
+  final Map<String, dynamic> operatingHours;
+  final ThemeData theme;
+
+  const _OperatingHoursWidget({
+    required this.operatingHours,
+    required this.theme,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final type = operatingHours['type'] as String? ?? 'unknown';
+
+    if (type == 'unknown') {
+      return Text(
+        'Sem informação sobre horários.',
+        style: theme.textTheme.bodyMedium?.copyWith(fontStyle: FontStyle.italic),
+      );
+    } else if (type == '24h') {
+      return Row(
+        children: [
+          Icon(Icons.access_time_filled, size: 20, color: theme.colorScheme.primary),
+          const SizedBox(width: 8),
+          Text('Aberto 24 horas', style: theme.textTheme.bodyMedium),
+        ],
+      );
+    }
+
+    final schedule = operatingHours['schedule'] as Map<String, dynamic>? ?? {};
+    final daysOfWeek = [
+      'Segunda-feira',
+      'Terça-feira',
+      'Quarta-feira',
+      'Quinta-feira',
+      'Sexta-feira',
+      'Sábado',
+      'Domingo',
+    ];
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: theme.colorScheme.outlineVariant),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: List.generate(7, (index) {
+          final dayKey = (index + 1).toString();
+          final daySchedule = schedule[dayKey] as Map<String, dynamic>?;
+          final dayName = daysOfWeek[index];
+          final isToday = DateTime.now().weekday == (index + 1);
+
+          String timeStr = 'Fechado';
+          if (daySchedule != null && daySchedule['open'] != null && daySchedule['close'] != null) {
+            timeStr = '${daySchedule['open']} - ${daySchedule['close']}';
+          }
+
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 6.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  dayName,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: isToday ? FontWeight.w700 : FontWeight.normal,
+                    color: isToday ? theme.colorScheme.primary : null,
+                  ),
+                ),
+                Text(
+                  timeStr,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: isToday ? FontWeight.w700 : FontWeight.normal,
+                    color: timeStr == 'Fechado' 
+                        ? theme.colorScheme.error 
+                        : (isToday ? theme.colorScheme.primary : null),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
+      ),
+    );
+  }
+}
