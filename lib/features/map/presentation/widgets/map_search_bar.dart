@@ -1,5 +1,8 @@
+import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
-
+import 'package:http/http.dart' as http;
+import 'package:latlong2/latlong.dart';
 import 'package:viva_livre_app/core/presentation/widgets/custom_loading_indicator.dart';
 import 'package:viva_livre_app/core/presentation/widgets/custom_text_field.dart';
 
@@ -7,21 +10,99 @@ const _kBlue = Color(0xFF2563EB);
 const _kSlate = Color(0xFF94A3B8);
 const _kSurface = Color(0xFFF1F5F9);
 
-class MapSearchBar extends StatelessWidget {
+class MapSearchBar extends StatefulWidget {
   final TextEditingController searchController;
   final int openCount;
   final bool isLocating;
+  final LatLng currentPosition;
   final VoidCallback onLocate;
-  final ValueChanged<String> onSearch;
+  final Function(LatLng) onSuggestionSelected;
 
   const MapSearchBar({
     super.key,
     required this.searchController,
     required this.openCount,
     required this.isLocating,
+    required this.currentPosition,
     required this.onLocate,
-    required this.onSearch,
+    required this.onSuggestionSelected,
   });
+
+  @override
+  State<MapSearchBar> createState() => _MapSearchBarState();
+}
+
+class _MapSearchBarState extends State<MapSearchBar> {
+  Timer? _debounce;
+  List<dynamic> _suggestions = [];
+  bool _isSearching = false;
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _fetchSuggestions(String query) async {
+    if (query.trim().isEmpty) {
+      if (mounted) {
+        setState(() {
+          _suggestions = [];
+          _isSearching = false;
+        });
+      }
+      return;
+    }
+
+    if (mounted) {
+      setState(() => _isSearching = true);
+    }
+
+    try {
+      final lat = widget.currentPosition.latitude;
+      final lon = widget.currentPosition.longitude;
+      
+      final uri = Uri.parse(
+          'https://nominatim.openstreetmap.org/search?q=${Uri.encodeComponent(query.trim())}&format=json&limit=5&lat=$lat&lon=$lon');
+
+      final response = await http.get(
+        uri,
+        headers: {'User-Agent': 'VivaLivreApp/1.0 (suporte@vivalivre.com)'},
+      );
+
+      if (response.statusCode == 200 && mounted) {
+        final List<dynamic> data = json.decode(response.body);
+        setState(() {
+          _suggestions = data;
+          _isSearching = false;
+        });
+      } else if (mounted) {
+        setState(() => _isSearching = false);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isSearching = false);
+      }
+    }
+  }
+
+  void _onSearchChanged(String query) {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    
+    if (query.trim().isEmpty) {
+      setState(() {
+        _suggestions = [];
+        _isSearching = false;
+      });
+      return;
+    }
+
+    setState(() => _isSearching = true);
+    
+    _debounce = Timer(const Duration(milliseconds: 800), () {
+      _fetchSuggestions(query);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +118,6 @@ class MapSearchBar extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  // Campo de busca
                   Expanded(
                     child: Container(
                       height: 52,
@@ -69,18 +149,27 @@ class MapSearchBar extends StatelessWidget {
                                 ),
                               ),
                               child: CustomTextField(
-                                controller: searchController,
-                                hintText: 'Buscar banheiros...',
+                                controller: widget.searchController,
+                                hintText: 'Buscar locais ou banheiros...',
                                 textInputAction: TextInputAction.search,
-                                onFieldSubmitted: onSearch,
+                                onChanged: _onSearchChanged,
+                                onFieldSubmitted: (val) {
+                                  if (_suggestions.isNotEmpty) {
+                                    final lat = double.parse(_suggestions[0]['lat'].toString());
+                                    final lon = double.parse(_suggestions[0]['lon'].toString());
+                                    widget.onSuggestionSelected(LatLng(lat, lon));
+                                    setState(() { _suggestions = []; });
+                                  }
+                                },
                               ),
                             ),
                           ),
-                          if (searchController.text.isNotEmpty)
+                          if (widget.searchController.text.isNotEmpty)
                             GestureDetector(
                               onTap: () {
-                                searchController.clear();
-                                onSearch('');
+                                widget.searchController.clear();
+                                _onSearchChanged('');
+                                FocusScope.of(context).unfocus();
                               },
                               child: const Padding(
                                 padding: EdgeInsets.symmetric(horizontal: 14),
@@ -92,9 +181,8 @@ class MapSearchBar extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 10),
-                  // Botão "Localizar com GPS real"
                   GestureDetector(
-                    onTap: onLocate,
+                    onTap: widget.onLocate,
                     child: Container(
                       width: 52,
                       height: 52,
@@ -110,7 +198,7 @@ class MapSearchBar extends StatelessWidget {
                           ),
                         ],
                       ),
-                      child: isLocating
+                      child: widget.isLocating
                           ? const Padding(
                               padding: EdgeInsets.all(14),
                               child: CustomLoadingIndicator(
@@ -128,37 +216,90 @@ class MapSearchBar extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 10),
-              // Brand chip
-              Row(
-                children: [
-                  Container(
-                    width: 26,
-                    height: 26,
-                    decoration: BoxDecoration(
-                      color: _kBlue,
-                      borderRadius: BorderRadius.circular(8),
+              
+              if (_isSearching || _suggestions.isNotEmpty)
+                Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: _kSurface),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.10),
+                        blurRadius: 16,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  constraints: const BoxConstraints(maxHeight: 250),
+                  child: _isSearching
+                      ? const Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: Center(
+                            child: CustomLoadingIndicator(color: _kBlue, strokeWidth: 2),
+                          ),
+                        )
+                      : ListView.separated(
+                          shrinkWrap: true,
+                          padding: EdgeInsets.zero,
+                          itemCount: _suggestions.length,
+                          separatorBuilder: (context, index) => const Divider(height: 1, color: _kSurface),
+                          itemBuilder: (context, index) {
+                            final suggestion = _suggestions[index];
+                            return ListTile(
+                              leading: const Icon(Icons.location_on_outlined, color: _kSlate),
+                              title: Text(
+                                suggestion['display_name'] ?? '',
+                                style: const TextStyle(fontSize: 14),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              onTap: () {
+                                final lat = double.parse(suggestion['lat'].toString());
+                                final lon = double.parse(suggestion['lon'].toString());
+                                widget.onSuggestionSelected(LatLng(lat, lon));
+                                setState(() {
+                                  _suggestions = [];
+                                  widget.searchController.text = suggestion['name'] ?? '';
+                                });
+                              },
+                            );
+                          },
+                        ),
+                ),
+                
+              if (!_isSearching && _suggestions.isEmpty)
+                Row(
+                  children: [
+                    Container(
+                      width: 26,
+                      height: 26,
+                      decoration: BoxDecoration(
+                        color: _kBlue,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.wc, size: 14, color: Colors.white),
                     ),
-                    child: const Icon(Icons.wc, size: 14, color: Colors.white),
-                  ),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'VivaLivre',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 13,
-                      color: Color(0xFF1E293B),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'VivaLivre',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                        color: Color(0xFF1E293B),
+                      ),
                     ),
-                  ),
-                  const Text(
-                    ' · ',
-                    style: TextStyle(color: _kSlate, fontSize: 13),
-                  ),
-                  Text(
-                    '$openCount banheiros próximos',
-                    style: const TextStyle(color: _kSlate, fontSize: 12),
-                  ),
-                ],
-              ),
+                    const Text(
+                      ' · ',
+                      style: TextStyle(color: _kSlate, fontSize: 13),
+                    ),
+                    Text(
+                      '${widget.openCount} banheiros próximos',
+                      style: const TextStyle(color: _kSlate, fontSize: 12),
+                    ),
+                  ],
+                ),
             ],
           ),
         ),

@@ -27,11 +27,11 @@ class ClearSelection extends MapEvent {
   const ClearSelection();
 }
 
-class SearchLocation extends MapEvent {
-  final String query;
-  const SearchLocation(this.query);
+class MoveToLocation extends MapEvent {
+  final LatLng location;
+  const MoveToLocation(this.location);
 
   @override
-  List<Object?> get props => [query];
+  List<Object?> get props => [location];
 }
 
