@@ -206,6 +206,11 @@ class _MapPageState extends State<MapPage>
                 options: MapOptions(
                   initialCenter: currentPosition,
                   initialZoom: _kInitialZoom,
+                  minZoom: 4.5,
+                  maxZoom: 18.0,
+                  cameraConstraint: CameraConstraint.contain(
+                    bounds: LatLngBounds(const LatLng(-90.0, -180.0), const LatLng(90.0, 180.0)),
+                  ),
                   onTap: (_, _) {
                     if (selectedPin != null) {
                       context.read<MapBloc>().add(const ClearSelection());
@@ -220,6 +225,7 @@ class _MapPageState extends State<MapPage>
                     userAgentPackageName: 'com.vivalivre.app',
                     maxNativeZoom: 19,
                     maxZoom: 22,
+                    tileBounds: LatLngBounds(const LatLng(-90.0, -180.0), const LatLng(90.0, 180.0)),
                     errorTileCallback: (tile, error, stackTrace) {},
                   ),
                   MarkerLayer(
