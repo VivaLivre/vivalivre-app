@@ -14,12 +14,18 @@ class ReviewFormWidget extends StatefulWidget {
   final Function(int rating, String comment, int? cleanliness, int? accessibility) onSubmit;
   final bool isLoading;
   final String? initialRating;
+  final String? initialComment;
+  final int? initialCleanlinessRating;
+  final int? initialAccessibilityRating;
 
   const ReviewFormWidget({
     super.key,
     required this.onSubmit,
     this.isLoading = false,
     this.initialRating,
+    this.initialComment,
+    this.initialCleanlinessRating,
+    this.initialAccessibilityRating,
   });
 
   @override
@@ -37,9 +43,9 @@ class _ReviewFormWidgetState extends State<ReviewFormWidget> {
   void initState() {
     super.initState();
     _overallRating = widget.initialRating != null ? double.parse(widget.initialRating!) : 0;
-    _cleanlinessRating = 0;
-    _accessibilityRating = 0;
-    _commentController = TextEditingController();
+    _cleanlinessRating = widget.initialCleanlinessRating?.toDouble() ?? 0;
+    _accessibilityRating = widget.initialAccessibilityRating?.toDouble() ?? 0;
+    _commentController = TextEditingController(text: widget.initialComment ?? '');
     _commentController.addListener(() {
       if (mounted) {
         setState(() {});

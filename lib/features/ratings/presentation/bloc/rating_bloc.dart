@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:dio/dio.dart';
 import 'package:equatable/equatable.dart';
 import 'package:viva_livre_app/features/ratings/domain/entities/bathroom_review.dart';
 import 'package:viva_livre_app/features/ratings/domain/repositories/i_rating_repository.dart';
@@ -88,8 +89,19 @@ class RatingBloc extends Bloc<RatingEvent, RatingState> {
 
       // Recarregar reviews após criação
       add(LoadBathroomReviews(bathroomId: event.bathroomId));
+    } on DioException catch (e) {
+      String errorMessage = 'Não foi possível guardar a avaliação. Verifique a sua ligação.';
+      if (e.response != null && e.response?.data != null) {
+        if (e.response?.data is Map && e.response?.data['error'] != null) {
+          errorMessage = e.response?.data['error'];
+        }
+      }
+      emit(RatingError(errorMessage));
+      if (previousState is BathroomReviewsLoaded) {
+        emit(previousState);
+      }
     } catch (e) {
-      emit(RatingError('Não foi possível guardar a avaliação. Verifique a sua ligação.'));
+      emit(RatingError('Erro inesperado: $e'));
       if (previousState is BathroomReviewsLoaded) {
         emit(previousState);
       }

@@ -13,12 +13,16 @@ import 'star_rating_widget.dart';
 class ReviewListWidget extends StatefulWidget {
   final List<BathroomReview> reviews;
   final Function(String reviewId, bool isHelpful)? onHelpfulVote;
+  final String? currentUserId;
+  final Function(String reviewId)? onDeleteReview;
   final bool isLoading;
 
   const ReviewListWidget({
     super.key,
     required this.reviews,
     this.onHelpfulVote,
+    this.currentUserId,
+    this.onDeleteReview,
     this.isLoading = false,
   });
 
@@ -80,6 +84,8 @@ class _ReviewListWidgetState extends State<ReviewListWidget> {
         final review = widget.reviews[index];
         return _ReviewCard(
           review: review,
+          currentUserId: widget.currentUserId,
+          onDeleteReview: widget.onDeleteReview,
           onHelpfulVote: _handleHelpfulVote,
           userVote: _votedReviews[review.id],
         );
@@ -91,12 +97,16 @@ class _ReviewListWidgetState extends State<ReviewListWidget> {
 /// Individual review card with rating, comment, and helpful voting.
 class _ReviewCard extends StatelessWidget {
   final BathroomReview review;
+  final String? currentUserId;
+  final Function(String reviewId)? onDeleteReview;
   final Function(String, bool) onHelpfulVote;
   final bool? userVote;
 
   const _ReviewCard({
     required this.review,
     required this.onHelpfulVote,
+    this.currentUserId,
+    this.onDeleteReview,
     this.userVote,
   });
 
@@ -131,6 +141,7 @@ class _ReviewCard extends StatelessWidget {
         // Header: Rating and Date
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
               child: Column(
@@ -151,6 +162,28 @@ class _ReviewCard extends StatelessWidget {
                 ],
               ),
             ),
+            if (currentUserId != null && currentUserId == review.userId)
+              PopupMenuButton<String>(
+                icon: Icon(Icons.more_vert_rounded, color: theme.colorScheme.outline),
+                padding: EdgeInsets.zero,
+                onSelected: (value) {
+                  if (value == 'delete') {
+                    onDeleteReview?.call(review.id);
+                  }
+                },
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 'delete',
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete_outline_rounded, color: theme.colorScheme.error, size: 20),
+                        const SizedBox(width: 8),
+                        Text('Excluir', style: TextStyle(color: theme.colorScheme.error)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
           ],
         ),
 
