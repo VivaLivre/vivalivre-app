@@ -289,13 +289,14 @@ class _MapPageState extends State<MapPage>
                 searchController: _searchController,
                 openCount: openCount,
                 isLocating: isLocating,
+                currentPosition: currentPosition,
                 onLocate: () {
                   FocusScope.of(context).unfocus();
                   context.read<MapBloc>().add(const RequestGpsLocation());
                 },
-                onSearch: (query) {
+                onSuggestionSelected: (location) {
                   FocusScope.of(context).unfocus();
-                  context.read<MapBloc>().add(SearchLocation(query));
+                  context.read<MapBloc>().add(MoveToLocation(location));
                 },
               ),
 

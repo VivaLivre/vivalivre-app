@@ -28,7 +28,7 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     on<FindNearestBathroom>(_onFindNearestBathroom);
     on<SelectBathroomPin>(_onSelectBathroomPin);
     on<ClearSelection>(_onClearSelection);
-    on<SearchLocation>(_onSearchLocation);
+    on<MoveToLocation>(_onMoveToLocation);
   }
 
   Future<void> _onRequestGpsLocation(
@@ -171,58 +171,34 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     }
   }
 
-  Future<void> _onSearchLocation(
-    SearchLocation event,
+  Future<void> _onMoveToLocation(
+    MoveToLocation event,
     Emitter<MapState> emit,
   ) async {
     if (state is MapLoaded) {
       final currentState = state as MapLoaded;
-      final query = event.query.trim();
       
-      if (query.isEmpty) return;
-
+      // Update UI quickly with the new position and loading state
+      emit(const MapLoading());
+      
+      List<Bathroom> bathrooms = [];
       try {
-        final uri = Uri.parse(
-          'https://nominatim.openstreetmap.org/search?q=${Uri.encodeComponent(query)}&format=json&limit=1'
-        );
-
-        // Cabeçalho obrigatório com User-Agent para a API Nominatim
-        final response = await http.get(
-          uri,
-          headers: {'User-Agent': 'VivaLivreApp/1.0 (suporte@vivalivre.com)'},
-        );
-
-        if (response.statusCode == 200) {
-          final List<dynamic> data = json.decode(response.body);
-
-          if (data.isNotEmpty) {
-            final lat = double.parse(data[0]['lat'].toString());
-            final lon = double.parse(data[0]['lon'].toString());
-            final newPos = LatLng(lat, lon);
-
-            // Move a câmara (atualizando currentPosition) e limpa os pinos selecionados
-            emit(currentState.copyWith(
-              currentPosition: newPos,
-              clearSelection: true,
-              clearNearest: true,
-            ));
-          } else {
-            emit(const MapError('Não foi possível encontrar o local. Verifique o nome e tente novamente.'));
-            emit(currentState); // Re-emite o estado carregado para garantir que a UI se mantém
-          }
-        } else {
-          emit(const MapError('Não foi possível encontrar o local. Problema na comunicação com o servidor.'));
-          emit(currentState);
-        }
-      } on http.ClientException catch (_) {
-        emit(const MapError('Erro de conexão: Verifique a sua internet.'));
-        emit(currentState);
-      } on FormatException catch (_) {
-        emit(const MapError('Erro ao processar dados do local. Tente novamente mais tarde.'));
-        emit(currentState);
-      } catch (_) {
-        emit(const MapError('Não foi possível encontrar o local.'));
-        emit(currentState);
+        bathrooms = await _repository.getBathrooms(event.location.latitude, event.location.longitude);
+        
+        emit(currentState.copyWith(
+          currentPosition: event.location,
+          bathrooms: bathrooms,
+          clearSelection: true,
+          clearNearest: true,
+        ));
+      } catch (e) {
+        emit(MapError('Erro ao carregar banheiros na nova localização: $e'));
+        // Fallback to previous state
+        emit(currentState.copyWith(
+          currentPosition: event.location,
+          clearSelection: true,
+          clearNearest: true,
+        ));
       }
     }
   }
