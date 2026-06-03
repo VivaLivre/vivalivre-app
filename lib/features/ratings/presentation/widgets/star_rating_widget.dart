@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 ///
 /// Displays 5 stars with visual feedback for rating selection.
 /// Supports both interactive (editable) and read-only modes.
+/// Can be constrained to integer-only ratings (no half stars).
 class StarRatingWidget extends StatefulWidget {
   final double initialRating;
   final bool readOnly;
   final ValueChanged<double>? onRatingChanged;
   final double size;
+  final bool integerOnly;
 
   const StarRatingWidget({
     super.key,
@@ -16,6 +18,7 @@ class StarRatingWidget extends StatefulWidget {
     this.readOnly = false,
     this.onRatingChanged,
     this.size = 32,
+    this.integerOnly = false,
   });
 
   @override
@@ -41,6 +44,13 @@ class _StarRatingWidgetState extends State<StarRatingWidget> {
     }
   }
 
+  double get _displayRating {
+    if (widget.integerOnly) {
+      return _currentRating.roundToDouble();
+    }
+    return _hoverRating > 0 ? _hoverRating : _currentRating;
+  }
+
   void _setRating(int index) {
     if (widget.readOnly) return;
     final newRating = (index + 1).toDouble();
@@ -49,12 +59,12 @@ class _StarRatingWidgetState extends State<StarRatingWidget> {
   }
 
   void _setHoverRating(int index) {
-    if (widget.readOnly) return;
+    if (widget.readOnly || widget.integerOnly) return;
     setState(() => _hoverRating = (index + 1).toDouble());
   }
 
   void _clearHoverRating() {
-    if (widget.readOnly) return;
+    if (widget.readOnly || widget.integerOnly) return;
     setState(() => _hoverRating = 0);
   }
 
@@ -65,7 +75,7 @@ class _StarRatingWidgetState extends State<StarRatingWidget> {
     final starColor = theme.colorScheme.primary;
     final emptyColor = isDark ? Colors.grey.shade700 : Colors.grey.shade300;
 
-    final displayRating = _hoverRating > 0 ? _hoverRating : _currentRating;
+    final displayRating = _displayRating;
 
     return MouseRegion(
       onExit: (_) => _clearHoverRating(),
@@ -73,8 +83,10 @@ class _StarRatingWidgetState extends State<StarRatingWidget> {
         mainAxisSize: MainAxisSize.min,
         children: List.generate(5, (index) {
           final isFilled = index < displayRating.toInt();
-          final isHalf =
-              index < displayRating && displayRating - index > 0 && displayRating - index < 1;
+          final isHalf = !widget.integerOnly &&
+              index < displayRating &&
+              displayRating - index > 0 &&
+              displayRating - index < 1;
 
           return GestureDetector(
             onTap: () => _setRating(index),

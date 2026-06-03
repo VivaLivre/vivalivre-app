@@ -90,12 +90,6 @@ class FakeRatingRepository implements IRatingRepository {
   Future<bool> hasUserReviewedBathroom(String bathroomId) async => false;
 
   @override
-  Future<String> uploadReviewPhoto({
-    required String reviewId,
-    required String imagePath,
-  }) async => 'https://example.com/photo.jpg';
-
-  @override
   Future<BathroomReview> updateReview({
     required String reviewId,
     int? rating,

@@ -123,17 +123,3 @@ class VoteHelpful extends RatingEvent {
   @override
   List<Object?> get props => [reviewId, isHelpful];
 }
-
-/// Faz upload de uma foto para uma avaliação
-class UploadReviewPhoto extends RatingEvent {
-  final String reviewId;
-  final String imagePath;
-
-  const UploadReviewPhoto({
-    required this.reviewId,
-    required this.imagePath,
-  });
-
-  @override
-  List<Object?> get props => [reviewId, imagePath];
-}

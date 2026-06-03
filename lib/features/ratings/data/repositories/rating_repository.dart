@@ -132,21 +132,6 @@ class RatingRepositoryImpl implements IRatingRepository {
   }
 
   @override
-  Future<String> uploadReviewPhoto({
-    required String reviewId,
-    required String imagePath,
-  }) async {
-    try {
-      return await _remoteDataSource.uploadReviewPhoto(
-        reviewId: reviewId,
-        imagePath: imagePath,
-      );
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  @override
   Future<bool> hasUserReviewedBathroom(String bathroomId) async {
     try {
       return await _remoteDataSource.hasUserReviewedBathroom(bathroomId);

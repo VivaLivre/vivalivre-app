@@ -49,12 +49,6 @@ abstract class IRatingRepository {
   /// Obtém estatísticas de ratings de um banheiro
   Future<BathroomRatingStats> getBathroomRatingStats(String bathroomId);
 
-  /// Faz upload de uma foto para uma avaliação
-  Future<String> uploadReviewPhoto({
-    required String reviewId,
-    required String imagePath,
-  });
-
   /// Verifica se o utilizador já avaliou o banheiro
   Future<bool> hasUserReviewedBathroom(String bathroomId);
 }

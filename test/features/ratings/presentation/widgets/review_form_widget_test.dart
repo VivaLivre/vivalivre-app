@@ -61,17 +61,28 @@ void main() {
         ),
       );
 
-      // Select overall rating (tap 4th star in first row)
-      final overallStars = find.byIcon(Icons.star_outlined);
+      // Select overall rating (4 stars)
+      final overallStars = find.descendant(
+        of: find.byKey(const Key('overall_rating_stars')),
+        matching: find.byType(GestureDetector),
+      );
       await tester.tap(overallStars.at(3));
       await tester.pumpAndSettle();
 
-      // Select cleanliness rating (tap 5th star in second row)
-      await tester.tap(overallStars.at(9));
+      // Select cleanliness rating (5 stars)
+      final cleanStars = find.descendant(
+        of: find.byKey(const Key('cleanliness_rating_stars')),
+        matching: find.byType(GestureDetector),
+      );
+      await tester.tap(cleanStars.at(4));
       await tester.pumpAndSettle();
 
-      // Select accessibility rating (tap 3rd star in third row)
-      await tester.tap(overallStars.at(12));
+      // Select accessibility rating (3 stars)
+      final accessStars = find.descendant(
+        of: find.byKey(const Key('accessibility_rating_stars')),
+        matching: find.byType(GestureDetector),
+      );
+      await tester.tap(accessStars.at(2));
       await tester.pumpAndSettle();
 
       // Enter comment
@@ -138,7 +149,6 @@ void main() {
       await tester.enterText(textField, longText);
       await tester.pumpAndSettle();
 
-      // The text field should limit to 500 chars
       expect(find.text('500/500'), findsOneWidget);
     });
 
@@ -180,7 +190,11 @@ void main() {
       );
 
       // Select a rating
-      await tester.tap(find.byIcon(Icons.star_outlined).at(2));
+      final overallStars = find.descendant(
+        of: find.byKey(const Key('overall_rating_stars')),
+        matching: find.byType(GestureDetector),
+      );
+      await tester.tap(overallStars.at(2));
       await tester.pumpAndSettle();
 
       // Submit without entering comment

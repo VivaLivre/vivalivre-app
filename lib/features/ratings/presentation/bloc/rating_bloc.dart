@@ -19,7 +19,6 @@ class RatingBloc extends Bloc<RatingEvent, RatingState> {
     on<UpdateReview>(_onUpdateReview);
     on<DeleteReview>(_onDeleteReview);
     on<VoteHelpful>(_onVoteHelpful);
-    on<UploadReviewPhoto>(_onUploadReviewPhoto);
   }
 
   /// Carrega reviews de um banheiro
@@ -163,25 +162,6 @@ class RatingBloc extends Bloc<RatingEvent, RatingState> {
       ));
     } catch (e) {
       emit(RatingError('Não foi possível registar o voto.'));
-    }
-  }
-
-  /// Faz upload de uma foto
-  Future<void> _onUploadReviewPhoto(
-    UploadReviewPhoto event,
-    Emitter<RatingState> emit,
-  ) async {
-    emit(const UploadingPhoto());
-
-    try {
-      final photoUrl = await _ratingRepository.uploadReviewPhoto(
-        reviewId: event.reviewId,
-        imagePath: event.imagePath,
-      );
-
-      emit(ReviewPhotoUploaded(photoUrl));
-    } catch (e) {
-      emit(RatingError('Não foi possível enviar a foto.'));
     }
   }
 }

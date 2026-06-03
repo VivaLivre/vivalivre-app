@@ -88,15 +88,6 @@ class HelpfulVoteRecorded extends RatingState {
   List<Object?> get props => [helpfulCount, unhelpfulCount];
 }
 
-/// Foto enviada com sucesso
-class ReviewPhotoUploaded extends RatingState {
-  final String photoUrl;
-
-  const ReviewPhotoUploaded(this.photoUrl);
-
-  @override
-  List<Object?> get props => [photoUrl];
-}
 
 /// Erro ao carregar/processar ratings
 class RatingError extends RatingState {
@@ -126,9 +117,4 @@ class ReviewDeleting extends RatingState {
 /// Enviando voto
 class VotingHelpful extends RatingState {
   const VotingHelpful();
-}
-
-/// Enviando foto
-class UploadingPhoto extends RatingState {
-  const UploadingPhoto();
 }

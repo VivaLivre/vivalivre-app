@@ -40,6 +40,11 @@ class _ReviewFormWidgetState extends State<ReviewFormWidget> {
     _cleanlinessRating = 0;
     _accessibilityRating = 0;
     _commentController = TextEditingController();
+    _commentController.addListener(() {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   @override
@@ -86,12 +91,14 @@ class _ReviewFormWidgetState extends State<ReviewFormWidget> {
                       ),
                 ),
                 const SizedBox(height: 8),
-                StarRatingWidget(
-                  initialRating: _overallRating,
-                  onRatingChanged: (rating) {
-                    setState(() => _overallRating = rating);
-                  },
-                ),
+                 StarRatingWidget(
+                   key: const Key('overall_rating_stars'),
+                   initialRating: _overallRating,
+                   integerOnly: true,
+                   onRatingChanged: (rating) {
+                     setState(() => _overallRating = rating);
+                   },
+                 ),
               ],
             ),
           ),
@@ -112,6 +119,7 @@ class _ReviewFormWidgetState extends State<ReviewFormWidget> {
                 ),
                 const SizedBox(height: 8),
                 StarRatingWidget(
+                  key: const Key('cleanliness_rating_stars'),
                   initialRating: _cleanlinessRating,
                   size: 28,
                   onRatingChanged: (rating) {
@@ -138,6 +146,7 @@ class _ReviewFormWidgetState extends State<ReviewFormWidget> {
                 ),
                 const SizedBox(height: 8),
                 StarRatingWidget(
+                  key: const Key('accessibility_rating_stars'),
                   initialRating: _accessibilityRating,
                   size: 28,
                   onRatingChanged: (rating) {

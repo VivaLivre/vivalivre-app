@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:viva_livre_app/core/api/api_client.dart';
 import 'package:viva_livre_app/features/ratings/data/models/bathroom_review_model.dart';
@@ -32,11 +31,6 @@ abstract class IRatingRemoteDataSource {
   });
 
   Future<BathroomRatingStatsModel> getBathroomRatingStats(String bathroomId);
-
-  Future<String> uploadReviewPhoto({
-    required String reviewId,
-    required String imagePath,
-  });
 
   Future<bool> hasUserReviewedBathroom(String bathroomId);
 }
@@ -209,33 +203,6 @@ class RatingRemoteDataSourceImpl implements IRatingRemoteDataSource {
       throw Exception('Failed to get rating stats');
     } catch (e) {
       debugPrint('[RatingDataSource] Error getting rating stats: $e');
-      rethrow;
-    }
-  }
-
-  @override
-  Future<String> uploadReviewPhoto({
-    required String reviewId,
-    required String imagePath,
-  }) async {
-    try {
-      final formData = FormData.fromMap({
-        'file': await MultipartFile.fromFile(imagePath),
-      });
-
-      final response = await _apiClient.dio.post(
-        '/api/reviews/$reviewId/photos',
-        data: formData,
-      );
-
-      if (response.statusCode == 201) {
-        debugPrint('[RatingDataSource] Photo uploaded successfully');
-        return response.data['photo_url'] as String;
-      }
-
-      throw Exception('Failed to upload photo');
-    } catch (e) {
-      debugPrint('[RatingDataSource] Error uploading photo: $e');
       rethrow;
     }
   }
