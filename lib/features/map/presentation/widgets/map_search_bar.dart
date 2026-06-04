@@ -122,9 +122,9 @@ class _MapSearchBarState extends State<MapSearchBar> {
                     child: Container(
                       height: 52,
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: Theme.of(context).cardColor,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: _kSurface),
+                        border: Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.1)),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withValues(alpha: 0.10),
@@ -187,9 +187,9 @@ class _MapSearchBarState extends State<MapSearchBar> {
                       width: 52,
                       height: 52,
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: Theme.of(context).cardColor,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: _kSurface),
+                        border: Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.1)),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withValues(alpha: 0.10),
@@ -221,9 +221,9 @@ class _MapSearchBarState extends State<MapSearchBar> {
                 Container(
                   margin: const EdgeInsets.only(bottom: 10),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Theme.of(context).cardColor,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: _kSurface),
+                    border: Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.1)),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withValues(alpha: 0.10),
@@ -244,7 +244,7 @@ class _MapSearchBarState extends State<MapSearchBar> {
                           shrinkWrap: true,
                           padding: EdgeInsets.zero,
                           itemCount: _suggestions.length,
-                          separatorBuilder: (context, index) => const Divider(height: 1, color: _kSurface),
+                          separatorBuilder: (context, index) => Divider(height: 1, color: Theme.of(context).dividerColor.withValues(alpha: 0.1)),
                           itemBuilder: (context, index) {
                             final suggestion = _suggestions[index];
                             return ListTile(
@@ -270,35 +270,51 @@ class _MapSearchBarState extends State<MapSearchBar> {
                 ),
                 
               if (!_isSearching && _suggestions.isEmpty)
-                Row(
-                  children: [
-                    Container(
-                      width: 26,
-                      height: 26,
-                      decoration: BoxDecoration(
-                        color: _kBlue,
-                        borderRadius: BorderRadius.circular(8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).cardColor,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.1)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
                       ),
-                      child: const Icon(Icons.wc, size: 14, color: Colors.white),
-                    ),
-                    const SizedBox(width: 8),
-                    const Text(
-                      'VivaLivre',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 13,
-                        color: Color(0xFF1E293B),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 26,
+                        height: 26,
+                        decoration: BoxDecoration(
+                          color: _kBlue,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(Icons.wc, size: 14, color: Colors.white),
                       ),
-                    ),
-                    const Text(
-                      ' · ',
-                      style: TextStyle(color: _kSlate, fontSize: 13),
-                    ),
-                    Text(
-                      '${widget.openCount} banheiros próximos',
-                      style: const TextStyle(color: _kSlate, fontSize: 12),
-                    ),
-                  ],
+                      const SizedBox(width: 8),
+                      Text(
+                        'VivaLivre',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
+                      const Text(
+                        ' · ',
+                        style: TextStyle(color: _kSlate, fontSize: 13),
+                      ),
+                      Text(
+                        '${widget.openCount} banheiros próximos',
+                        style: const TextStyle(color: _kSlate, fontSize: 12),
+                      ),
+                    ],
+                  ),
                 ),
             ],
           ),
