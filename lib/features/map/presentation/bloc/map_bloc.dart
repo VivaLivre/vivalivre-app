@@ -21,6 +21,8 @@ class MapBloc extends Bloc<MapEvent, MapState> {
   // Posição de fallback original da map_page
   static const LatLng _kFallbackPosition = LatLng(-23.66070438587852, -46.43089117960558);
 
+  StreamSubscription<Position>? _positionSubscription;
+
   MapBloc({required IBathroomRepository repository})
       : _repository = repository,
         super(const MapInitial()) {
@@ -29,6 +31,17 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     on<SelectBathroomPin>(_onSelectBathroomPin);
     on<ClearSelection>(_onClearSelection);
     on<MoveToLocation>(_onMoveToLocation);
+    on<CenterCameraOnUserEvent>(_onCenterCameraOnUser);
+    on<CameraMovementHandled>(_onCameraMovementHandled);
+    on<UserPositionUpdated>(_onUserPositionUpdated);
+    on<FetchBathroomsInArea>(_onFetchBathroomsInArea);
+    on<ClearBathroomsEvent>(_onClearBathrooms);
+  }
+
+  @override
+  Future<void> close() {
+    _positionSubscription?.cancel();
+    return super.close();
   }
 
   Future<void> _onRequestGpsLocation(
@@ -94,6 +107,39 @@ class MapBloc extends Bloc<MapEvent, MapState> {
             if (pos.accuracy > 50) {
               emit(MapError('Precisão baixa (±${pos.accuracy.toInt()} m). Vai para um local aberto.'));
             }
+
+            // ── 6. Inicia o stream contínuo de localização (Configuração Otimizada) ──
+            _positionSubscription?.cancel();
+            
+            final streamSettings = defaultTargetPlatform == TargetPlatform.android
+                ? AndroidSettings(
+                    accuracy: LocationAccuracy.bestForNavigation,
+                    distanceFilter: 5, // Só emite se o usuário mover 5 metros
+                    forceLocationManager: true,
+                  )
+                : (defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.macOS)
+                    ? AppleSettings(
+                        accuracy: LocationAccuracy.bestForNavigation,
+                        activityType: ActivityType.fitness,
+                        distanceFilter: 5,
+                        pauseLocationUpdatesAutomatically: false,
+                      )
+                    : const LocationSettings(
+                        accuracy: LocationAccuracy.bestForNavigation,
+                        distanceFilter: 5,
+                      );
+
+            _positionSubscription = Geolocator.getPositionStream(
+              locationSettings: streamSettings,
+            ).listen(
+              (Position position) {
+                add(UserPositionUpdated(LatLng(position.latitude, position.longitude)));
+              },
+              onError: (error) {
+                // Log do erro silencioso para não quebrar o tracking caso o GPS perca sinal temporariamente
+                debugPrint('Erro no stream de GPS: $error');
+              },
+            );
           }
         }
       }
@@ -112,7 +158,8 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     }
 
     emit(MapLoaded(
-      currentPosition: currentPosition,
+      userPosition: currentPosition,
+      targetCameraPosition: currentPosition,
       bathrooms: bathrooms,
     ));
   }
@@ -130,7 +177,7 @@ class MapBloc extends Bloc<MapEvent, MapState> {
           .toList();
 
       final nearest = _repository.findNearestBathroom(
-        currentState.currentPosition,
+        currentState.userPosition,
         openBathrooms,
       );
 
@@ -178,28 +225,83 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     if (state is MapLoaded) {
       final currentState = state as MapLoaded;
       
-      // Update UI quickly with the new position and loading state
-      emit(const MapLoading());
+      // Apenas define a câmara, o mapa (UI) mover-se-á e disparará FetchBathroomsInArea
+      emit(currentState.copyWith(
+        targetCameraPosition: event.location,
+        clearSelection: true,
+        clearNearest: true,
+      ));
+    }
+  }
+
+  Future<void> _onFetchBathroomsInArea(
+    FetchBathroomsInArea event,
+    Emitter<MapState> emit,
+  ) async {
+    if (state is MapLoaded) {
+      final currentState = state as MapLoaded;
       
-      List<Bathroom> bathrooms = [];
       try {
-        bathrooms = await _repository.getBathrooms(event.location.latitude, event.location.longitude);
+        final bathrooms = await _repository.getBathrooms(
+          event.center.latitude, 
+          event.center.longitude,
+          radius: event.radius,
+        );
         
-        emit(currentState.copyWith(
-          currentPosition: event.location,
-          bathrooms: bathrooms,
-          clearSelection: true,
-          clearNearest: true,
-        ));
+        emit(currentState.copyWith(bathrooms: bathrooms));
       } catch (e) {
-        emit(MapError('Erro ao carregar banheiros na nova localização: $e'));
-        // Fallback to previous state
-        emit(currentState.copyWith(
-          currentPosition: event.location,
-          clearSelection: true,
-          clearNearest: true,
-        ));
+        emit(MapError('Erro ao explorar mapa: $e'));
+        emit(currentState); // Restaura o estado anterior (sem alterar banheiros)
       }
+    }
+  }
+
+  void _onCenterCameraOnUser(
+    CenterCameraOnUserEvent event,
+    Emitter<MapState> emit,
+  ) {
+    if (state is MapLoaded) {
+      final currentState = state as MapLoaded;
+      emit(currentState.copyWith(
+        targetCameraPosition: currentState.userPosition,
+      ));
+    }
+  }
+
+  void _onCameraMovementHandled(
+    CameraMovementHandled event,
+    Emitter<MapState> emit,
+  ) {
+    if (state is MapLoaded) {
+      final currentState = state as MapLoaded;
+      emit(currentState.copyWith(
+        clearTargetCamera: true,
+      ));
+    }
+  }
+
+  void _onUserPositionUpdated(
+    UserPositionUpdated event,
+    Emitter<MapState> emit,
+  ) {
+    if (state is MapLoaded) {
+      final currentState = state as MapLoaded;
+      emit(currentState.copyWith(
+        userPosition: event.newPosition,
+      ));
+    }
+  }
+
+  void _onClearBathrooms(
+    ClearBathroomsEvent event,
+    Emitter<MapState> emit,
+  ) {
+    if (state is MapLoaded) {
+      final currentState = state as MapLoaded;
+      emit(currentState.copyWith(
+        bathrooms: [],
+        clearSelection: true,
+      ));
     }
   }
 }

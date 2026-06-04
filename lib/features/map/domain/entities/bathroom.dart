@@ -71,7 +71,12 @@ class Bathroom extends Equatable {
           int.parse(closeParts[0]) * 60 + int.parse(closeParts[1]);
       final nowMinutes = now.hour * 60 + now.minute;
 
-      return nowMinutes >= openMinutes && nowMinutes < closeMinutes;
+      if (openMinutes < closeMinutes) {
+        return nowMinutes >= openMinutes && nowMinutes < closeMinutes;
+      } else {
+        // Horário passa da meia-noite (ex: 22:00 às 06:00)
+        return nowMinutes >= openMinutes || nowMinutes < closeMinutes;
+      }
     }
 
     return true; // Fallback: consider open
