@@ -12,14 +12,7 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage>
     with AutomaticKeepAliveClientMixin {
 
-  // ── Paleta de Cores (Design System Médico) ──
-  static const Color _kBg = Color(0xFFF8FAFC);
-  static const Color _kBlue = Color(0xFF2563EB);
-  static const Color _kGreenText = Color(0xFF10B981);
-  static const Color _kGreenBg = Color(0xFFD1FAE5);
-  static const Color _kText = Color(0xFF1E293B);
-  static const Color _kSubText = Color(0xFF64748B);
-  static const Color _kCardBorder = Color(0xFFF1F5F9);
+  // Cores dinâmicas definidas no build
 
   @override
   bool get wantKeepAlive => true;
@@ -27,6 +20,15 @@ class _ProfilePageState extends State<ProfilePage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final theme = Theme.of(context);
+    final _kBg = theme.scaffoldBackgroundColor;
+    final _kBlue = theme.colorScheme.primary;
+    final _kGreenText = const Color(0xFF10B981);
+    final _kGreenBg = const Color(0xFF10B981).withValues(alpha: 0.15);
+    final _kText = theme.colorScheme.onSurface;
+    final _kSubText = theme.colorScheme.onSurface.withValues(alpha: 0.7);
+    final _kCardBorder = theme.shadowColor.withValues(alpha: 0.05);
+
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
         final user = state is AuthAuthenticated ? state.user : null;
@@ -49,8 +51,8 @@ class _ProfilePageState extends State<ProfilePage>
                           height: 88,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            gradient: const LinearGradient(
-                              colors: [_kBlue, Color(0xFF3B82F6)],
+                            gradient: LinearGradient(
+                              colors: [_kBlue, const Color(0xFF3B82F6)],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
@@ -68,7 +70,7 @@ class _ProfilePageState extends State<ProfilePage>
                         // Nome e Email
                         Text(
                           user?.name ?? 'Usuário',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.w800,
                             color: _kText,
@@ -77,7 +79,7 @@ class _ProfilePageState extends State<ProfilePage>
                         const SizedBox(height: 4),
                         Text(
                           user?.email ?? '',
-                          style: const TextStyle(fontSize: 14, color: _kSubText),
+                          style: TextStyle(fontSize: 14, color: _kSubText),
                         ),
                         const SizedBox(height: 12),
                         // Chip "Paciente DII - Conta Ativa"
@@ -87,11 +89,11 @@ class _ProfilePageState extends State<ProfilePage>
                             color: _kGreenBg,
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(Icons.verified_user_rounded, size: 14, color: _kGreenText),
-                              SizedBox(width: 6),
+                              const SizedBox(width: 6),
                               Text(
                                 'Paciente DII - Conta Ativa',
                                 style: TextStyle(
@@ -114,9 +116,8 @@ class _ProfilePageState extends State<ProfilePage>
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).cardColor,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: _kCardBorder),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.03),
@@ -134,18 +135,18 @@ class _ProfilePageState extends State<ProfilePage>
                           Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFEFF6FF),
+                              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: const Icon(Icons.bolt_rounded, color: _kBlue, size: 24),
+                            child: Icon(Icons.bolt_rounded, color: _kBlue, size: 24),
                           ),
                           const SizedBox(height: 12),
-                          const Text(
+                          Text(
                             '12',
                             style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: _kText),
                           ),
                           const SizedBox(height: 2),
-                          const Text(
+                          Text(
                             'Urgências',
                             style: TextStyle(fontSize: 13, color: _kSubText, fontWeight: FontWeight.w500),
                           ),
@@ -165,18 +166,18 @@ class _ProfilePageState extends State<ProfilePage>
                           Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFFFFBEB),
+                              color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Icon(Icons.healing_rounded, color: Color(0xFFF59E0B), size: 24),
                           ),
                           const SizedBox(height: 12),
-                          const Text(
+                          Text(
                             '4',
                             style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: _kText),
                           ),
                           const SizedBox(height: 2),
-                          const Text(
+                          Text(
                             'Sintomas',
                             style: TextStyle(fontSize: 13, color: _kSubText, fontWeight: FontWeight.w500),
                           ),
@@ -192,7 +193,7 @@ class _ProfilePageState extends State<ProfilePage>
               // ── 3. Agrupamento de Menus ──
 
               // Secção: Gestão Clínica
-              const Text(
+              Text(
                 'Gestão Clínica',
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: _kSubText),
               ),
@@ -203,7 +204,7 @@ class _ProfilePageState extends State<ProfilePage>
               const SizedBox(height: 24),
 
               // Secção: Conta e Segurança
-              const Text(
+              Text(
                 'Conta e Segurança',
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: _kSubText),
               ),
@@ -253,14 +254,13 @@ class _ProfileMenuItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isDestructive ? Colors.red.shade600 : const Color(0xFF334155);
+    final color = isDestructive ? Colors.red.shade600 : Theme.of(context).colorScheme.onSurface;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFF1F5F9)),
       ),
       child: ListTile(
         leading: Icon(icon, color: color, size: 22),

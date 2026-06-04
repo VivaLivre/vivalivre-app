@@ -66,7 +66,7 @@ class _VivaLivreBottomNav extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.08),
@@ -74,7 +74,6 @@ class _VivaLivreBottomNav extends StatelessWidget {
             offset: const Offset(0, -4),
           ),
         ],
-        border: const Border(top: BorderSide(color: Color(0xFFE2E8F0))),
       ),
       child: SafeArea(
         top: false,
@@ -99,14 +98,14 @@ class _VivaLivreBottomNav extends StatelessWidget {
                           height: 3,
                           margin: const EdgeInsets.only(bottom: 4),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF2563EB),
+                            color: Theme.of(context).colorScheme.primary,
                             borderRadius: BorderRadius.circular(2),
                           ),
                         ),
                         Icon(
                           items[i].icon,
                           size: 22,
-                          color: isActive ? const Color(0xFF2563EB) : const Color(0xFF94A3B8),
+                          color: isActive ? Theme.of(context).colorScheme.primary : Theme.of(context).unselectedWidgetColor,
                         ),
                         const SizedBox(height: 3),
                         Text(
@@ -114,7 +113,7 @@ class _VivaLivreBottomNav extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w600,
-                            color: isActive ? const Color(0xFF2563EB) : const Color(0xFF94A3B8),
+                            color: isActive ? Theme.of(context).colorScheme.primary : Theme.of(context).unselectedWidgetColor,
                           ),
                         ),
                       ],
@@ -153,7 +152,7 @@ class _PlaceholderPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -170,10 +169,10 @@ class _PlaceholderPage extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               title,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF1E293B),
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
             const SizedBox(height: 8),

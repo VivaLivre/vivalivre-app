@@ -7,13 +7,6 @@ class CartaoDIIPage extends StatelessWidget {
   const CartaoDIIPage({super.key});
 
   // ── Paleta de Cores (Design System Médico) ──
-  static const Color _kBg = Color(0xFFF8FAFC);
-  static const Color _kBlue = Color(0xFF2563EB);
-  static const Color _kText = Color(0xFF1E293B);
-  static const Color _kSubText = Color(0xFF64748B);
-  static const Color _kCardBorder = Color(0xFFE2E8F0);
-  static const Color _kAlertBg = Color(0xFFFEF3C7);
-  static const Color _kAlertText = Color(0xFF92400E);
 
   Future<void> _openLaudo(String? laudoUrl) async {
     if (laudoUrl == null || laudoUrl.isEmpty) {
@@ -32,9 +25,9 @@ class CartaoDIIPage extends StatelessWidget {
       builder: (context, state) {
         if (state is! AuthAuthenticated) {
           return Scaffold(
-            backgroundColor: _kBg,
-            body: const Center(
-              child: Text('Usuário não autenticado', style: TextStyle(color: _kSubText)),
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            body: Center(
+              child: Text('Usuário não autenticado', style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6))),
             ),
           );
         }
@@ -43,9 +36,13 @@ class CartaoDIIPage extends StatelessWidget {
         const String? cid = null;
         const String? laudoUrl = null;
         final String userName = user.name;
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final alertBg = isDark ? const Color(0xFF451A03) : const Color(0xFFFEF3C7);
+        final alertText = isDark ? const Color(0xFFFDE68A) : const Color(0xFF92400E);
+        final alertBorder = isDark ? const Color(0xFF78350F) : const Color(0xFFFDE68A);
 
         return Scaffold(
-          backgroundColor: _kBg,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           body: SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
@@ -53,9 +50,9 @@ class CartaoDIIPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // ── Header ──
-                  const Row(
+                  Row(
                     children: [
-                      Icon(Icons.badge_rounded, color: _kBlue, size: 28),
+                      Icon(Icons.badge_rounded, color: Theme.of(context).colorScheme.primary, size: 28),
                       SizedBox(width: 12),
                       Expanded(
                         child: Column(
@@ -66,7 +63,7 @@ class CartaoDIIPage extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
-                                color: _kSubText,
+                                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                                 letterSpacing: 1.2,
                               ),
                             ),
@@ -76,7 +73,7 @@ class CartaoDIIPage extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w800,
-                                color: _kText,
+                                color: Theme.of(context).colorScheme.onSurface,
                               ),
                             ),
                           ],
@@ -91,12 +88,12 @@ class CartaoDIIPage extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: _kBlue, width: 2),
+                      border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2),
                       boxShadow: [
                         BoxShadow(
-                          color: _kBlue.withValues(alpha: 0.15),
+                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
                           blurRadius: 24,
                           offset: const Offset(0, 8),
                         ),
@@ -111,19 +108,19 @@ class CartaoDIIPage extends StatelessWidget {
                             Container(
                               padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFEFF6FF),
+                                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              child: const Icon(Icons.medical_information_rounded, color: _kBlue, size: 24),
+                              child: Icon(Icons.medical_information_rounded, color: Theme.of(context).colorScheme.primary, size: 24),
                             ),
                             const SizedBox(width: 12),
-                            const Expanded(
+                            Expanded(
                               child: Text(
                                 'CARTÃO DE IDENTIFICAÇÃO DII',
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,
-                                  color: _kBlue,
+                                  color: Theme.of(context).colorScheme.primary,
                                   letterSpacing: 0.5,
                                 ),
                               ),
@@ -132,38 +129,38 @@ class CartaoDIIPage extends StatelessWidget {
                         ),
 
                         const SizedBox(height: 20),
-                        const Divider(color: _kCardBorder),
+                        Divider(color: Theme.of(context).dividerColor),
                         const SizedBox(height: 20),
 
                         // Nome do Titular
-                        const Text(
+                        Text(
                           'TITULAR',
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w600,
-                            color: _kSubText,
+                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                             letterSpacing: 1.0,
                           ),
                         ),
                         const SizedBox(height: 6),
                         Text(
                           userName,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w800,
-                            color: _kText,
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
 
                         const SizedBox(height: 20),
 
                         // CID
-                        const Text(
+                        Text(
                           'CID',
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w600,
-                            color: _kSubText,
+                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                             letterSpacing: 1.0,
                           ),
                         ),
@@ -173,23 +170,23 @@ class CartaoDIIPage extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
-                            color: cid != null ? _kText : Colors.red.shade600,
+                            color: cid != null ? Theme.of(context).colorScheme.onSurface : Colors.red.shade600,
                           ),
                         ),
 
                         const SizedBox(height: 20),
-                        const Divider(color: _kCardBorder),
+                        Divider(color: Theme.of(context).dividerColor),
                         const SizedBox(height: 16),
 
                         // Rodapé Legal
-                        const Row(
+                        Row(
                           children: [
-                            Icon(Icons.gavel_rounded, color: _kBlue, size: 14),
+                            Icon(Icons.gavel_rounded, color: Theme.of(context).colorScheme.primary, size: 14),
                             SizedBox(width: 8),
                             Expanded(
                               child: Text(
                                 'Lei 15.138/2025 - Política Nacional de Assistência a DII',
-                                style: TextStyle(fontSize: 10, color: _kSubText),
+                                style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
                               ),
                             ),
                           ],
@@ -204,9 +201,9 @@ class CartaoDIIPage extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: _kAlertBg,
+                      color: alertBg,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFFFDE68A)),
+                      border: Border.all(color: alertBorder),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -216,19 +213,19 @@ class CartaoDIIPage extends StatelessWidget {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: Theme.of(context).cardColor,
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: const Icon(Icons.priority_high_rounded, color: Color(0xFFF59E0B), size: 20),
                             ),
                             const SizedBox(width: 12),
-                            const Expanded(
+                            Expanded(
                               child: Text(
                                 'DIREITO DE ACESSO URGENTE',
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,
-                                  color: _kAlertText,
+                                  color: alertText,
                                   letterSpacing: 0.5,
                                 ),
                               ),
@@ -236,21 +233,21 @@ class CartaoDIIPage extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 12),
-                        const Text(
+                        Text(
                           'O portador deste cartão tem Doença Inflamatória Intestinal e necessita de ACESSO URGENTE E IMEDIATO a instalações sanitárias.',
                           style: TextStyle(
                             fontSize: 13,
-                            color: _kAlertText,
+                            color: alertText,
                             height: 1.5,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
                         const SizedBox(height: 8),
-                        const Text(
+                        Text(
                           'Lei de Acesso - Diversos estados possuem legislação específica garantindo prioridade.',
                           style: TextStyle(
                             fontSize: 11,
-                            color: _kAlertText,
+                            color: alertText,
                             height: 1.4,
                           ),
                         ),
@@ -274,10 +271,10 @@ class CartaoDIIPage extends StatelessWidget {
                         style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: _kBlue,
+                        backgroundColor: Theme.of(context).colorScheme.primary,
                         foregroundColor: Colors.white,
-                        disabledBackgroundColor: Colors.grey.shade300,
-                        disabledForegroundColor: Colors.grey.shade600,
+                        disabledBackgroundColor: Theme.of(context).dividerColor.withValues(alpha: 0.1),
+                        disabledForegroundColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.38),
                         elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
@@ -287,16 +284,16 @@ class CartaoDIIPage extends StatelessWidget {
                   ),
 
                   if (laudoUrl == null || laudoUrl.isEmpty)
-                    const Padding(
+                    Padding(
                       padding: EdgeInsets.only(top: 12),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.info_outline_rounded, size: 14, color: _kSubText),
+                          Icon(Icons.info_outline_rounded, size: 14, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
                           SizedBox(width: 6),
                           Text(
                             'Laudo não encontrado. Complete o seu perfil.',
-                            style: TextStyle(fontSize: 12, color: _kSubText),
+                            style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
                           ),
                         ],
                       ),
@@ -308,8 +305,8 @@ class CartaoDIIPage extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white,
-                      border: Border.all(color: _kCardBorder),
+                      color: Theme.of(context).cardColor,
+                      border: Border.all(color: Theme.of(context).dividerColor),
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Row(
@@ -318,24 +315,24 @@ class CartaoDIIPage extends StatelessWidget {
                           width: 40,
                           height: 40,
                           decoration: BoxDecoration(
-                            color: const Color(0xFFEFF6FF),
+                            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Icon(Icons.shield_rounded, color: _kBlue, size: 20),
+                          child: Icon(Icons.shield_rounded, color: Theme.of(context).colorScheme.primary, size: 20),
                         ),
                         const SizedBox(width: 12),
-                        const Expanded(
+                        Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 'Dados protegidos',
-                                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: _kText),
+                                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: Theme.of(context).colorScheme.onSurface),
                               ),
                               SizedBox(height: 2),
                               Text(
                                 'Suas informações médicas são criptografadas',
-                                style: TextStyle(fontSize: 12, color: _kSubText),
+                                style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
                               ),
                             ],
                           ),

@@ -17,7 +17,6 @@ import 'package:viva_livre_app/features/map/presentation/widgets/emergency_butto
 import 'package:viva_livre_app/features/map/presentation/widgets/map_search_bar.dart';
 import 'package:viva_livre_app/features/ratings/presentation/pages/ratings_page.dart';
 
-const _kBlue = Color(0xFF2563EB);
 const _kInitialZoom = 17.0;
 
 class MapPage extends StatefulWidget {
@@ -106,7 +105,7 @@ class _MapPageState extends State<MapPage>
   Marker _buildBathroomMarker(Bathroom bathroom, Bathroom? selectedPin) {
     final isSelected = selectedPin?.id == bathroom.id;
     final isOpen = bathroom.isOpen;
-    final pinColor = isOpen ? _kBlue : const Color(0xFF9CA3AF);
+    final pinColor = isOpen ? Theme.of(context).colorScheme.primary : const Color(0xFF9CA3AF);
     return Marker(
       point: bathroom.location,
       width: 44,
@@ -125,7 +124,7 @@ class _MapPageState extends State<MapPage>
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           decoration: BoxDecoration(
-            color: isSelected ? pinColor : Colors.white,
+            color: isSelected ? pinColor : Theme.of(context).cardColor,
             shape: BoxShape.circle,
             border: Border.all(color: pinColor, width: 3),
             boxShadow: [
@@ -139,7 +138,7 @@ class _MapPageState extends State<MapPage>
           child: Icon(
             Icons.wc,
             size: 20,
-            color: isSelected ? Colors.white : pinColor,
+            color: isSelected ? Theme.of(context).colorScheme.onPrimary : pinColor,
           ),
         ),
       ),
@@ -244,15 +243,24 @@ class _MapPageState extends State<MapPage>
                   },
                 ),
                 children: [
-                  TileLayer(
-                    urlTemplate:
-                        'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-                    subdomains: const ['a', 'b', 'c', 'd'],
-                    userAgentPackageName: 'com.vivalivre.app',
-                    maxNativeZoom: 19,
-                    maxZoom: 22,
-                    tileBounds: LatLngBounds(const LatLng(-90.0, -180.0), const LatLng(90.0, 180.0)),
-                    errorTileCallback: (tile, error, stackTrace) {},
+                  ColorFiltered(
+                    colorFilter: ColorFilter.mode(
+                      Theme.of(context).brightness == Brightness.dark
+                          ? const Color(0xFF1E293B).withValues(alpha: 0.5)
+                          : Colors.transparent,
+                      BlendMode.color,
+                    ),
+                    child: TileLayer(
+                      urlTemplate: Theme.of(context).brightness == Brightness.dark
+                          ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'
+                          : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+                      subdomains: const ['a', 'b', 'c', 'd'],
+                      userAgentPackageName: 'com.vivalivre.app',
+                      maxNativeZoom: 19,
+                      maxZoom: 22,
+                      tileBounds: LatLngBounds(const LatLng(-90.0, -180.0), const LatLng(90.0, 180.0)),
+                      errorTileCallback: (tile, error, stackTrace) {},
+                    ),
                   ),
                   MarkerLayer(
                     markers: [
@@ -269,7 +277,7 @@ class _MapPageState extends State<MapPage>
                 Positioned.fill(
                   child: IgnorePointer(
                     child: Container(
-                      color: Colors.white.withValues(alpha: 0.3),
+                      color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.5),
                       child: Center(
                         child: Container(
                           padding: const EdgeInsets.symmetric(
@@ -277,7 +285,7 @@ class _MapPageState extends State<MapPage>
                             vertical: 20,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: Theme.of(context).cardColor,
                             borderRadius: BorderRadius.circular(24),
                             boxShadow: [
                               BoxShadow(
@@ -287,20 +295,20 @@ class _MapPageState extends State<MapPage>
                               ),
                             ],
                           ),
-                          child: const Column(
+                          child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               CircularProgressIndicator(
-                                color: _kBlue,
+                                color: Theme.of(context).colorScheme.primary,
                                 strokeWidth: 3,
                               ),
-                              SizedBox(height: 16),
+                              const SizedBox(height: 16),
                               Text(
                                 'A procurar satélites...',
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
-                                  color: Color(0xFF0F172A),
+                                  color: Theme.of(context).colorScheme.onSurface,
                                 ),
                               ),
                             ],
@@ -327,6 +335,29 @@ class _MapPageState extends State<MapPage>
               ),
 
               if (_showEmergency) const _EmergencyOverlay(),
+
+              // Gradient at the bottom to blend buttons with the map
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                height: 180,
+                child: IgnorePointer(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.0),
+                          Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.8),
+                          Theme.of(context).scaffoldBackgroundColor,
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
 
               Positioned(
                 left: 16,
@@ -444,7 +475,7 @@ class _CurrentLocationDotState extends State<_CurrentLocationDot>
                 height: 48,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.red.withValues(alpha: 0.2),
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
                 ),
               ),
             ),
@@ -454,11 +485,11 @@ class _CurrentLocationDotState extends State<_CurrentLocationDot>
             height: 18,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.red.shade600,
-              border: Border.all(color: Colors.white, width: 2.5),
+              color: Theme.of(context).colorScheme.primary,
+              border: Border.all(color: Theme.of(context).cardColor, width: 2.5),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.red.withValues(alpha: 0.45),
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.45),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -482,11 +513,11 @@ class _EmergencyOverlay extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
             decoration: BoxDecoration(
-              color: _kBlue,
+              color: Theme.of(context).colorScheme.primary,
               borderRadius: BorderRadius.circular(24),
               boxShadow: [
                 BoxShadow(
-                  color: _kBlue.withValues(alpha: 0.40),
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.40),
                   blurRadius: 32,
                   spreadRadius: 4,
                 ),

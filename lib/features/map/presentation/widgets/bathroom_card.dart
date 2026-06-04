@@ -3,12 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:viva_livre_app/features/map/domain/entities/bathroom.dart';
 import 'package:viva_livre_app/features/ratings/presentation/bloc/rating_bloc.dart';
 
-const _kBlue = Color(0xFF2563EB);
-const _kBlueSoft = Color(0xFFEFF6FF);
-const _kBlueBorder = Color(0xFFBFDBFE);
-const _kText = Color(0xFF111827);
-const _kSubText = Color(0xFF6B7280);
-const _kGray = Color(0xFF9CA3AF);
+// Cores dinâmicas definidas no build
 
 class BathroomCard extends StatefulWidget {
   final Bathroom bathroom;
@@ -49,13 +44,21 @@ class _BathroomCardState extends State<BathroomCard> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final _kBlue = theme.colorScheme.primary;
+    final _kBlueSoft = theme.colorScheme.primary.withValues(alpha: 0.1);
+    final _kBlueBorder = theme.colorScheme.primary.withValues(alpha: 0.3);
+    final _kText = theme.colorScheme.onSurface;
+    final _kSubText = theme.colorScheme.onSurface.withValues(alpha: 0.6);
+    final _kGray = theme.dividerColor;
+
     final isOpen = widget.bathroom.isOpen;
     final tags = widget.bathroom.tags;
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
@@ -88,7 +91,7 @@ class _BathroomCardState extends State<BathroomCard> {
                         color: const Color(0xFFF3F4F6),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Center(
+                      child: Center(
                         child: Icon(
                           Icons.image_not_supported_outlined,
                           size: 32,
@@ -115,14 +118,9 @@ class _BathroomCardState extends State<BathroomCard> {
                           horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
                         color: isOpen
-                            ? const Color(0xFFECFDF5)
-                            : const Color(0xFFF3F4F6),
+                            ? const Color(0xFF10B981).withValues(alpha: 0.15)
+                            : Theme.of(context).dividerColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: isOpen
-                              ? const Color(0xFF6EE7B7)
-                              : const Color(0xFFD1D5DB),
-                        ),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -133,7 +131,7 @@ class _BathroomCardState extends State<BathroomCard> {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: isOpen
-                                  ? const Color(0xFF10B981)
+                                  ? (Theme.of(context).brightness == Brightness.dark ? const Color(0xFF34D399) : const Color(0xFF10B981))
                                   : _kGray,
                             ),
                           ),
@@ -144,7 +142,7 @@ class _BathroomCardState extends State<BathroomCard> {
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
                               color: isOpen
-                                  ? const Color(0xFF059669)
+                                  ? (Theme.of(context).brightness == Brightness.dark ? const Color(0xFF34D399) : const Color(0xFF059669))
                                   : _kGray,
                             ),
                           ),
@@ -158,7 +156,7 @@ class _BathroomCardState extends State<BathroomCard> {
                         Expanded(
                           child: Text(
                             widget.bathroom.name,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
                               color: _kText,
@@ -178,7 +176,7 @@ class _BathroomCardState extends State<BathroomCard> {
                                   const SizedBox(width: 2),
                                   Text(
                                     '${state.averageRating.toStringAsFixed(1)} (${state.total})',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w600,
                                       color: _kSubText,
@@ -202,7 +200,7 @@ class _BathroomCardState extends State<BathroomCard> {
                     const SizedBox(height: 2),
                     Text(
                       '${widget.distanceText} de distância',
-                      style: const TextStyle(fontSize: 13, color: _kSubText),
+                      style: TextStyle(fontSize: 13, color: _kSubText),
                     ),
                   ],
                 ),
@@ -217,7 +215,7 @@ class _BathroomCardState extends State<BathroomCard> {
                     color: Color(0xFFF3F4F6),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.close_rounded,
                     size: 16,
                     color: _kSubText,
@@ -266,7 +264,7 @@ class _BathroomCardState extends State<BathroomCard> {
             runSpacing: 6,
             children: [
               if (widget.bathroom.isAccessible)
-                const _TagChip(
+                _TagChip(
                   icon: Icons.accessible_outlined,
                   label: 'Acessível',
                   bg: _kBlueSoft,
@@ -274,7 +272,7 @@ class _BathroomCardState extends State<BathroomCard> {
                   fg: _kBlue,
                 ),
               if (widget.bathroom.hasChangingTable)
-                const _TagChip(
+                _TagChip(
                   icon: Icons.child_care_outlined,
                   label: 'Trocador',
                   bg: _kBlueSoft,
@@ -282,7 +280,7 @@ class _BathroomCardState extends State<BathroomCard> {
                   fg: _kBlue,
                 ),
               if (widget.bathroom.isFree)
-                const _TagChip(
+                _TagChip(
                   icon: Icons.local_offer_outlined,
                   label: 'Gratuito',
                   bg: _kBlueSoft,
@@ -336,20 +334,20 @@ class _BathroomCardState extends State<BathroomCard> {
           const SizedBox(height: 10),
           SizedBox(
             width: double.infinity,
-            child: OutlinedButton.icon(
+            child: TextButton.icon(
               onPressed: widget.onDetails,
-              icon: const Icon(
+              icon: Icon(
                 Icons.info_outline_rounded,
                 size: 18,
-                color: Color(0xFF374151),
+                color: Theme.of(context).colorScheme.onSurface,
               ),
-              label: const Text(
+              label: Text(
                 'Detalhes e Avaliações',
-                style: TextStyle(color: Color(0xFF374151)),
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
               ),
-              style: OutlinedButton.styleFrom(
+              style: TextButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 12),
-                side: const BorderSide(color: Color(0xFFE2E8F0)),
+                backgroundColor: Theme.of(context).dividerColor.withValues(alpha: 0.1),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -382,15 +380,14 @@ class _TagChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: bg,
+        color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: border),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[
-            Icon(icon, size: 12, color: fg),
+            Icon(icon, size: 12, color: Theme.of(context).colorScheme.onSurface),
             const SizedBox(width: 3),
           ],
           Text(
@@ -398,7 +395,7 @@ class _TagChip extends StatelessWidget {
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w600,
-              color: fg,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
         ],
