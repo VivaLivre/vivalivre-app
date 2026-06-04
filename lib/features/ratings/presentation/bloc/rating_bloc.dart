@@ -39,7 +39,7 @@ class RatingBloc extends Bloc<RatingEvent, RatingState> {
 
       final reviews = result['reviews'] as List<BathroomReview>;
       final total = result['total'] as int;
-      final averageRating = result['average_rating'] as double;
+      final averageRating = (result['average_rating'] as num).toDouble();
 
       emit(BathroomReviewsLoaded(
         reviews: reviews,

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:viva_livre_app/features/auth/presentation/pages/auth_wrapper.dart';
 import 'package:viva_livre_app/features/auth/presentation/pages/splash_page.dart';
 import 'package:viva_livre_app/features/auth/presentation/pages/onboarding_page.dart';
 import 'package:viva_livre_app/features/auth/presentation/pages/login_page.dart';
@@ -77,7 +76,10 @@ class App extends StatelessWidget {
         '/register': (_) => const RegisterPage(),
         '/home': (_) => const MainShell(),
         '/health-dashboard': (context) {
-          final args = ModalRoute.of(context)?.settings.arguments as List<HealthRecord>? ?? [];
+          final args =
+              ModalRoute.of(context)?.settings.arguments
+                  as List<HealthRecord>? ??
+              [];
           return HealthDashboardPage(records: args);
         },
         '/add-health-entry': (_) => const AddHealthEntryPage(),
