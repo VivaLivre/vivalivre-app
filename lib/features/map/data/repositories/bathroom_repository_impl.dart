@@ -1,4 +1,4 @@
-// Removed dart:io
+import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
@@ -29,9 +29,13 @@ class BathroomRepositoryImpl implements IBathroomRepository {
         }
       }
     } catch (e) {
-      // Fallback to empty list or handle error
+      // Log do erro e propagação para que o BLoC possa emitir o estado de MapError
+      debugPrint('Erro no getBathrooms: $e');
+      throw Exception('Não foi possível carregar os banheiros. Verifique sua conexão.');
     }
-    return [];
+    
+    // Se não for status 200 ou data não for List
+    throw Exception('Falha ao processar a resposta do servidor.');
   }
 
   @override

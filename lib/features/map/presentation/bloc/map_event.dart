@@ -35,3 +35,34 @@ class MoveToLocation extends MapEvent {
   List<Object?> get props => [location];
 }
 
+class CenterCameraOnUserEvent extends MapEvent {
+  const CenterCameraOnUserEvent();
+}
+
+class CameraMovementHandled extends MapEvent {
+  const CameraMovementHandled();
+}
+
+class UserPositionUpdated extends MapEvent {
+  final LatLng newPosition;
+  const UserPositionUpdated(this.newPosition);
+
+  @override
+  List<Object?> get props => [newPosition];
+}
+
+class FetchBathroomsInArea extends MapEvent {
+  final LatLng center;
+  final double radius;
+  const FetchBathroomsInArea(this.center, this.radius);
+
+  @override
+  List<Object?> get props => [center, radius];
+}
+
+class ClearBathroomsEvent extends MapEvent {
+  const ClearBathroomsEvent();
+  @override
+  List<Object?> get props => [];
+}
+

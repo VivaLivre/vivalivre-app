@@ -16,28 +16,33 @@ class MapLoading extends MapState {
 }
 
 class MapLoaded extends MapState {
-  final LatLng currentPosition;
+  final LatLng userPosition;
+  final LatLng? targetCameraPosition;
   final List<Bathroom> bathrooms;
   final Bathroom? selectedBathroom;
   final Bathroom? nearestBathroom;
 
   const MapLoaded({
-    required this.currentPosition,
+    required this.userPosition,
+    this.targetCameraPosition,
     required this.bathrooms,
     this.selectedBathroom,
     this.nearestBathroom,
   });
 
   MapLoaded copyWith({
-    LatLng? currentPosition,
+    LatLng? userPosition,
+    LatLng? targetCameraPosition,
     List<Bathroom>? bathrooms,
     Bathroom? selectedBathroom,
     Bathroom? nearestBathroom,
     bool clearSelection = false,
     bool clearNearest = false,
+    bool clearTargetCamera = false,
   }) {
     return MapLoaded(
-      currentPosition: currentPosition ?? this.currentPosition,
+      userPosition: userPosition ?? this.userPosition,
+      targetCameraPosition: clearTargetCamera ? null : (targetCameraPosition ?? this.targetCameraPosition),
       bathrooms: bathrooms ?? this.bathrooms,
       selectedBathroom: clearSelection ? null : (selectedBathroom ?? this.selectedBathroom),
       nearestBathroom: clearNearest ? null : (nearestBathroom ?? this.nearestBathroom),
@@ -45,7 +50,7 @@ class MapLoaded extends MapState {
   }
 
   @override
-  List<Object?> get props => [currentPosition, bathrooms, selectedBathroom, nearestBathroom];
+  List<Object?> get props => [userPosition, targetCameraPosition, bathrooms, selectedBathroom, nearestBathroom];
 }
 
 class MapError extends MapState {

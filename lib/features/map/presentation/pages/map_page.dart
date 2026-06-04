@@ -9,7 +9,7 @@ import 'package:vibration/vibration.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:viva_livre_app/features/map/domain/entities/bathroom.dart';
-import 'package:viva_livre_app/features/map/presentation/bloc/map_bloc.dart';
+import 'package:viva_livre_app/features/map/presentation/bloc/map_bloc.dart' hide MapEvent;
 import 'package:viva_livre_app/features/map/presentation/bloc/add_bathroom_bloc.dart';
 import 'package:viva_livre_app/features/map/presentation/pages/add_bathroom_page.dart';
 import 'package:viva_livre_app/features/map/presentation/widgets/bathroom_card.dart';
@@ -46,6 +46,7 @@ class _MapPageState extends State<MapPage>
 
   @override
   void dispose() {
+    _moveController?.dispose();
     _searchController.dispose();
     _mapController.dispose();
     super.dispose();
@@ -57,6 +58,8 @@ class _MapPageState extends State<MapPage>
       ..clearSnackBars()
       ..showSnackBar(SnackBar(content: Text(msg)));
   }
+
+  AnimationController? _moveController;
 
   void _animatedMove(LatLng dest, double zoom) {
     final latTween = Tween<double>(
@@ -72,26 +75,22 @@ class _MapPageState extends State<MapPage>
       end: zoom,
     );
 
-    final ctrl = AnimationController(
+    _moveController?.dispose();
+
+    _moveController = AnimationController(
       duration: const Duration(milliseconds: 900),
       vsync: this,
     );
-    final anim = CurvedAnimation(parent: ctrl, curve: Curves.fastOutSlowIn);
+    final anim = CurvedAnimation(parent: _moveController!, curve: Curves.fastOutSlowIn);
 
-    ctrl.addListener(() {
+    _moveController!.addListener(() {
       _mapController.move(
         LatLng(latTween.evaluate(anim), lngTween.evaluate(anim)),
         zoomTween.evaluate(anim),
       );
     });
 
-    anim.addStatusListener((s) {
-      if (s == AnimationStatus.completed || s == AnimationStatus.dismissed) {
-        ctrl.dispose();
-      }
-    });
-
-    ctrl.forward();
+    _moveController!.forward();
   }
 
   Marker _buildCurrentLocationMarker(LatLng position) {
@@ -163,6 +162,11 @@ class _MapPageState extends State<MapPage>
             _showSnack(state.message);
           }
           if (state is MapLoaded) {
+            if (state.targetCameraPosition != null) {
+              _animatedMove(state.targetCameraPosition!, _mapController.camera.zoom < 15 ? _kInitialZoom : _mapController.camera.zoom);
+              context.read<MapBloc>().add(const CameraMovementHandled());
+            }
+
             if (_showEmergency) {
               if (state.nearestBathroom != null &&
                   state.selectedBathroom != null) {
@@ -174,16 +178,11 @@ class _MapPageState extends State<MapPage>
               } else {
                 setState(() => _showEmergency = false);
               }
-            } else if (state.selectedBathroom == null &&
-                state.currentPosition !=
-                    const LatLng(-23.66070438587852, -46.43089117960558)) {
-              // Move camera if position is updated via search and nothing is selected
-              _animatedMove(state.currentPosition, _kInitialZoom);
             }
           }
         },
         builder: (context, state) {
-          LatLng currentPosition = const LatLng(
+          LatLng userPosition = const LatLng(
             -23.66070438587852,
             -46.43089117960558,
           );
@@ -192,7 +191,7 @@ class _MapPageState extends State<MapPage>
           bool isLocating = state is MapLoading;
 
           if (state is MapLoaded) {
-            currentPosition = state.currentPosition;
+            userPosition = state.userPosition;
             bathrooms = state.bathrooms;
             selectedPin = state.selectedBathroom;
           }
@@ -204,7 +203,7 @@ class _MapPageState extends State<MapPage>
               FlutterMap(
                 mapController: _mapController,
                 options: MapOptions(
-                  initialCenter: currentPosition,
+                  initialCenter: userPosition,
                   initialZoom: _kInitialZoom,
                   minZoom: 4.5,
                   maxZoom: 18.0,
@@ -214,6 +213,33 @@ class _MapPageState extends State<MapPage>
                   onTap: (_, _) {
                     if (selectedPin != null) {
                       context.read<MapBloc>().add(const ClearSelection());
+                    }
+                  },
+                  onMapEvent: (MapEvent event) {
+                    if (event is MapEventMoveEnd) {
+                      final zoom = _mapController.camera.zoom;
+                      
+                      // Limite de zoom ajustado (meio termo): desaparecem ao ver uma região ampla (zoom < 10.0)
+                      if (zoom < 10.0) {
+                        context.read<MapBloc>().add(const ClearBathroomsEvent());
+                        return;
+                      }
+
+                      final center = _mapController.camera.center;
+                      final bounds = _mapController.camera.visibleBounds;
+                      
+                      // Calcular raio visível no mapa em metros
+                      final distance = const Distance();
+                      double radiusInMeters = distance.as(
+                        LengthUnit.Meter,
+                        center,
+                        bounds.northEast,
+                      );
+                      
+                      // Margem de segurança de 20% e limite máximo de 80km
+                      radiusInMeters = (radiusInMeters * 1.2).clamp(100.0, 80000.0);
+
+                      context.read<MapBloc>().add(FetchBathroomsInArea(center, radiusInMeters));
                     }
                   },
                 ),
@@ -230,7 +256,7 @@ class _MapPageState extends State<MapPage>
                   ),
                   MarkerLayer(
                     markers: [
-                      _buildCurrentLocationMarker(currentPosition),
+                      _buildCurrentLocationMarker(userPosition),
                       ...bathrooms.map(
                         (b) => _buildBathroomMarker(b, selectedPin),
                       ),
@@ -289,10 +315,10 @@ class _MapPageState extends State<MapPage>
                 searchController: _searchController,
                 openCount: openCount,
                 isLocating: isLocating,
-                currentPosition: currentPosition,
+                currentPosition: userPosition,
                 onLocate: () {
                   FocusScope.of(context).unfocus();
-                  context.read<MapBloc>().add(const RequestGpsLocation());
+                  context.read<MapBloc>().add(const CenterCameraOnUserEvent());
                 },
                 onSuggestionSelected: (location) {
                   FocusScope.of(context).unfocus();
@@ -310,12 +336,12 @@ class _MapPageState extends State<MapPage>
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (selectedPin != null && !_showEmergency) ...[
-                       BathroomCard(
-                         bathroom: selectedPin,
-                         distanceText: _formatDistance(
-                           currentPosition,
-                           selectedPin,
-                         ),
+                         BathroomCard(
+                           bathroom: selectedPin,
+                           distanceText: _formatDistance(
+                             userPosition,
+                             selectedPin,
+                           ),
                          onClose: () =>
                              context.read<MapBloc>().add(const ClearSelection()),
                          onDetails: () {
@@ -338,10 +364,9 @@ class _MapPageState extends State<MapPage>
                     EmergencyButton(
                       onEmergency: _handleFindNearest,
                       onAddBathroom: () {
-                        final mapState = context.read<MapBloc>().state;
-                        final pos = mapState is MapLoaded
-                            ? mapState.currentPosition
-                            : const LatLng(-23.660704, -46.430891);
+                        // Passar a posição central da câmara para adicionar o banheiro
+                        // É mais intuitivo pois o usuário pode ter arrastado o mapa para onde quer adicionar
+                        final pos = _mapController.camera.center;
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (_) => BlocProvider(
