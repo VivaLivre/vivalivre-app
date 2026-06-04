@@ -66,10 +66,10 @@ class App extends StatelessWidget {
           ),
         ),
       ),
-      // ── Rota raiz protegida pelo AuthWrapper ──
-      // AuthWrapper escuta o estado de autenticação e encaminha
-      // para MainShell (logado) ou LoginPage (deslogado).
-      home: const AuthWrapper(),
+      // ── Rota raiz protegida pelo SplashPage ──
+      // SplashPage verifica onboarding, dispara a autenticação e
+      // encaminha para /home (MainShell), /login ou /onboarding.
+      home: const SplashPage(),
       routes: {
         '/splash': (_) => const SplashPage(),
         '/onboarding': (_) => const OnboardingPage(),

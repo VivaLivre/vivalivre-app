@@ -31,25 +31,30 @@ void main() async {
   final crowdsourceRepository = CrowdsourceRepositoryImpl(dio: apiClient.dio);
 
   runApp(
-    MultiBlocProvider(
+    MultiRepositoryProvider(
       providers: [
-        BlocProvider<AuthBloc>(
-          create: (_) => AuthBloc(authRepository: authRepository)..add(AuthAppStarted()),
-        ),
-        BlocProvider<HealthBloc>(
-          create: (_) => HealthBloc(healthRepository: healthRepository),
-        ),
-        BlocProvider<MapBloc>(
-          create: (_) => MapBloc(repository: bathroomRepository)..add(const RequestGpsLocation()),
-        ),
-        BlocProvider<RatingBloc>(
-          create: (_) => RatingBloc(ratingRepository: ratingRepository),
-        ),
-        BlocProvider<CrowdsourceBloc>(
-          create: (_) => CrowdsourceBloc(repository: crowdsourceRepository),
-        ),
+        RepositoryProvider.value(value: authRepository),
       ],
-      child: const App(),
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider<AuthBloc>(
+            create: (_) => AuthBloc(authRepository: authRepository),
+          ),
+          BlocProvider<HealthBloc>(
+            create: (_) => HealthBloc(healthRepository: healthRepository),
+          ),
+          BlocProvider<MapBloc>(
+            create: (_) => MapBloc(repository: bathroomRepository)..add(const RequestGpsLocation()),
+          ),
+          BlocProvider<RatingBloc>(
+            create: (_) => RatingBloc(ratingRepository: ratingRepository),
+          ),
+          BlocProvider<CrowdsourceBloc>(
+            create: (_) => CrowdsourceBloc(repository: crowdsourceRepository),
+          ),
+        ],
+        child: const App(),
+      ),
     ),
   );
 }

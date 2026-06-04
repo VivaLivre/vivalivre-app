@@ -25,14 +25,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthAppStarted event,
     Emitter<AuthState> emit,
   ) async {
-    final authenticated = await _authRepository.isAuthenticated();
-    if (authenticated) {
-      // For now, we don't have a /me endpoint, so we might need to store user data in storage too
-      // or fetch it. Let's assume we store basic info.
-      // emit(AuthAuthenticated(user));
-      emit(
-        AuthUnauthenticated(),
-      ); // Temporary until we handle persistence of user info
+    final user = await _authRepository.checkAuth();
+    if (user != null) {
+      emit(AuthAuthenticated(user));
     } else {
       emit(AuthUnauthenticated());
     }

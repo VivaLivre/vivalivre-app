@@ -20,6 +20,7 @@ class _MainShellState extends State<MainShell> {
     MapPage(),
     HealthPage(),
     CartaoDIIPage(),
+    _PlaceholderPage(icon: Icons.people_alt_rounded, title: 'Comunidade', color: Color(0xFFD97706)),
     ProfilePage(),
   ];
 
@@ -59,6 +60,7 @@ class _VivaLivreBottomNav extends StatelessWidget {
       _NavItem(icon: Icons.map_rounded, label: 'Mapa'),
       _NavItem(icon: Icons.favorite_rounded, label: 'Saúde'),
       _NavItem(icon: Icons.badge_rounded, label: 'Cartão DII'),
+      _NavItem(icon: Icons.people_alt_rounded, label: 'Comunidade'),
       _NavItem(icon: Icons.person_rounded, label: 'Perfil'),
     ];
 
@@ -135,3 +137,53 @@ class _NavItem {
 }
 
 
+// ── Placeholder temporário para as páginas ─────────────────────────────────
+
+class _PlaceholderPage extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final Color color;
+
+  const _PlaceholderPage({
+    required this.icon,
+    required this.title,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, size: 40, color: color),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF1E293B),
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Em desenvolvimento',
+              style: TextStyle(fontSize: 14, color: Color(0xFF64748B)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

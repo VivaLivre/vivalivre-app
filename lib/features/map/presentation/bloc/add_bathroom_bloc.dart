@@ -1,6 +1,6 @@
-// Removed dart:io
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:image_picker/image_picker.dart';
@@ -212,9 +212,17 @@ class AddBathroomBloc extends Bloc<AddBathroomEvent, AddBathroomState> {
       emit(state.copyWith(submissionStatus: SubmissionStatus.success));
     } catch (e) {
       String message = 'Falha ao enviar sugestão. Tente novamente.';
-      if (e.toString().contains('SocketException') || e.toString().contains('Connection')) {
+      
+      if (e is DioException) {
+        if (e.response?.statusCode == 429) {
+          message = 'Limite diário de 10 requisições atingido.';
+        } else if (e.type == DioExceptionType.connectionError || e.type == DioExceptionType.connectionTimeout) {
+          message = 'Sem conexão com o servidor. Verifique a sua internet.';
+        }
+      } else if (e.toString().contains('SocketException') || e.toString().contains('Connection')) {
         message = 'Sem conexão com o servidor. Verifique a sua internet.';
       }
+
       emit(state.copyWith(
         submissionStatus: SubmissionStatus.error,
         errorMessage: message,

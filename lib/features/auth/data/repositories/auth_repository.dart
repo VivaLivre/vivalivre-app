@@ -1,4 +1,5 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/api/api_client.dart';
 import '../../../../core/models/user_model.dart';
 
@@ -60,5 +61,31 @@ class AuthRepository {
   Future<bool> isAuthenticated() async {
     final token = await _storage.read(key: 'jwt_token');
     return token != null;
+  }
+
+  Future<UserModel?> checkAuth() async {
+    final token = await _storage.read(key: 'jwt_token');
+    if (token != null) {
+      try {
+        final response = await _apiClient.dio.get('/api/users/me');
+        if (response.statusCode == 200) {
+          return UserModel.fromJson(response.data);
+        }
+      } catch (e) {
+        // Se houver erro (token inválido/expirado), faz o logout e limpa o token
+        await logout();
+      }
+    }
+    return null;
+  }
+
+  Future<void> setOnboardingSeen() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('has_seen_onboarding', true);
+  }
+
+  Future<bool> hasSeenOnboarding() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('has_seen_onboarding') ?? false;
   }
 }

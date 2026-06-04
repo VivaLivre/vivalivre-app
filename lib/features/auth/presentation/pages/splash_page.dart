@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:viva_livre_app/features/auth/presentation/auth_bloc.dart';
+import 'package:viva_livre_app/features/auth/data/repositories/auth_repository.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -13,8 +14,25 @@ class _SplashPageState extends State<SplashPage> {
   @override
   void initState() {
     super.initState();
-    // Dispatch the AuthAppStarted event to check authentication status
-    context.read<AuthBloc>().add(AuthAppStarted());
+    _checkInitialState();
+  }
+
+  Future<void> _checkInitialState() async {
+    // Delay to show the splash screen slightly
+    await Future.delayed(const Duration(seconds: 1));
+    if (!mounted) return;
+
+    final authRepository = context.read<AuthRepository>();
+    final hasSeenOnboarding = await authRepository.hasSeenOnboarding();
+
+    if (!mounted) return;
+
+    if (!hasSeenOnboarding) {
+      Navigator.pushReplacementNamed(context, '/onboarding');
+    } else {
+      // Dispatch the AuthAppStarted event to check authentication status
+      context.read<AuthBloc>().add(AuthAppStarted());
+    }
   }
 
   @override
@@ -25,12 +43,12 @@ class _SplashPageState extends State<SplashPage> {
         if (state is AuthAuthenticated) {
           Navigator.pushReplacementNamed(context, '/home');
         } else if (state is AuthUnauthenticated) {
-          Navigator.pushReplacementNamed(context, '/onboarding');
+          Navigator.pushReplacementNamed(context, '/login');
         } else if (state is AuthError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(state.message)),
           );
-          Navigator.pushReplacementNamed(context, '/onboarding');
+          Navigator.pushReplacementNamed(context, '/login');
         }
       },
       child: const Scaffold(
