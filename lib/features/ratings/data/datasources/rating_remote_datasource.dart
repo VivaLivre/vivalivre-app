@@ -109,7 +109,7 @@ class RatingRemoteDataSourceImpl implements IRatingRemoteDataSource {
         return {
           'reviews': reviews,
           'total': response.data['total'] as int,
-          'average_rating': response.data['average_rating'] as double,
+          'average_rating': (response.data['average_rating'] as num).toDouble(),
         };
       }
 

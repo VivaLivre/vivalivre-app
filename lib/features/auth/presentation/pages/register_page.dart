@@ -1,8 +1,5 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:viva_livre_app/core/presentation/widgets/custom_primary_button.dart';
 import 'package:viva_livre_app/core/presentation/widgets/custom_text_field.dart';
 import 'package:viva_livre_app/features/auth/presentation/auth_bloc.dart';
@@ -19,16 +16,15 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
   final TextEditingController _customConditionController =
       TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   // -- State --
   bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
   String? _selectedCondition;
-  File? _laudoFile;
-  bool _isPdf = false;
-  String? _fileName;
 
   // Regex simples para validar formato de e-mail
   static final _emailRegex = RegExp(r'^[\w\-\.]+@([\w\-]+\.)+[\w\-]{2,4}$');
@@ -52,37 +48,9 @@ class _RegisterPageState extends State<RegisterPage> {
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     _customConditionController.dispose();
     super.dispose();
-  }
-
-  // -- Lógica de Upload --
-  Future<void> _takePhoto() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.camera);
-
-    if (pickedFile != null) {
-      setState(() {
-        _laudoFile = File(pickedFile.path);
-        _isPdf = false;
-        _fileName = pickedFile.name;
-      });
-    }
-  }
-
-  Future<void> _pickPdf() async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['pdf'],
-    );
-
-    if (result != null && result.files.single.path != null) {
-      setState(() {
-        _laudoFile = File(result.files.single.path!);
-        _isPdf = true;
-        _fileName = result.files.single.name;
-      });
-    }
   }
 
   // -- Lógica de Registo --
@@ -106,13 +74,7 @@ class _RegisterPageState extends State<RegisterPage> {
       return;
     }
 
-    // 4. Valida laudo
-    if (_laudoFile == null) {
-      _showSnack('O anexo do laudo médico é obrigatório.');
-      return;
-    }
-
-    // 5. Dispara o evento real no AuthBloc (cria conta no Firebase)
+    // 4. Dispara o evento real no AuthBloc
     final name = _nameController.text.trim();
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
@@ -151,7 +113,7 @@ class _RegisterPageState extends State<RegisterPage> {
           } else if (state is AuthAuthenticated) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Laudo recebido! Conta criada com sucesso.'),
+                content: Text('Conta criada com sucesso!'),
                 backgroundColor: Color(0xFF10B981),
               ),
             );
@@ -160,7 +122,7 @@ class _RegisterPageState extends State<RegisterPage> {
         },
         builder: (context, state) {
           final isLoading = state is AuthLoading;
-          final bool canSubmit = _laudoFile != null && !isLoading;
+          final bool canSubmit = !isLoading;
 
           return SafeArea(
             child: Center(
@@ -272,6 +234,38 @@ class _RegisterPageState extends State<RegisterPage> {
                           return null;
                         },
                       ),
+                      const SizedBox(height: 12),
+
+                      CustomTextField(
+                        controller: _confirmPasswordController,
+                        enabled: !isLoading,
+                        obscureText: _obscureConfirmPassword,
+                        hintText: 'Confirmar palavra-passe',
+                        prefixIcon: const Icon(
+                          Icons.lock_outline,
+                          color: Color(0xFF94A3B8),
+                        ),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscureConfirmPassword
+                                ? Icons.visibility_off_outlined
+                                : Icons.visibility_outlined,
+                            color: const Color(0xFF94A3B8),
+                          ),
+                          onPressed: () => setState(
+                            () => _obscureConfirmPassword = !_obscureConfirmPassword,
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Confirme a sua senha.';
+                          }
+                          if (value != _passwordController.text) {
+                            return 'As senhas não coincidem.';
+                          }
+                          return null;
+                        },
+                      ),
                       const SizedBox(height: 32),
 
                       // -- Condição Clínica (Dropdown) --
@@ -366,145 +360,6 @@ class _RegisterPageState extends State<RegisterPage> {
                           },
                         ),
                       ],
-                      const SizedBox(height: 32),
-
-                      // -- Comprovação Médica --
-                      const _SectionTitle('Comprovação Médica'),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'O teu laudo será analisado para validar o teu Cartão de uso prioritário. Anexa uma foto clara ou o PDF original.',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Color(0xFF64748B),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      if (_laudoFile == null)
-                        IgnorePointer(
-                          ignoring: isLoading,
-                          child: Opacity(
-                            opacity: isLoading ? 0.5 : 1.0,
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: OutlinedButton.icon(
-                                    onPressed: _takePhoto,
-                                    icon: const Icon(Icons.camera_alt_rounded),
-                                    label: const Text('Tirar Foto'),
-                                    style: OutlinedButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 16,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(16),
-                                      ),
-                                      side: const BorderSide(
-                                        color: Color(0xFF2563EB),
-                                      ),
-                                      foregroundColor: const Color(0xFF2563EB),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: OutlinedButton.icon(
-                                    onPressed: _pickPdf,
-                                    icon: const Icon(
-                                      Icons.picture_as_pdf_rounded,
-                                    ),
-                                    label: const Text('Selecionar PDF'),
-                                    style: OutlinedButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 16,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(16),
-                                      ),
-                                      side: const BorderSide(
-                                        color: Color(0xFF2563EB),
-                                      ),
-                                      foregroundColor: const Color(0xFF2563EB),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        )
-                      else
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: const Color(0xFFE2E8F0)),
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 50,
-                                height: 50,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFF1F5F9),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: _isPdf
-                                    ? const Icon(
-                                        Icons.description_rounded,
-                                        color: Color(0xFF2563EB),
-                                        size: 28,
-                                      )
-                                    : ClipRRect(
-                                        borderRadius: BorderRadius.circular(8),
-                                        // DEFESA: capturamos _laudoFile em variável local para
-                                        // eliminar o bang operator e documentar a premissa.
-                                        child: Image.file(
-                                          _laudoFile!,
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'Laudo anexado',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                    Text(
-                                      _fileName ?? 'Documento',
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        color: Color(0xFF64748B),
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              IconButton(
-                                icon: const Icon(
-                                  Icons.delete_outline_rounded,
-                                  color: Colors.red,
-                                ),
-                                onPressed: isLoading
-                                    ? null
-                                    : () => setState(() {
-                                        _laudoFile = null;
-                                        _fileName = null;
-                                      }),
-                              ),
-                            ],
-                          ),
-                        ),
-
                       const SizedBox(height: 40),
 
                       // -- Botão Finalizar (com loading inline) --
