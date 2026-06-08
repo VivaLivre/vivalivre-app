@@ -12,10 +12,11 @@ class ApiClient {
     // 10.0.2.2 is the address to access localhost from Android Emulator
     String baseUrl = 'http://localhost:8080';
     
-    if (!kIsWeb && Platform.isAndroid) {
-      // Usando o IP local da máquina para permitir acesso por dispositivos físicos na mesma rede
-      baseUrl = 'http://192.168.18.5:8080';
-    }
+    // Se estiver usando adb reverse ou emulador, localhost funciona.
+    // Para dispositivos físicos sem adb reverse, descomente e ajuste o IP abaixo.
+    // if (!kIsWeb && Platform.isAndroid) {
+    //   baseUrl = 'http://192.168.18.5:8080';
+    // }
 
     dio = Dio(BaseOptions(
       baseUrl: baseUrl,

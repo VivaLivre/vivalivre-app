@@ -82,7 +82,9 @@ class AuthRepository {
 
   Future<UserModel?> loginWithGoogle() async {
     try {
-      final GoogleSignIn googleSignIn = GoogleSignIn();
+      final GoogleSignIn googleSignIn = GoogleSignIn(
+        serverClientId: '437244400535-vvkllcs0vnv3ph8hag4piapkn9i7un65.apps.googleusercontent.com',
+      );
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
       if (googleUser == null) {
         return null;
