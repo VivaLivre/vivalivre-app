@@ -218,11 +218,33 @@ class _HealthPageState extends State<HealthPage>
 
           Vibration.vibrate(duration: 150, amplitude: 255);
 
+          const severeSymptoms = [
+            'Sangue nas Fezes',
+            'Fadiga Extrema',
+            'Febre',
+            'Incontinência Fecal',
+            'Desidratação',
+            'Perda de Peso',
+            'Anemia',
+            'Desmaios',
+            'Convulsões',
+            'Dor Intensa no Peito',
+            'Dificuldade para Respirar',
+            'Febre Alta',
+          ];
+
+          final hasSevere = symptoms.any((s) => severeSymptoms.contains(s));
+          final severity = hasSevere
+              ? 'Grave'
+              : symptoms.length >= 3
+              ? 'Observação'
+              : 'Leve';
+
           final entry = HealthEntry(
             id: '',
             userId: '',
             symptoms: symptoms,
-            severity: 'Leve',
+            severity: severity,
             notes: '',
             timestamp: DateTime.now(),
             type: 'sintoma',
