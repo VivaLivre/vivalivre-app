@@ -134,28 +134,7 @@ class _HealthPageState extends State<HealthPage>
 
     final symptoms = ['Ida ao Banheiro', ...?extraSymptoms];
 
-    // Calcula gravidade automaticamente com base nos sintomas extras
-    // Regra: 1 sintoma grave = Grave imediatamente
-    const severeSymptoms = [
-      'Sangue nas Fezes',
-      'Fadiga Extrema',
-      'Febre',
-      'Incontinência Fecal',
-      'Desidratação',
-      'Perda de Peso',
-      'Anemia',
-      'Desmaios',
-      'Convulsões',
-      'Dor Intensa no Peito',
-      'Dificuldade para Respirar',
-      'Febre Alta',
-    ];
-    final hasSevere = symptoms.any((s) => severeSymptoms.contains(s));
-    final severity = hasSevere
-        ? 'Grave'
-        : symptoms.length >= 4
-        ? 'Observação'
-        : 'Leve';
+    final severity = HealthEntry.calculateSeverity(symptoms);
 
     final entry = HealthEntry(
       id: '',
@@ -218,27 +197,7 @@ class _HealthPageState extends State<HealthPage>
 
           Vibration.vibrate(duration: 150, amplitude: 255);
 
-          const severeSymptoms = [
-            'Sangue nas Fezes',
-            'Fadiga Extrema',
-            'Febre',
-            'Incontinência Fecal',
-            'Desidratação',
-            'Perda de Peso',
-            'Anemia',
-            'Desmaios',
-            'Convulsões',
-            'Dor Intensa no Peito',
-            'Dificuldade para Respirar',
-            'Febre Alta',
-          ];
-
-          final hasSevere = symptoms.any((s) => severeSymptoms.contains(s));
-          final severity = hasSevere
-              ? 'Grave'
-              : symptoms.length >= 3
-              ? 'Observação'
-              : 'Leve';
+          final severity = HealthEntry.calculateSeverity(symptoms);
 
           final entry = HealthEntry(
             id: '',

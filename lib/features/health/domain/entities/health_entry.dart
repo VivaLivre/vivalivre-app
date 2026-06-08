@@ -48,4 +48,67 @@ class HealthEntry extends Equatable {
 
   @override
   List<Object?> get props => [id, userId, symptoms, severity, notes, timestamp, type];
+
+  /// Retorna a severidade clínica individual para um sintoma.
+  static String getSymptomSeverity(String symptom) {
+    const severe = {
+      'Sangue nas Fezes',
+      'Fadiga Extrema',
+      'Incontinência Fecal',
+      'Desidratação',
+      'Perda de Peso',
+      'Anemia',
+      'Falta de Ar',
+      'Dor Intensa no Peito',
+      'Dificuldade para Respirar',
+      'Desmaios',
+      'Convulsões',
+      'Febre Alta',
+    };
+
+    const moderate = {
+      'Febre',
+      'Dor Abdominal',
+      'Diarreia',
+      'Náusea/Vómito',
+      'Perda de Apetite',
+      'Dores Articulares',
+      'Cólica Intestinal',
+      'Urgência Evacuatória',
+      'Muco nas Fezes',
+      'Eritema Nodoso',
+      'Visão Embaçada',
+      'Palpitações',
+      'Feridas na Boca',
+      'Aftas',
+      'Lesões na Pele',
+      'Suores Noturnos',
+      'Parestesia/Formigueiro',
+      'Ansiedade',
+      'Alterações de Humor',
+    };
+
+    if (severe.contains(symptom)) return 'Grave';
+    if (moderate.contains(symptom)) return 'Observação';
+    return 'Leve';
+  }
+
+  /// Calcula a severidade geral com base na lista de sintomas.
+  static String calculateSeverity(List<String> symptoms) {
+    if (symptoms.isEmpty) return 'Leve';
+
+    bool hasModerate = false;
+    for (final s in symptoms) {
+      final sev = getSymptomSeverity(s);
+      if (sev == 'Grave') return 'Grave'; // Qualquer sintoma Grave torna a entrada Grave
+      if (sev == 'Observação') hasModerate = true;
+    }
+
+    // Regra clínica complementar: 3 ou mais sintomas leves elevam para Observação
+    if (hasModerate || symptoms.length >= 3) {
+      return 'Observação';
+    }
+
+    return 'Leve';
+  }
 }
