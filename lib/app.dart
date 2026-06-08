@@ -7,6 +7,7 @@ import 'package:viva_livre_app/features/home/presentation/pages/main_shell.dart'
 import 'package:viva_livre_app/features/health/presentation/pages/health_dashboard_page.dart';
 import 'package:viva_livre_app/features/health/presentation/pages/add_health_entry_page.dart';
 import 'package:viva_livre_app/features/health/presentation/pages/health_page.dart';
+import 'package:viva_livre_app/features/profile/presentation/pages/edit_profile_page.dart';
 import 'package:viva_livre_app/core/theme/app_theme.dart';
 
 class App extends StatelessWidget {
@@ -38,6 +39,7 @@ class App extends StatelessWidget {
           return HealthDashboardPage(records: args);
         },
         '/add-health-entry': (_) => const AddHealthEntryPage(),
+        '/edit-profile': (_) => const EditProfilePage(),
       },
     );
   }

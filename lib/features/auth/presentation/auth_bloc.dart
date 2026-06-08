@@ -20,6 +20,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthRegisterRequested>(_onAuthRegisterRequested);
     on<AuthLogoutRequested>(_onAuthLogoutRequested);
     on<AuthGoogleLoginRequested>(_onAuthGoogleLoginRequested);
+    on<AuthUserUpdated>(_onAuthUserUpdated);
   }
 
   Future<void> _onAuthAppStarted(
@@ -137,5 +138,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     } catch (e) {
       emit(AuthError(_authErrorMessage(e, isRegister: false)));
     }
+  }
+
+  void _onAuthUserUpdated(
+    AuthUserUpdated event,
+    Emitter<AuthState> emit,
+  ) {
+    emit(AuthAuthenticated(event.user));
   }
 }

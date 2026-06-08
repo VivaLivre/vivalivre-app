@@ -33,3 +33,12 @@ class AuthRegisterRequested extends AuthEvent {
 class AuthLogoutRequested extends AuthEvent {}
 
 class AuthGoogleLoginRequested extends AuthEvent {}
+
+class AuthUserUpdated extends AuthEvent {
+  final UserModel user;
+
+  const AuthUserUpdated(this.user);
+
+  @override
+  List<Object?> get props => [user];
+}
