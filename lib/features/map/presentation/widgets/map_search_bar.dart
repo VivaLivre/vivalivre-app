@@ -43,6 +43,14 @@ class _MapSearchBarState extends State<MapSearchBar> {
     super.dispose();
   }
 
+  String _stripStreetPrefix(String query) {
+    final pattern = RegExp(
+      r'^(rua|r\.?|avenida|av\.?|ave\.?|travessa|tv\.?|trav\.?|alameda|al\.?|alam\.?|rodovia|rod\.?|praça|pça\.?|prc\.?|prac\.?|beco|bc\.?|estrada|est\.?|estr\.?|viaduto|vd\.?|viad\.?)\s+',
+      caseSensitive: false,
+    );
+    return query.replaceFirst(pattern, '');
+  }
+
   Future<void> _fetchSuggestions(String query) async {
     if (query.trim().isEmpty) {
       if (mounted) {
@@ -71,7 +79,24 @@ class _MapSearchBarState extends State<MapSearchBar> {
       );
 
       if (response.statusCode == 200 && mounted) {
-        final List<dynamic> data = json.decode(response.body);
+        List<dynamic> data = json.decode(response.body);
+
+        // Se a busca principal retornar vazia e a query contiver um prefixo de rua, tenta novamente sem o prefixo
+        if (data.isEmpty) {
+          final strippedQuery = _stripStreetPrefix(query.trim());
+          if (strippedQuery != query.trim()) {
+            final fallbackUri = Uri.parse(
+                'https://nominatim.openstreetmap.org/search?q=${Uri.encodeComponent(strippedQuery)}&format=json&limit=5&lat=$lat&lon=$lon');
+            final fallbackResponse = await http.get(
+              fallbackUri,
+              headers: {'User-Agent': 'VivaLivreApp/1.0 (suporte@vivalivre.com)'},
+            );
+            if (fallbackResponse.statusCode == 200 && mounted) {
+              data = json.decode(fallbackResponse.body);
+            }
+          }
+        }
+
         setState(() {
           _suggestions = data;
           _isSearching = false;
@@ -261,7 +286,7 @@ class _MapSearchBarState extends State<MapSearchBar> {
                                 widget.onSuggestionSelected(LatLng(lat, lon));
                                 setState(() {
                                   _suggestions = [];
-                                  widget.searchController.text = suggestion['name'] ?? '';
+                                  widget.searchController.text = suggestion['display_name'] ?? '';
                                 });
                               },
                             );
