@@ -185,6 +185,16 @@ class _LoginPageState extends State<LoginPage> {
                       const OrDivider(),
                       const SizedBox(height: 24),
 
+                      GoogleSignInButton(
+                        label: 'Entrar com o Google',
+                        onPressed: isLoading
+                            ? null
+                            : () {
+                                context.read<AuthBloc>().add(AuthGoogleLoginRequested());
+                              },
+                      ),
+                      const SizedBox(height: 24),
+
 
                       // -- Link Criar Conta --
                       Row(
