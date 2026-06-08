@@ -60,9 +60,9 @@ class EmergencyButton extends StatelessWidget {
             width: 54,
             height: 54,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).cardColor,
               shape: BoxShape.circle,
-              border: Border.all(color: _kSurface),
+              border: Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.1)),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.15),

@@ -50,11 +50,6 @@ class HealthPage extends StatefulWidget {
 class _HealthPageState extends State<HealthPage>
     with AutomaticKeepAliveClientMixin {
   // ── Constantes de design — INALTERADAS ──
-  static const Color _kBlue = Color(0xFF2563EB);
-  static const Color _kBg = Color(0xFFF8FAFC);
-  static const Color _kText = Color(0xFF0F172A);
-  static const Color _kSubText = Color(0xFF64748B);
-
   // ── Lista de sintomas disponíveis para o modal de pesquisa ──
   final List<String> _baseSymptoms = [
     'Dor Abdominal',
@@ -171,9 +166,9 @@ class _HealthPageState extends State<HealthPage>
         SnackBar(
           content: Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.check_circle_rounded,
-                color: Colors.white,
+                color: Theme.of(context).cardColor,
                 size: 20,
               ),
               const SizedBox(width: 12),
@@ -231,9 +226,9 @@ class _HealthPageState extends State<HealthPage>
               SnackBar(
                 content: Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.check_circle_rounded,
-                      color: Colors.white,
+                      color: Theme.of(context).cardColor,
                       size: 20,
                     ),
                     const SizedBox(width: 12),
@@ -268,7 +263,7 @@ class _HealthPageState extends State<HealthPage>
         final isLoading = state is HealthLoading;
 
         return Scaffold(
-          backgroundColor: _kBg,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           body: SafeArea(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -277,7 +272,7 @@ class _HealthPageState extends State<HealthPage>
                 Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Theme.of(context).cardColor,
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withValues(alpha: 0.03),
@@ -296,28 +291,28 @@ class _HealthPageState extends State<HealthPage>
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
+                              Text(
                                 'Diário Clínico',
                                 style: TextStyle(
                                   fontSize: 24,
                                   fontWeight: FontWeight.w800,
-                                  color: _kText,
+                                  color: Theme.of(context).colorScheme.onSurface,
                                 ),
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 today,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 14,
-                                  color: _kSubText,
+                                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                                 ),
                               ),
                             ],
                           ),
                           IconButton(
-                            icon: const Icon(
+                            icon: Icon(
                               Icons.bar_chart_rounded,
-                              color: _kBlue,
+                              color: Theme.of(context).colorScheme.primary,
                             ),
                             tooltip: 'Ver Resumo',
                             onPressed: () {
@@ -339,33 +334,33 @@ class _HealthPageState extends State<HealthPage>
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF3B82F6), _kBlue],
+                            gradient: LinearGradient(
+                              colors: [Color(0xFF3B82F6), Theme.of(context).colorScheme.primary],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [
                               BoxShadow(
-                                color: _kBlue.withValues(alpha: 0.3),
+                                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
                                 blurRadius: 12,
                                 offset: const Offset(0, 4),
                               ),
                             ],
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(
                                 Icons.wc_rounded,
-                                color: Colors.white,
+                                color: Theme.of(context).cardColor,
                                 size: 24,
                               ),
                               SizedBox(width: 12),
                               Text(
                                 'Registrar Ida ao Banheiro',
                                 style: TextStyle(
-                                  color: Colors.white,
+                                  color: Theme.of(context).cardColor,
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -381,8 +376,8 @@ class _HealthPageState extends State<HealthPage>
                 // ── Timeline ──
                 Expanded(
                   child: isLoading
-                      ? const Center(
-                          child: CircularProgressIndicator(color: _kBlue),
+                      ? Center(
+                          child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary),
                         )
                       : entries.isEmpty
                       ? const _EmptyTimeline()
@@ -404,9 +399,9 @@ class _HealthPageState extends State<HealthPage>
           // ── FAB Sintoma ──
           floatingActionButton: FloatingActionButton.extended(
             onPressed: () => _showAddSymptomModal(entries),
-            backgroundColor: Colors.white,
-            foregroundColor: _kText,
-            icon: const Icon(Icons.add_rounded, color: _kBlue),
+            backgroundColor: Theme.of(context).cardColor,
+            foregroundColor: Theme.of(context).colorScheme.onSurface,
+            icon: Icon(Icons.add_rounded, color: Theme.of(context).colorScheme.primary),
             label: const Text(
               'Sintoma',
               style: TextStyle(fontWeight: FontWeight.w700),
@@ -439,7 +434,7 @@ class _EmptyTimeline extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).cardColor,
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
@@ -456,21 +451,21 @@ class _EmptyTimeline extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          const Text(
+          Text(
             'Tudo tranquilo por aqui.',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF0F172A),
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Nenhum evento registado ainda hoje.\nContinue a cuidar da sua saúde!',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 14,
-              color: Color(0xFF64748B),
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
               height: 1.4,
             ),
           ),
@@ -502,8 +497,8 @@ class _TimelineItem extends StatelessWidget {
       builder: (_) => SafeArea(
         bottom: true,
         child: Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
             borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           ),
           padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
@@ -577,9 +572,9 @@ class _TimelineItem extends StatelessWidget {
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(ctx),
-                          child: const Text(
+                          child: Text(
                             'Cancelar',
-                            style: TextStyle(color: Color(0xFF64748B)),
+                            style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
                           ),
                         ),
                         ElevatedButton(
@@ -635,10 +630,10 @@ class _TimelineItem extends StatelessWidget {
                 const SizedBox(height: 16),
                 Text(
                   timeStr,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF64748B),
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
                 ),
               ],
@@ -656,7 +651,7 @@ class _TimelineItem extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: dotColor,
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2),
+                  border: Border.all(color: Theme.of(context).cardColor, width: 2),
                   boxShadow: [
                     BoxShadow(
                       color: dotColor.withValues(alpha: 0.35),
@@ -680,7 +675,7 @@ class _TimelineItem extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).cardColor,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: dotColor.withValues(alpha: 0.25)),
                   boxShadow: [
@@ -702,10 +697,10 @@ class _TimelineItem extends StatelessWidget {
                     Expanded(
                       child: Text(
                         title,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF0F172A),
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -821,18 +816,18 @@ class _EntryDetailDialog extends StatelessWidget {
                     children: [
                       Text(
                         isBathroom ? 'Ida ao Banheiro' : 'Registo de Sintomas',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w800,
-                          color: Color(0xFF0F172A),
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         '$dateStr às $timeStr',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
-                          color: Color(0xFF64748B),
+                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                         ),
                       ),
                     ],
@@ -882,7 +877,7 @@ class _EntryDetailDialog extends StatelessWidget {
                                 vertical: 5,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: Theme.of(context).cardColor,
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
                                   color: const Color(0xFFE2E8F0),
@@ -890,10 +885,10 @@ class _EntryDetailDialog extends StatelessWidget {
                               ),
                               child: Text(
                                 s,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
-                                  color: Color(0xFF0F172A),
+                                  color: Theme.of(context).colorScheme.onSurface,
                                 ),
                               ),
                             ),
@@ -910,7 +905,7 @@ class _EntryDetailDialog extends StatelessWidget {
                         width: double.infinity,
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: Theme.of(context).cardColor,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: const Color(0xFFE2E8F0)),
                         ),
@@ -960,10 +955,10 @@ class _EntryDetailDialog extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text(
+                    child: Text(
                       'Fechar',
                       style: TextStyle(
-                        color: Color(0xFF64748B),
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -1004,9 +999,9 @@ class _EntryDetailDialog extends StatelessWidget {
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.pop(ctx),
-                              child: const Text(
+                              child: Text(
                                 'Cancelar',
-                                style: TextStyle(color: Color(0xFF64748B)),
+                                style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
                               ),
                             ),
                             ElevatedButton(
@@ -1141,8 +1136,8 @@ class _SymptomSearchModalState extends State<_SymptomSearchModal> {
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.75,
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Column(
@@ -1169,7 +1164,7 @@ class _SymptomSearchModalState extends State<_SymptomSearchModal> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
-                color: const Color(0xFFF1F5F9),
+                color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Row(
@@ -1351,13 +1346,11 @@ class _BathroomExtrasModalState extends State<_BathroomExtrasModal> {
 
   final List<String> _selected = [];
 
-  static const Color _kBlue = Color(0xFF2563EB);
-
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       padding: EdgeInsets.only(
@@ -1396,10 +1389,10 @@ class _BathroomExtrasModalState extends State<_BathroomExtrasModal> {
                   color: const Color(0xFFEFF6FF),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.wc_rounded, color: _kBlue, size: 22),
+                child: Icon(Icons.wc_rounded, color: Theme.of(context).colorScheme.primary, size: 22),
               ),
               const SizedBox(width: 14),
-              const Column(
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
@@ -1407,12 +1400,12 @@ class _BathroomExtrasModalState extends State<_BathroomExtrasModal> {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
-                      color: Color(0xFF0F172A),
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   Text(
                     'Opcional — tudo fica num registo só.',
-                    style: TextStyle(fontSize: 13, color: Color(0xFF64748B)),
+                    style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
                   ),
                 ],
               ),
@@ -1439,14 +1432,14 @@ class _BathroomExtrasModalState extends State<_BathroomExtrasModal> {
                     }
                   });
                 },
-                selectedColor: _kBlue.withValues(alpha: 0.15),
-                checkmarkColor: _kBlue,
-                backgroundColor: Colors.white,
+                selectedColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
+                checkmarkColor: Theme.of(context).colorScheme.primary,
+                backgroundColor: Theme.of(context).cardColor,
                 side: BorderSide(
-                  color: isSelected ? _kBlue : const Color(0xFFE2E8F0),
+                  color: isSelected ? Theme.of(context).colorScheme.primary : const Color(0xFFE2E8F0),
                 ),
                 labelStyle: TextStyle(
-                  color: isSelected ? _kBlue : const Color(0xFF0F172A),
+                  color: isSelected ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.onSurface,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                   fontSize: 13,
                 ),
@@ -1469,10 +1462,10 @@ class _BathroomExtrasModalState extends State<_BathroomExtrasModal> {
                       borderRadius: BorderRadius.circular(14),
                     ),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Não, só isso',
                     style: TextStyle(
-                      color: Color(0xFF64748B),
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -1487,7 +1480,7 @@ class _BathroomExtrasModalState extends State<_BathroomExtrasModal> {
                     Navigator.pop(context, _selected);
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: _kBlue,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
@@ -1498,8 +1491,8 @@ class _BathroomExtrasModalState extends State<_BathroomExtrasModal> {
                     _selected.isEmpty
                         ? 'Só a ida'
                         : 'Adicionar (${_selected.length})',
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: Theme.of(context).cardColor,
                       fontWeight: FontWeight.w700,
                     ),
                   ),

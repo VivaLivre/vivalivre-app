@@ -162,30 +162,46 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     ));
   }
 
-  void _onFindNearestBathroom(
+  Future<void> _onFindNearestBathroom(
     FindNearestBathroom event,
     Emitter<MapState> emit,
-  ) {
+  ) async {
     if (state is MapLoaded) {
       final currentState = state as MapLoaded;
       
-      // Filter only open bathrooms for emergency
-      final openBathrooms = currentState.bathrooms
-          .where((b) => b.isOpen)
-          .toList();
+      try {
+        // Find bathrooms around the real user position up to 10km radius
+        final bathroomsNearUser = await _repository.getBathrooms(
+          currentState.userPosition.latitude,
+          currentState.userPosition.longitude,
+          radius: 10000,
+        );
 
-      final nearest = _repository.findNearestBathroom(
-        currentState.userPosition,
-        openBathrooms,
-      );
+        final openBathrooms = bathroomsNearUser.where((b) => b.isOpen).toList();
 
-      if (nearest != null) {
-        emit(currentState.copyWith(
-          nearestBathroom: nearest,
-          selectedBathroom: nearest,
-        ));
-      } else {
-        emit(const MapError('Nenhum banheiro aberto encontrado na sua região.'));
+        final nearest = _repository.findNearestBathroom(
+          currentState.userPosition,
+          openBathrooms,
+        );
+
+        if (nearest != null) {
+          // Merge to ensure the nearest bathroom is in the loaded list
+          final Map<String, Bathroom> bathroomMap = {
+            for (var b in currentState.bathrooms) b.id.toString(): b,
+            for (var b in bathroomsNearUser) b.id.toString(): b,
+          };
+
+          emit(currentState.copyWith(
+            nearestBathroom: nearest,
+            selectedBathroom: nearest,
+            bathrooms: bathroomMap.values.toList(),
+          ));
+        } else {
+          emit(const MapError('Nenhum banheiro aberto encontrado na sua região.'));
+          emit(currentState);
+        }
+      } catch (e) {
+        emit(MapError('Erro ao buscar banheiros próximos.'));
         emit(currentState);
       }
     }

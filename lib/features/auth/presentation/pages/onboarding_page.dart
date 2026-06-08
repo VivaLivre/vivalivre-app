@@ -16,7 +16,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -137,6 +137,14 @@ class OnboardingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final activeGradient = isDark 
+        ? [Theme.of(context).colorScheme.primary.withValues(alpha: 0.15), Theme.of(context).colorScheme.primary.withValues(alpha: 0.05)]
+        : gradientColors;
+    final activeShadowColor = isDark
+        ? Colors.black.withValues(alpha: 0.2)
+        : gradientColors.first.withValues(alpha: 0.5);
+
     return Padding(
       padding: const EdgeInsets.all(24.0),
       child: Column(
@@ -147,14 +155,14 @@ class OnboardingCard extends StatelessWidget {
             width: double.infinity,
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: gradientColors,
+                colors: activeGradient,
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(30),
               boxShadow: [
                 BoxShadow(
-                  color: gradientColors.first.withValues(alpha: 0.5),
+                  color: activeShadowColor,
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),
@@ -163,16 +171,16 @@ class OnboardingCard extends StatelessWidget {
             child: Icon(
               icon,
               size: 100,
-              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.8),
+              color: Theme.of(context).colorScheme.primary.withValues(alpha: isDark ? 0.6 : 0.8),
             ),
           ),
           const SizedBox(height: 40),
           Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.w800,
-              color: Color(0xFF1E293B), // slate-800
+              color: Theme.of(context).colorScheme.onSurface, // slate-800
               letterSpacing: -0.5,
             ),
             textAlign: TextAlign.center,
@@ -181,9 +189,9 @@ class OnboardingCard extends StatelessWidget {
           Text(
             description,
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
-              color: Color(0xFF64748B), // slate-500
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7), // slate-500
               height: 1.5,
             ),
           ),

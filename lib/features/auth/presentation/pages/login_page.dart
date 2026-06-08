@@ -78,20 +78,20 @@ class _LoginPageState extends State<LoginPage> {
                         color: Color(0xFF2563EB),
                       ),
                       const SizedBox(height: 16),
-                      const Text(
+                      Text(
                         'Bem-vindo de volta',
                         style: TextStyle(
                           fontSize: 26,
                           fontWeight: FontWeight.w800,
-                          color: Color(0xFF1E293B),
+                          color: Theme.of(context).colorScheme.onSurface,
                           letterSpacing: -0.5,
                         ),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 6),
-                      const Text(
+                      Text(
                         'Faça login na sua conta do VivaLivre',
-                        style: TextStyle(fontSize: 15, color: Color(0xFF64748B)),
+                        style: TextStyle(fontSize: 15, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 40),
@@ -190,9 +190,9 @@ class _LoginPageState extends State<LoginPage> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text(
+                          Text(
                             'Não tem uma conta?',
-                            style: TextStyle(color: Color(0xFF64748B)),
+                            style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
                           ),
                           TextButton(
                             onPressed: isLoading

@@ -192,13 +192,13 @@ class _RatingsPageState extends State<RatingsPage> {
                   ],
                 ),
               ),
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'suggest',
                 child: Row(
                   children: [
-                    Icon(Icons.edit_note_rounded, size: 18, color: Color(0xFF2563EB)), // _kBlue equivalent
-                    SizedBox(width: 10),
-                    Text('Propor alteração', style: TextStyle(fontSize: 14)),
+                    Icon(Icons.edit_note_rounded, size: 18, color: Theme.of(context).colorScheme.primary), // _kBlue equivalent
+                    const SizedBox(width: 10),
+                    const Text('Propor alteração', style: TextStyle(fontSize: 14)),
                   ],
                 ),
               ),
@@ -606,16 +606,16 @@ class _RatingsPageState extends State<RatingsPage> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE5E7EB),
+                  color: Theme.of(context).dividerColor,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
               const SizedBox(height: 20),
-              const Row(
+              Row(
                 children: [
-                  Icon(Icons.edit_note_rounded, color: Color(0xFF2563EB), size: 22),
-                  SizedBox(width: 10),
-                  Text('Propor Alteração',
+                  Icon(Icons.edit_note_rounded, color: Theme.of(context).colorScheme.primary, size: 22),
+                  const SizedBox(width: 10),
+                  const Text('Propor Alteração',
                       style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
                 ],
               ),
@@ -628,7 +628,7 @@ class _RatingsPageState extends State<RatingsPage> {
               CheckboxListTile(
                 title: const Text('♿ Acessível para PCD', style: TextStyle(fontSize: 14)),
                 value: suggestAccessible,
-                activeColor: const Color(0xFF2563EB),
+                activeColor: Theme.of(context).colorScheme.primary,
                 onChanged: (val) => setSheetState(() => suggestAccessible = val ?? false),
                 dense: true,
                 contentPadding: EdgeInsets.zero,
@@ -636,7 +636,7 @@ class _RatingsPageState extends State<RatingsPage> {
               CheckboxListTile(
                 title: const Text('🍼 Possui Trocador', style: TextStyle(fontSize: 14)),
                 value: suggestChangingTable,
-                activeColor: const Color(0xFF2563EB),
+                activeColor: Theme.of(context).colorScheme.primary,
                 onChanged: (val) => setSheetState(() => suggestChangingTable = val ?? false),
                 dense: true,
                 contentPadding: EdgeInsets.zero,
@@ -644,7 +644,7 @@ class _RatingsPageState extends State<RatingsPage> {
               CheckboxListTile(
                 title: const Text('🆓 Gratuito', style: TextStyle(fontSize: 14)),
                 value: suggestFree,
-                activeColor: const Color(0xFF2563EB),
+                activeColor: Theme.of(context).colorScheme.primary,
                 onChanged: (val) => setSheetState(() => suggestFree = val ?? false),
                 dense: true,
                 contentPadding: EdgeInsets.zero,
@@ -666,7 +666,7 @@ class _RatingsPageState extends State<RatingsPage> {
                     ));
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2563EB),
+                    backgroundColor: Theme.of(context).colorScheme.primary,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
