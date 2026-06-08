@@ -18,6 +18,7 @@ class EditProfilePage extends StatefulWidget {
 class _EditProfilePageState extends State<EditProfilePage> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
+  late TextEditingController _emailController;
   late TextEditingController _heightController;
   late TextEditingController _weightController;
   late TextEditingController _birthDateController;
@@ -37,6 +38,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     }
 
     _nameController = TextEditingController(text: user?.name ?? '');
+    _emailController = TextEditingController(text: user?.email ?? '');
     _heightController = TextEditingController(
       text: user?.height != null ? user!.height.toString() : '',
     );
@@ -57,6 +59,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   @override
   void dispose() {
     _nameController.dispose();
+    _emailController.dispose();
     _heightController.dispose();
     _weightController.dispose();
     _birthDateController.dispose();
@@ -120,38 +123,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
     );
   }
 
-  Future<void> _selectBirthDate() async {
-    final DateTime now = DateTime.now();
-    final DateTime initialDate = _selectedBirthDate ?? DateTime(2000, 1, 1);
-    final DateTime firstDate = DateTime(1900);
-    final DateTime lastDate = now;
-
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: initialDate,
-      firstDate: firstDate,
-      lastDate: lastDate,
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: Theme.of(context).colorScheme.copyWith(
-                  primary: AppColors.primary,
-                  onPrimary: Colors.white,
-                ),
-          ),
-          child: child!,
-        );
-      },
-    );
-
-    if (picked != null && picked != _selectedBirthDate) {
-      setState(() {
-        _selectedBirthDate = picked;
-        _birthDateController.text = DateFormat('dd/MM/yyyy').format(picked);
-      });
-    }
-  }
-
   Future<void> _saveProfile() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -160,16 +131,15 @@ class _EditProfilePageState extends State<EditProfilePage> {
     });
 
     try {
-      final name = _nameController.text.trim();
+      final email = _emailController.text.trim();
       final height = int.tryParse(_heightController.text.trim());
       final weight = double.tryParse(_weightController.text.trim());
       
       final authRepo = RepositoryProvider.of<AuthRepository>(context);
       final updatedUser = await authRepo.updateProfile(
-        name: name,
+        email: email,
         height: height,
         weight: weight,
-        birthDate: _selectedBirthDate,
         photo: _selectedImage,
       );
 
@@ -216,7 +186,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
       user = authState.user;
     }
 
-    // Dynamic color parameters for glassmorphism and modern cards
     final _kCardBg = isDark ? AppColors.darkSurface : Colors.white;
     final _kInputBg = isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9);
 
@@ -351,29 +320,44 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           ),
                           const SizedBox(height: 20),
 
-                          // Name
+                          // Name (Read Only with Lock Icon)
                           _buildTextField(
-                            label: 'Nome Completo',
+                            label: 'Nome Completo (Não alterável)',
                             controller: _nameController,
                             icon: Icons.person_outline_rounded,
+                            fillColor: _kInputBg.withValues(alpha: 0.5),
+                            readOnly: true,
+                            suffixIcon: const Icon(Icons.lock_outline, color: Colors.grey, size: 18),
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Email (Editable)
+                          _buildTextField(
+                            label: 'E-mail',
+                            controller: _emailController,
+                            icon: Icons.email_outlined,
                             fillColor: _kInputBg,
+                            keyboardType: TextInputType.emailAddress,
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
-                                return 'O nome é obrigatório.';
+                                return 'O e-mail é obrigatório.';
+                              }
+                              if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value.trim())) {
+                                return 'E-mail inválido.';
                               }
                               return null;
                             },
                           ),
                           const SizedBox(height: 16),
 
-                          // Birth Date
+                          // Birth Date (Read Only with Lock Icon)
                           _buildTextField(
-                            label: 'Data de Nascimento',
+                            label: 'Data de Nascimento (Não alterável)',
                             controller: _birthDateController,
                             icon: Icons.calendar_month_outlined,
-                            fillColor: _kInputBg,
+                            fillColor: _kInputBg.withValues(alpha: 0.5),
                             readOnly: true,
-                            onTap: _selectBirthDate,
+                            suffixIcon: const Icon(Icons.lock_outline, color: Colors.grey, size: 18),
                           ),
                         ],
                       ),
@@ -501,6 +485,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     required IconData icon,
     required Color fillColor,
     bool readOnly = false,
+    Widget? suffixIcon,
     VoidCallback? onTap,
     TextInputType? keyboardType,
     FormFieldValidator<String>? validator,
@@ -514,7 +499,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
       onTap: onTap,
       keyboardType: keyboardType,
       validator: validator,
-      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+      style: TextStyle(
+        fontWeight: FontWeight.w600,
+        fontSize: 15,
+        color: readOnly ? Colors.grey : (isDark ? Colors.white : Colors.black),
+      ),
       decoration: InputDecoration(
         labelText: label,
         labelStyle: TextStyle(
@@ -527,6 +516,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
           fontWeight: FontWeight.w600,
         ),
         prefixIcon: Icon(icon, color: AppColors.primary, size: 22),
+        suffixIcon: suffixIcon,
         filled: true,
         fillColor: fillColor,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),

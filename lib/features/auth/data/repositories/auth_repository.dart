@@ -119,18 +119,16 @@ class AuthRepository {
   }
 
   Future<UserModel?> updateProfile({
-    required String name,
+    required String email,
     int? height,
     double? weight,
-    DateTime? birthDate,
     XFile? photo,
   }) async {
     try {
       final formData = FormData.fromMap({
-        'name': name,
+        'email': email,
         if (height != null) 'height': height.toString(),
         if (weight != null) 'weight': weight.toString(),
-        if (birthDate != null) 'birth_date': birthDate.toIso8601String().split('T')[0],
         if (photo != null)
           'photo': MultipartFile.fromBytes(
             await photo.readAsBytes(),

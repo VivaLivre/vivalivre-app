@@ -184,6 +184,27 @@ class _ProfilePageState extends State<ProfilePage>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Perfil',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w900,
+                          color: _kText,
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.edit_outlined, color: _kBlue, size: 22),
+                        tooltip: 'Editar Perfil',
+                        onPressed: () {
+                          Navigator.pushNamed(context, '/edit-profile');
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
                   // ── 1. Cabeçalho do Paciente ──
                   Center(
                     child: Column(
@@ -403,24 +424,7 @@ class _ProfilePageState extends State<ProfilePage>
                     ),
                   ),
 
-                  const SizedBox(height: 28),
-
-                  // ── 4. Menu e Ações ──
-                  Text(
-                    'Conta',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: _kSubText, letterSpacing: 0.5),
-                  ),
-                  const SizedBox(height: 10),
-                  _ProfileMenuItem(
-                    icon: Icons.edit_rounded,
-                    title: 'Editar Perfil',
-                    onTap: () {
-                      Navigator.pushNamed(context, '/edit-profile');
-                    },
-                    cardBg: _kCardBg,
-                  ),
-
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 12),
 
                   Text(
                     'Configurações',
