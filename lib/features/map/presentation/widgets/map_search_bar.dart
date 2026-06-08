@@ -97,6 +97,31 @@ class _MapSearchBarState extends State<MapSearchBar> {
           }
         }
 
+        // Ordenar as sugestões pela distância até a localização atual do usuário
+        if (data.isNotEmpty) {
+          const distanceCalc = Distance();
+          data.sort((a, b) {
+            final latA = double.tryParse(a['lat']?.toString() ?? '') ?? 0.0;
+            final lonA = double.tryParse(a['lon']?.toString() ?? '') ?? 0.0;
+            final latB = double.tryParse(b['lat']?.toString() ?? '') ?? 0.0;
+            final lonB = double.tryParse(b['lon']?.toString() ?? '') ?? 0.0;
+
+            final distA = distanceCalc.as(
+              LengthUnit.Meter,
+              widget.currentPosition,
+              LatLng(latA, lonA),
+            );
+
+            final distB = distanceCalc.as(
+              LengthUnit.Meter,
+              widget.currentPosition,
+              LatLng(latB, lonB),
+            );
+
+            return distA.compareTo(distB);
+          });
+        }
+
         setState(() {
           _suggestions = data;
           _isSearching = false;
