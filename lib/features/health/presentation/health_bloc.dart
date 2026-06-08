@@ -25,7 +25,7 @@ class HealthBloc extends Bloc<HealthEvent, HealthState> {
     emit(HealthLoading());
 
     try {
-      final entries = await _healthRepository.getEntries(event.userId);
+      final entries = await _healthRepository.getEntries(event.userId, filterDate: 'today');
       emit(HealthEntriesLoaded(entries));
     } catch (e) {
       emit(const HealthError('Não foi possível carregar os registos. Verifique a sua ligação.'));

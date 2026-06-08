@@ -18,5 +18,5 @@ abstract class IHealthRepository {
   ///
   /// Os registos são ordenados por [timestamp] decrescente,
   /// limitados a 100 entradas.
-  Future<List<HealthEntry>> getEntries(String userId);
+  Future<List<HealthEntry>> getEntries(String userId, {String? filterDate});
 }

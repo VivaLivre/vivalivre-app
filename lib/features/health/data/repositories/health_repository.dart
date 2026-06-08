@@ -36,9 +36,12 @@ class HealthRepositoryImpl implements IHealthRepository {
   }
 
   @override
-  Future<List<HealthEntry>> getEntries(String userId) async {
+  Future<List<HealthEntry>> getEntries(String userId, {String? filterDate}) async {
     try {
-      final response = await _apiClient.dio.get('/api/health/entries');
+      final response = await _apiClient.dio.get(
+        '/api/health/entries',
+        queryParameters: filterDate != null ? {'date': filterDate} : null,
+      );
       if (response.statusCode == 200 && response.data is List) {
         debugPrint('[HealthRepository] getEntries: sucesso');
         return (response.data as List).map((json) => HealthEntryModel.fromJson(json)).toList();
