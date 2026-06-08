@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
@@ -236,10 +237,15 @@ class _EditProfilePageState extends State<EditProfilePage> {
                             ),
                             child: ClipOval(
                               child: _selectedImage != null
-                                  ? Image.file(
-                                      File(_selectedImage!.path),
-                                      fit: BoxFit.cover,
-                                    )
+                                  ? (kIsWeb
+                                      ? Image.network(
+                                          _selectedImage!.path,
+                                          fit: BoxFit.cover,
+                                        )
+                                      : Image.file(
+                                          File(_selectedImage!.path),
+                                          fit: BoxFit.cover,
+                                        ))
                                   : user?.avatarUrl != null
                                       ? Image.network(
                                           user!.avatarUrl!,
