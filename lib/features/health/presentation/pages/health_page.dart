@@ -685,9 +685,12 @@ class _TimelineItem extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).cardColor,
+                  color: Color.alphaBlend(
+                    dotColor.withValues(alpha: 0.08),
+                    Theme.of(context).cardColor,
+                  ),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: dotColor.withValues(alpha: 0.25)),
+                  border: Border.all(color: dotColor.withValues(alpha: 0.2)),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.02),
