@@ -28,7 +28,7 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
   static const Color _kSubText = Color(0xFF64748B);
   static const Color _kBg = Color(0xFFF8FAFC);
 
-  final List<String> _severityOptions = ['Leve', 'Moderada', 'Grave'];
+  final List<String> _severityOptions = ['Leve', 'Observação', 'Grave'];
 
   final List<String> _symptomsOptions = [
     'Dor Abdominal', 'Diarreia', 'Sangue nas Fezes', 'Fadiga Extrema',
@@ -40,6 +40,9 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
     'Eritema Nodoso', 'Olhos Vermelhos/Irritados', 'Visão Embaçada',
     'Perda de Peso', 'Anemia', 'Fraqueza', 'Desidratação', 'Boca Seca',
     'Palpitações', 'Ansiedade', 'Insónia', 'Alterações de Humor',
+    'Dor Lombar', 'Cãibras', 'Espasmos Musculares', 'Parestesia/Formigueiro',
+    'Dor de Garganta', 'Tosse', 'Falta de Ar', 'Olho Seco', 'Coceira/Prurido',
+    'Dificuldade de Concentração',
   ];
 
   @override
@@ -91,7 +94,7 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
       // 1 sintoma grave já é suficiente para Grave
       newSeverity = 'Grave';
     } else if (_selectedSymptoms.length >= 3) {
-      newSeverity = 'Moderada';
+      newSeverity = 'Observação';
     } else if (_selectedSymptoms.isNotEmpty) {
       newSeverity = 'Leve';
     } else {
@@ -170,7 +173,7 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
                   final isSelected = _severity == option;
                   final color = option == 'Leve'
                       ? const Color(0xFF10B981)
-                      : option == 'Moderada'
+                      : option == 'Observação'
                           ? const Color(0xFFF59E0B)
                           : const Color(0xFFEF4444);
                   return Expanded(

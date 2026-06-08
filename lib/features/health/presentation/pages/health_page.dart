@@ -88,6 +88,16 @@ class _HealthPageState extends State<HealthPage>
     'Ansiedade',
     'Insónia',
     'Alterações de Humor',
+    'Dor Lombar',
+    'Cãibras',
+    'Espasmos Musculares',
+    'Parestesia/Formigueiro',
+    'Dor de Garganta',
+    'Tosse',
+    'Falta de Ar',
+    'Olho Seco',
+    'Coceira/Prurido',
+    'Dificuldade de Concentração',
   ];
   late List<String> _customSymptoms;
 
@@ -144,7 +154,7 @@ class _HealthPageState extends State<HealthPage>
     final severity = hasSevere
         ? 'Grave'
         : symptoms.length >= 4
-        ? 'Moderada'
+        ? 'Observação'
         : 'Leve';
 
     final entry = HealthEntry(
@@ -484,7 +494,7 @@ class _TimelineItem extends StatelessWidget {
   static Color _severityColor(String severity) {
     return switch (severity) {
       'Grave' => const Color(0xFFEF4444),
-      'Moderada' => const Color(0xFFF59E0B),
+      'Observação' || 'Moderada' => const Color(0xFFF59E0B),
       _ => const Color(0xFF10B981),
     };
   }
@@ -760,7 +770,7 @@ class _EntryDetailDialog extends StatelessWidget {
   static Color _severityColor(String severity) {
     return switch (severity) {
       'Grave' => const Color(0xFFEF4444),
-      'Moderada' => const Color(0xFFF59E0B),
+      'Observação' || 'Moderada' => const Color(0xFFF59E0B),
       _ => const Color(0xFF10B981),
     };
   }
