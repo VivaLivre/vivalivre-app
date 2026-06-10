@@ -13,11 +13,17 @@ import 'package:latlong2/latlong.dart';
 import 'package:viva_livre_app/features/map/presentation/bloc/add_bathroom_bloc.dart';
 
 const _kBlue = Color(0xFF2563EB);
-const _kDark = Color(0xFF111827);
-const _kGray = Color(0xFF9CA3AF);
-const _kBg = Color(0xFFF3F4F6);
-const _kCardBg = Color(0xFFF9FAFB);
-const _kBorder = Color(0xFFE5E7EB);
+
+extension AddBathroomTheme on BuildContext {
+  bool get isDark => Theme.of(this).brightness == Brightness.dark;
+  Color get bg => isDark ? Theme.of(this).scaffoldBackgroundColor : const Color(0xFFF3F4F6);
+  Color get cardBg => isDark ? Theme.of(this).cardColor : const Color(0xFFF9FAFB);
+  Color get border => isDark ? Theme.of(this).dividerColor : const Color(0xFFE5E7EB);
+  Color get textDark => isDark ? Colors.white : const Color(0xFF111827);
+  Color get textGray => isDark ? Colors.white70 : const Color(0xFF9CA3AF);
+  Color get sheetBg => isDark ? Theme.of(this).cardColor : Colors.white;
+}
+
 
 class AddBathroomPage extends StatefulWidget {
   /// Initial position from the user's current GPS location.
@@ -138,9 +144,9 @@ class _AddBathroomPageState extends State<AddBathroomPage>
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (_) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
+      builder: (ctx) => Container(
+        decoration: BoxDecoration(
+          color: ctx.sheetBg,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
@@ -151,17 +157,17 @@ class _AddBathroomPageState extends State<AddBathroomPage>
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: _kBorder,
+                color: context.border,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
             const SizedBox(height: 24),
-            const Text(
+            Text(
               'Adicionar Foto',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
-                color: _kDark,
+                color: context.textDark,
               ),
             ),
             const SizedBox(height: 20),
@@ -285,13 +291,22 @@ class _AddBathroomPageState extends State<AddBathroomPage>
                     },
                   ),
                   children: [
-                    TileLayer(
-                      urlTemplate:
-                          'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-                      subdomains: const ['a', 'b', 'c', 'd'],
-                      userAgentPackageName: 'com.vivalivre.app',
-                      maxNativeZoom: 19,
-                      maxZoom: 22,
+                    ColorFiltered(
+                      colorFilter: ColorFilter.mode(
+                        context.isDark
+                            ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.15)
+                            : Colors.transparent,
+                        BlendMode.color,
+                      ),
+                      child: TileLayer(
+                        urlTemplate: context.isDark
+                            ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'
+                            : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+                        subdomains: const ['a', 'b', 'c', 'd'],
+                        userAgentPackageName: 'com.vivalivre.app',
+                        maxNativeZoom: 19,
+                        maxZoom: 22,
+                      ),
                     ),
                   ],
                 ),
@@ -384,9 +399,9 @@ class _AddBathroomPageState extends State<AddBathroomPage>
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        Colors.white,
-                        Colors.white.withValues(alpha: 0.95),
-                        Colors.white.withValues(alpha: 0),
+                        context.sheetBg,
+                        context.sheetBg.withValues(alpha: 0.95),
+                        context.sheetBg.withValues(alpha: 0),
                       ],
                       stops: const [0, 0.7, 1.0],
                     ),
@@ -398,13 +413,13 @@ class _AddBathroomPageState extends State<AddBathroomPage>
                         onTap: () => Navigator.of(context).pop(),
                       ),
                       const SizedBox(width: 12),
-                      const Expanded(
+                      Expanded(
                         child: Text(
                           'Sugerir Banheiro',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
-                            color: _kDark,
+                            color: context.textDark,
                           ),
                         ),
                       ),
@@ -433,7 +448,7 @@ class _AddBathroomPageState extends State<AddBathroomPage>
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 10),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: context.sheetBg,
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
@@ -456,11 +471,11 @@ class _AddBathroomPageState extends State<AddBathroomPage>
                             ),
                           ),
                           const SizedBox(width: 10),
-                          const Text(
+                          Text(
                             'A procurar endereço...',
                             style: TextStyle(
                               fontSize: 13,
-                              color: _kGray,
+                              color: context.textGray,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -473,10 +488,10 @@ class _AddBathroomPageState extends State<AddBathroomPage>
                               state.address.isNotEmpty
                                   ? state.address
                                   : 'Mova o mapa para selecionar',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
-                                color: _kDark,
+                                color: context.textDark,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -500,7 +515,7 @@ class _AddBathroomPageState extends State<AddBathroomPage>
                 builder: (context, scrollController) {
                   return Container(
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: context.sheetBg,
                       borderRadius:
                           const BorderRadius.vertical(top: Radius.circular(24)),
                       boxShadow: [
@@ -522,7 +537,7 @@ class _AddBathroomPageState extends State<AddBathroomPage>
                             width: 40,
                             height: 4,
                             decoration: BoxDecoration(
-                              color: _kBorder,
+                              color: context.border,
                               borderRadius: BorderRadius.circular(2),
                             ),
                           ),
@@ -538,7 +553,7 @@ class _AddBathroomPageState extends State<AddBathroomPage>
                           onChanged: (val) => context
                               .read<AddBathroomBloc>()
                               .add(AddressEdited(val)),
-                          style: const TextStyle(fontSize: 14, color: _kDark),
+                          style: TextStyle(fontSize: 14, color: context.textDark),
                           decoration: _inputDecoration(
                             hint: 'Morada preenchida automaticamente',
                             suffixIcon: state.isGeocodingAddress
@@ -553,8 +568,8 @@ class _AddBathroomPageState extends State<AddBathroomPage>
                                       ),
                                     ),
                                   )
-                                : const Icon(Icons.edit_rounded,
-                                    size: 18, color: _kGray),
+                                : Icon(Icons.edit_rounded,
+                                    size: 18, color: context.textGray),
                           ),
                         ),
                         const SizedBox(height: 20),
@@ -566,7 +581,7 @@ class _AddBathroomPageState extends State<AddBathroomPage>
                         const SizedBox(height: 8),
                         TextField(
                           controller: _nameController,
-                          style: const TextStyle(fontSize: 14, color: _kDark),
+                          style: TextStyle(fontSize: 14, color: context.textDark),
                           decoration: _inputDecoration(
                             hint: 'Ex: Shopping ABCD, Posto Shell...',
                           ),
@@ -578,9 +593,9 @@ class _AddBathroomPageState extends State<AddBathroomPage>
                             icon: Icons.camera_alt_rounded,
                             label: 'Foto do Local'),
                         const SizedBox(height: 4),
-                        const Text(
+                        Text(
                           'Obrigatória para validação da sugestão',
-                          style: TextStyle(fontSize: 12, color: _kGray),
+                          style: TextStyle(fontSize: 12, color: context.textGray),
                         ),
                         const SizedBox(height: 10),
                         _PhotoPicker(
@@ -595,7 +610,7 @@ class _AddBathroomPageState extends State<AddBathroomPage>
                         // ── Toggles ──
                         Container(
                           decoration: BoxDecoration(
-                            color: _kCardBg,
+                            color: context.cardBg,
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Column(
@@ -608,7 +623,7 @@ class _AddBathroomPageState extends State<AddBathroomPage>
                                     .read<AddBathroomBloc>()
                                     .add(const ToggleAccessible()),
                               ),
-                              const Divider(height: 1, color: _kBorder),
+                              Divider(height: 1, color: context.border),
                               _ToggleRow(
                                 icon: '🍼',
                                 label: 'Possui Trocador',
@@ -617,7 +632,7 @@ class _AddBathroomPageState extends State<AddBathroomPage>
                                     .read<AddBathroomBloc>()
                                     .add(const ToggleChangingTable()),
                               ),
-                              const Divider(height: 1, color: _kBorder),
+                              Divider(height: 1, color: context.border),
                               _ToggleRow(
                                 icon: '🆓',
                                 label: 'Gratuito',
@@ -636,9 +651,9 @@ class _AddBathroomPageState extends State<AddBathroomPage>
                             icon: Icons.schedule_rounded,
                             label: 'Horário de Funcionamento'),
                         const SizedBox(height: 4),
-                        const Text(
+                        Text(
                           'Selecione o tipo de horário',
-                          style: TextStyle(fontSize: 12, color: _kGray),
+                          style: TextStyle(fontSize: 12, color: context.textGray),
                         ),
                         const SizedBox(height: 10),
                         Row(
@@ -696,7 +711,7 @@ class _AddBathroomPageState extends State<AddBathroomPage>
                               '(opcional)',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: _kGray.withValues(alpha: 0.8),
+                                color: context.textGray.withValues(alpha: 0.8),
                               ),
                             ),
                           ],
@@ -705,7 +720,7 @@ class _AddBathroomPageState extends State<AddBathroomPage>
                         TextField(
                           controller: _commentController,
                           maxLines: 3,
-                          style: const TextStyle(fontSize: 14, color: _kDark),
+                          style: TextStyle(fontSize: 14, color: context.textDark),
                           decoration: _inputDecoration(
                             hint:
                                 'Dicas, observações sobre o local...',
@@ -788,9 +803,9 @@ class _AddBathroomPageState extends State<AddBathroomPage>
   }) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: const TextStyle(color: _kGray, fontSize: 14),
+      hintStyle: TextStyle(color: context.textGray, fontSize: 14),
       filled: true,
-      fillColor: _kBg,
+      fillColor: context.bg,
       suffixIcon: suffixIcon,
       contentPadding:
           const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -824,7 +839,7 @@ class _CircleButton extends StatelessWidget {
         width: 44,
         height: 44,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.sheetBg,
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
@@ -834,7 +849,7 @@ class _CircleButton extends StatelessWidget {
             ),
           ],
         ),
-        child: Icon(icon, color: _kDark, size: 20),
+        child: Icon(icon, color: context.textDark, size: 20),
       ),
     );
   }
@@ -854,10 +869,10 @@ class _SectionLabel extends StatelessWidget {
         const SizedBox(width: 6),
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: _kDark,
+            color: context.textDark,
           ),
         ),
       ],
@@ -887,7 +902,7 @@ class _ToggleRow extends StatelessWidget {
         children: [
           Text(
             '$icon  $label',
-            style: const TextStyle(fontSize: 15, color: _kDark),
+            style: TextStyle(fontSize: 15, color: context.textDark),
           ),
           Switch(
             value: value,
@@ -979,20 +994,20 @@ class _PhotoPicker extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.9),
+                  color: context.sheetBg.withValues(alpha: 0.9),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.edit_rounded, size: 14, color: _kDark),
+                    Icon(Icons.edit_rounded, size: 14, color: context.textDark),
                     SizedBox(width: 6),
                     Text(
                       'Alterar',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: _kDark,
+                        color: context.textDark,
                       ),
                     ),
                   ],
@@ -1011,10 +1026,10 @@ class _PhotoPicker extends StatelessWidget {
         height: 120,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: _kBorder, width: 1.5),
-          color: _kBg,
+          border: Border.all(color: context.border, width: 1.5),
+          color: context.bg,
         ),
-        child: const Column(
+        child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.add_a_photo_rounded, color: _kBlue, size: 32),
@@ -1030,7 +1045,7 @@ class _PhotoPicker extends StatelessWidget {
             SizedBox(height: 2),
             Text(
               'JPEG, PNG ou WebP — máx. 10 MB',
-              style: TextStyle(fontSize: 11, color: _kGray),
+              style: TextStyle(fontSize: 11, color: context.textGray),
             ),
           ],
         ),
@@ -1058,7 +1073,7 @@ class _PhotoOptionTile extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         decoration: BoxDecoration(
-          color: _kBg,
+          color: context.bg,
           borderRadius: BorderRadius.circular(14),
         ),
         child: Row(
@@ -1067,14 +1082,14 @@ class _PhotoOptionTile extends StatelessWidget {
             const SizedBox(width: 14),
             Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
-                color: _kDark,
+                color: context.textDark,
               ),
             ),
             const Spacer(),
-            const Icon(Icons.chevron_right_rounded, color: _kGray, size: 20),
+            Icon(Icons.chevron_right_rounded, color: context.textGray, size: 20),
           ],
         ),
       ),
@@ -1103,10 +1118,10 @@ class _OperatingHoursChip extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: isSelected ? _kBlue.withValues(alpha: 0.08) : _kCardBg,
+          color: isSelected ? _kBlue.withValues(alpha: 0.08) : context.cardBg,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? _kBlue : _kBorder,
+            color: isSelected ? _kBlue : context.border,
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -1116,7 +1131,7 @@ class _OperatingHoursChip extends StatelessWidget {
             Icon(
               icon,
               size: 18,
-              color: isSelected ? _kBlue : _kGray,
+              color: isSelected ? _kBlue : context.textGray,
             ),
             const SizedBox(width: 8),
             Text(
@@ -1124,7 +1139,7 @@ class _OperatingHoursChip extends StatelessWidget {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: isSelected ? _kBlue : _kDark,
+                color: isSelected ? _kBlue : context.textDark,
               ),
             ),
           ],
@@ -1153,9 +1168,9 @@ class _CustomScheduleWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: _kBg,
+        color: context.bg,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _kBorder),
+        border: Border.all(color: context.border),
       ),
       child: Column(
         children: _days.entries.map((entry) {
@@ -1239,7 +1254,7 @@ class _DayRow extends StatelessWidget {
       decoration: BoxDecoration(
         border: isLast
             ? null
-            : const Border(bottom: BorderSide(color: _kBorder)),
+            : Border(bottom: BorderSide(color: context.border)),
       ),
       child: Row(
         children: [
@@ -1262,7 +1277,7 @@ class _DayRow extends StatelessWidget {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: isOpen ? _kDark : _kGray,
+                color: isOpen ? context.textDark : context.textGray,
               ),
             ),
           ),
@@ -1272,9 +1287,9 @@ class _DayRow extends StatelessWidget {
             isEnabled: isOpen,
             onTap: () => _selectTime(context, true),
           ),
-          const Padding(
+          Padding(
             padding: EdgeInsets.symmetric(horizontal: 8),
-            child: Text('-', style: TextStyle(color: _kGray)),
+            child: Text('-', style: TextStyle(color: context.textGray)),
           ),
           _TimeButton(
             time: closeTime,
@@ -1306,10 +1321,10 @@ class _TimeButton extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: isEnabled ? Colors.white : _kBg,
+          color: isEnabled ? context.sheetBg : context.bg,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isEnabled ? _kBorder : Colors.transparent,
+            color: isEnabled ? context.border : Colors.transparent,
           ),
         ),
         child: Text(
@@ -1317,7 +1332,7 @@ class _TimeButton extends StatelessWidget {
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: isEnabled ? _kDark : _kGray.withValues(alpha: 0.5),
+            color: isEnabled ? context.textDark : context.textGray.withValues(alpha: 0.5),
           ),
         ),
       ),

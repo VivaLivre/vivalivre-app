@@ -653,7 +653,7 @@ class _TimelineItem extends StatelessWidget {
               ),
               if (!isLast)
                 Expanded(
-                  child: Container(width: 2, color: const Color(0xFFE2E8F0)),
+                  child: Container(width: 2, color: Theme.of(context).dividerColor),
                 ),
             ],
           ),
@@ -771,7 +771,7 @@ class _EntryDetailDialog extends StatelessWidget {
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -874,7 +874,7 @@ class _EntryDetailDialog extends StatelessWidget {
                                 color: Theme.of(context).cardColor,
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
-                                  color: const Color(0xFFE2E8F0),
+                                  color: Theme.of(context).dividerColor,
                                 ),
                               ),
                               child: Text(
@@ -901,13 +901,13 @@ class _EntryDetailDialog extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: Theme.of(context).cardColor,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                          border: Border.all(color: Theme.of(context).dividerColor),
                         ),
                         child: Text(
                           entry.notes,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 13,
-                            color: Color(0xFF334155),
+                            color: Theme.of(context).colorScheme.onSurface,
                             height: 1.5,
                           ),
                         ),
@@ -920,9 +920,9 @@ class _EntryDetailDialog extends StatelessWidget {
                     label: 'Tipo de registo',
                     child: Text(
                       isBathroom ? 'Ida ao Banheiro' : 'Registo de Sintomas',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
-                        color: Color(0xFF334155),
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                   ),
@@ -933,8 +933,8 @@ class _EntryDetailDialog extends StatelessWidget {
           ),
           // Rodapé com ações
           Container(
-            decoration: const BoxDecoration(
-              border: Border(top: BorderSide(color: Color(0xFFE2E8F0))),
+            decoration: BoxDecoration(
+              border: Border(top: BorderSide(color: Theme.of(context).dividerColor)),
             ),
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
             child: Row(
@@ -944,7 +944,7 @@ class _EntryDetailDialog extends StatelessWidget {
                     onPressed: () => Navigator.pop(context),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 12),
-                      side: const BorderSide(color: Color(0xFFE2E8F0)),
+                      side: BorderSide(color: Theme.of(context).dividerColor),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -1053,14 +1053,14 @@ class _DetailSection extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(icon, size: 16, color: const Color(0xFF94A3B8)),
+            Icon(icon, size: 16, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
             const SizedBox(width: 6),
             Text(
               label.toUpperCase(),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF94A3B8),
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                 letterSpacing: 0.8,
               ),
             ),
@@ -1241,8 +1241,8 @@ class _SymptomSearchModalState extends State<_SymptomSearchModal> {
                         child: Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFEFF6FF),
-                            border: Border.all(color: const Color(0xFFBFDBFE)),
+                            color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF2563EB).withValues(alpha: 0.15) : const Color(0xFFEFF6FF),
+                            border: Border.all(color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF2563EB).withValues(alpha: 0.3) : const Color(0xFFBFDBFE)),
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Row(
@@ -1290,8 +1290,8 @@ class _SymptomSearchModalState extends State<_SymptomSearchModal> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF2563EB),
                     foregroundColor: Colors.white,
-                    disabledBackgroundColor: Colors.grey.shade300,
-                    disabledForegroundColor: Colors.grey.shade600,
+                    disabledBackgroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.grey.shade800 : Colors.grey.shade300,
+                    disabledForegroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.grey.shade500 : Colors.grey.shade600,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -1380,7 +1380,7 @@ class _BathroomExtrasModalState extends State<_BathroomExtrasModal> {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEFF6FF),
+                  color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF2563EB).withValues(alpha: 0.15) : const Color(0xFFEFF6FF),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(Icons.wc_rounded, color: Theme.of(context).colorScheme.primary, size: 22),
@@ -1430,7 +1430,7 @@ class _BathroomExtrasModalState extends State<_BathroomExtrasModal> {
                 checkmarkColor: Theme.of(context).colorScheme.primary,
                 backgroundColor: Theme.of(context).cardColor,
                 side: BorderSide(
-                  color: isSelected ? Theme.of(context).colorScheme.primary : const Color(0xFFE2E8F0),
+                  color: isSelected ? Theme.of(context).colorScheme.primary : Theme.of(context).dividerColor,
                 ),
                 labelStyle: TextStyle(
                   color: isSelected ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.onSurface,
@@ -1451,7 +1451,7 @@ class _BathroomExtrasModalState extends State<_BathroomExtrasModal> {
                   onPressed: () => Navigator.pop(context, <String>[]),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    side: const BorderSide(color: Color(0xFFE2E8F0)),
+                    side: BorderSide(color: Theme.of(context).dividerColor),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
