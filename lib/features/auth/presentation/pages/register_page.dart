@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:viva_livre_app/core/presentation/widgets/custom_primary_button.dart';
 import 'package:viva_livre_app/core/presentation/widgets/custom_text_field.dart';
 import 'package:viva_livre_app/features/auth/presentation/auth_bloc.dart';
+import 'package:viva_livre_app/core/theme/app_colors.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -91,12 +92,19 @@ class _RegisterPageState extends State<RegisterPage> {
   // -- UI Builders --
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = isDark ? AppColors.darkBackground : const Color(0xFFF8FAFC);
+    final textDark = isDark ? AppColors.darkText : const Color(0xFF1E293B);
+    final textMuted = isDark ? Colors.white70 : const Color(0xFF64748B);
+    final iconColor = isDark ? Colors.white54 : const Color(0xFF94A3B8);
+    final cardColor = isDark ? AppColors.darkSurface : Colors.white;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: bgColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Color(0xFF1E293B)),
+        iconTheme: IconThemeData(color: textDark),
       ),
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
@@ -137,37 +145,37 @@ class _RegisterPageState extends State<RegisterPage> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
                       // -- Header --
-                      const Text(
+                      Text(
                         'Identidade DII',
                         style: TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.w800,
-                          color: Color(0xFF1E293B),
+                          color: textDark,
                           letterSpacing: -0.5,
                         ),
                       ),
                       const SizedBox(height: 8),
-                      const Text(
+                      Text(
                         'Crie o seu perfil de paciente para validar o seu Cartão de uso prioritário.',
                         style: TextStyle(
                           fontSize: 15,
-                          color: Color(0xFF64748B),
+                          color: textMuted,
                           height: 1.4,
                         ),
                       ),
                       const SizedBox(height: 32),
 
                       // -- Dados Pessoais --
-                      const _SectionTitle('Dados Pessoais'),
+                      _SectionTitle('Dados Pessoais', color: textDark),
                       const SizedBox(height: 16),
 
                       CustomTextField(
                         controller: _nameController,
                         enabled: !isLoading,
                         hintText: 'Nome Completo',
-                        prefixIcon: const Icon(
+                        prefixIcon: Icon(
                           Icons.person_outline,
-                          color: Color(0xFF94A3B8),
+                          color: iconColor,
                         ),
                         textInputAction: TextInputAction.next,
                         validator: (value) {
@@ -187,9 +195,9 @@ class _RegisterPageState extends State<RegisterPage> {
                         enabled: !isLoading,
                         keyboardType: TextInputType.emailAddress,
                         hintText: 'E-mail',
-                        prefixIcon: const Icon(
+                        prefixIcon: Icon(
                           Icons.email_outlined,
-                          color: Color(0xFF94A3B8),
+                          color: iconColor,
                         ),
                         textInputAction: TextInputAction.next,
                         validator: (value) {
@@ -209,16 +217,16 @@ class _RegisterPageState extends State<RegisterPage> {
                         enabled: !isLoading,
                         obscureText: _obscurePassword,
                         hintText: 'Palavra-passe (mín. 6 caracteres)',
-                        prefixIcon: const Icon(
+                        prefixIcon: Icon(
                           Icons.lock_outline,
-                          color: Color(0xFF94A3B8),
+                          color: iconColor,
                         ),
                         suffixIcon: IconButton(
                           icon: Icon(
                             _obscurePassword
                                 ? Icons.visibility_off_outlined
                                 : Icons.visibility_outlined,
-                            color: const Color(0xFF94A3B8),
+                            color: iconColor,
                           ),
                           onPressed: () => setState(
                             () => _obscurePassword = !_obscurePassword,
@@ -241,16 +249,16 @@ class _RegisterPageState extends State<RegisterPage> {
                         enabled: !isLoading,
                         obscureText: _obscureConfirmPassword,
                         hintText: 'Confirmar palavra-passe',
-                        prefixIcon: const Icon(
+                        prefixIcon: Icon(
                           Icons.lock_outline,
-                          color: Color(0xFF94A3B8),
+                          color: iconColor,
                         ),
                         suffixIcon: IconButton(
                           icon: Icon(
                             _obscureConfirmPassword
                                 ? Icons.visibility_off_outlined
                                 : Icons.visibility_outlined,
-                            color: const Color(0xFF94A3B8),
+                            color: iconColor,
                           ),
                           onPressed: () => setState(
                             () => _obscureConfirmPassword = !_obscureConfirmPassword,
@@ -269,13 +277,13 @@ class _RegisterPageState extends State<RegisterPage> {
                       const SizedBox(height: 32),
 
                       // -- Condição Clínica (Dropdown) --
-                      const _SectionTitle('Condição Clínica'),
+                      _SectionTitle('Condição Clínica', color: textDark),
                       const SizedBox(height: 8),
-                      const Text(
+                      Text(
                         'Selecione a condição que melhor se aplica ao seu caso.',
                         style: TextStyle(
                           fontSize: 13,
-                          color: Color(0xFF64748B),
+                          color: textMuted,
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -286,19 +294,19 @@ class _RegisterPageState extends State<RegisterPage> {
                           opacity: isLoading ? 0.5 : 1.0,
                           child: Container(
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: cardColor,
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: DropdownButtonFormField<String>(
                               initialValue: _selectedCondition,
                               isExpanded: true,
                               decoration: InputDecoration(
-                                prefixIcon: const Icon(
+                                prefixIcon: Icon(
                                   Icons.medical_information_outlined,
-                                  color: Color(0xFF94A3B8),
+                                  color: iconColor,
                                 ),
                                 filled: true,
-                                fillColor: Colors.white,
+                                fillColor: cardColor,
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(16),
                                   borderSide: BorderSide.none,
@@ -308,20 +316,20 @@ class _RegisterPageState extends State<RegisterPage> {
                                   vertical: 16,
                                 ),
                               ),
-                              hint: const Text(
+                              hint: Text(
                                 'Selecione a sua condição',
-                                style: TextStyle(color: Color(0xFF94A3B8)),
+                                style: TextStyle(color: iconColor),
                               ),
-                              dropdownColor: Colors.white,
+                              dropdownColor: cardColor,
                               borderRadius: BorderRadius.circular(16),
                               items: _conditions.map((condition) {
                                 return DropdownMenuItem<String>(
                                   value: condition,
                                   child: Text(
                                     condition,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 15,
-                                      color: Color(0xFF1E293B),
+                                      color: textDark,
                                     ),
                                   ),
                                 );
@@ -346,9 +354,9 @@ class _RegisterPageState extends State<RegisterPage> {
                           controller: _customConditionController,
                           enabled: !isLoading,
                           hintText: 'Descreva a sua condição',
-                          prefixIcon: const Icon(
+                          prefixIcon: Icon(
                             Icons.edit_outlined,
-                            color: Color(0xFF94A3B8),
+                            color: iconColor,
                           ),
                           textInputAction: TextInputAction.done,
                           validator: (value) {
@@ -432,16 +440,17 @@ class _RegisterPageState extends State<RegisterPage> {
 // -- Widget auxiliar para títulos de secção --
 class _SectionTitle extends StatelessWidget {
   final String text;
-  const _SectionTitle(this.text);
+  final Color color;
+  const _SectionTitle(this.text, {required this.color});
 
   @override
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 18,
         fontWeight: FontWeight.w700,
-        color: Color(0xFF0F172A),
+        color: color,
       ),
     );
   }

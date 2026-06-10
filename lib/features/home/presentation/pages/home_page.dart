@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:viva_livre_app/features/auth/presentation/auth_bloc.dart';
+import 'package:viva_livre_app/core/theme/app_colors.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -30,21 +31,27 @@ class _HomePageState extends State<HomePage>
           final user = state is AuthAuthenticated ? state.user : null;
           final userName = user?.name ?? 'Usuário';
 
+          final isDark = Theme.of(context).brightness == Brightness.dark;
+          final bgColor = isDark ? AppColors.darkBackground : const Color(0xFFF8FAFC);
+          final surfaceColor = isDark ? AppColors.darkSurface : Colors.white;
+          final textDark = isDark ? Colors.white : const Color(0xFF1E293B);
+          final iconColor = isDark ? Colors.white70 : const Color(0xFF64748B);
+
           return Scaffold(
-            backgroundColor: const Color(0xFFF8FAFC),
+            backgroundColor: bgColor,
             appBar: AppBar(
-              backgroundColor: Colors.white,
+              backgroundColor: surfaceColor,
               elevation: 0,
-              title: const Text(
+              title: Text(
                 'VivaLivre',
                 style: TextStyle(
                   fontWeight: FontWeight.w800,
-                  color: Color(0xFF1E293B),
+                  color: textDark,
                 ),
               ),
               actions: [
                 IconButton(
-                  icon: const Icon(Icons.logout_rounded, color: Color(0xFF64748B)),
+                  icon: Icon(Icons.logout_rounded, color: iconColor),
                   tooltip: 'Sair',
                   onPressed: () {
                     context.read<AuthBloc>().add(AuthLogoutRequested());
@@ -91,12 +98,12 @@ class _HomePageState extends State<HomePage>
                   ),
                   const SizedBox(height: 32),
                   // ... grid view code ...
-              const Text(
+              Text(
                 'O que você precisa hoje?',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF1E293B),
+                  color: textDark,
                 ),
               ),
               const SizedBox(height: 16),
@@ -160,9 +167,13 @@ class _FeatureCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBgColor = isDark ? iconColor.withValues(alpha: 0.2) : color;
+    final textColor = isDark ? Colors.white : const Color(0xFF1E293B);
+
     return Container(
       decoration: BoxDecoration(
-        color: color,
+        color: cardBgColor,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Material(
@@ -179,10 +190,10 @@ class _FeatureCard extends StatelessWidget {
                 const Spacer(),
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF1E293B),
+                    color: textColor,
                     height: 1.3,
                   ),
                 ),

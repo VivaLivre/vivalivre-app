@@ -91,14 +91,14 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
-        backgroundColor: _kBg,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           elevation: 0,
-          iconTheme: const IconThemeData(color: _kText),
-          title: const Text(
+          iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onSurface),
+          title: Text(
             'Registar Sintoma / Crise',
-            style: TextStyle(color: _kText, fontWeight: FontWeight.w700, fontSize: 18),
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.w700, fontSize: 18),
           ),
           centerTitle: true,
           actions: [
@@ -165,10 +165,10 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
                           duration: const Duration(milliseconds: 180),
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           decoration: BoxDecoration(
-                            color: isSelected ? color.withValues(alpha: 0.15) : Colors.white,
+                            color: isSelected ? color.withValues(alpha: 0.15) : Theme.of(context).cardColor,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: isSelected ? color : const Color(0xFFE2E8F0),
+                              color: isSelected ? color : Theme.of(context).dividerColor,
                               width: isSelected ? 2 : 1,
                             ),
                           ),
@@ -228,15 +228,15 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
                               });
                               state.didChange(_selectedSymptoms);
                             },
-                            // ── Cores originais preservadas ──
+                            // ── Cores dinâmicas para dark mode ──
                             selectedColor: _kBlue.withValues(alpha: 0.2),
                             checkmarkColor: _kBlue,
-                            backgroundColor: Colors.white,
+                            backgroundColor: Theme.of(context).cardColor,
                             side: BorderSide(
-                              color: isSelected ? _kBlue : const Color(0xFFE2E8F0),
+                              color: isSelected ? _kBlue : Theme.of(context).dividerColor,
                             ),
                             labelStyle: TextStyle(
-                              color: isSelected ? _kBlue : _kText,
+                              color: isSelected ? _kBlue : Theme.of(context).colorScheme.onSurface,
                               fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                             ),
                           );
@@ -303,7 +303,7 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
                           elevatedButtonTheme: ElevatedButtonThemeData(
                             style: ElevatedButton.styleFrom(
                               backgroundColor: _kBlue,
-                              disabledBackgroundColor: Colors.grey.shade300,
+                              disabledBackgroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.grey.shade800 : Colors.grey.shade300,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
                               ),
@@ -350,10 +350,10 @@ class _SectionLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 15,
         fontWeight: FontWeight.w700,
-        color: Color(0xFF0F172A),
+        color: Theme.of(context).colorScheme.onSurface,
       ),
     );
   }
@@ -383,10 +383,10 @@ class _TypeChip extends StatelessWidget {
           duration: const Duration(milliseconds: 180),
           padding: const EdgeInsets.symmetric(vertical: 14),
           decoration: BoxDecoration(
-            color: isSelected ? color.withValues(alpha: 0.12) : Colors.white,
+            color: isSelected ? color.withValues(alpha: 0.12) : Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: isSelected ? color : const Color(0xFFE2E8F0),
+              color: isSelected ? color : Theme.of(context).dividerColor,
               width: isSelected ? 2 : 1,
             ),
           ),

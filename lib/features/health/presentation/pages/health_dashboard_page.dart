@@ -26,15 +26,21 @@ class _HealthDashboardPageState extends State<HealthDashboardPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = isDark ? Theme.of(context).scaffoldBackgroundColor : _kBg;
+    final surfaceColor = isDark ? Theme.of(context).cardColor : Colors.white;
+    final textColor = isDark ? Colors.white : _kText;
+    final mutedText = isDark ? Colors.white70 : const Color(0xFF64748B);
+
     return Scaffold(
-      backgroundColor: _kBg,
+      backgroundColor: bgColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: surfaceColor,
         elevation: 0,
-        iconTheme: const IconThemeData(color: _kText),
-        title: const Text(
+        iconTheme: IconThemeData(color: textColor),
+        title: Text(
           'Resumo de Saúde',
-          style: TextStyle(color: _kText, fontWeight: FontWeight.w700, fontSize: 18),
+          style: TextStyle(color: textColor, fontWeight: FontWeight.w700, fontSize: 18),
         ),
         centerTitle: true,
       ),
@@ -43,7 +49,7 @@ class _HealthDashboardPageState extends State<HealthDashboardPage>
           children: [
             // ── Filtros ──
             Container(
-              color: Colors.white,
+              color: surfaceColor,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               child: Row(
                 children: _filters.map((filter) {
@@ -56,7 +62,7 @@ class _HealthDashboardPageState extends State<HealthDashboardPage>
                         duration: const Duration(milliseconds: 200),
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
-                          color: isSelected ? _kBlue : const Color(0xFFF1F5F9),
+                          color: isSelected ? _kBlue : (isDark ? Colors.grey.shade800 : const Color(0xFFF1F5F9)),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
@@ -64,7 +70,7 @@ class _HealthDashboardPageState extends State<HealthDashboardPage>
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
-                            color: isSelected ? Colors.white : const Color(0xFF64748B),
+                            color: isSelected ? Colors.white : mutedText,
                           ),
                         ),
                       ),
@@ -106,14 +112,14 @@ class _HealthDashboardPageState extends State<HealthDashboardPage>
                   const SizedBox(height: 32),
 
                   // ── Gráfico de Atividade ──
-                  const Text(
+                  Text(
                     'Atividade ao Longo do Dia',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: _kText),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: textColor),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
+                  Text(
                     'Distribuição de sintomas e eventos nas últimas 24h',
-                    style: TextStyle(fontSize: 13, color: Color(0xFF64748B)),
+                    style: TextStyle(fontSize: 13, color: mutedText),
                   ),
                   const SizedBox(height: 24),
                   
@@ -121,7 +127,7 @@ class _HealthDashboardPageState extends State<HealthDashboardPage>
                     height: 250,
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: surfaceColor,
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
@@ -131,7 +137,7 @@ class _HealthDashboardPageState extends State<HealthDashboardPage>
                         ),
                       ],
                     ),
-                    child: _buildChart(),
+                    child: _buildChart(context),
                   ),
                   const SizedBox(height: 40),
                 ],
@@ -151,8 +157,8 @@ class _HealthDashboardPageState extends State<HealthDashboardPage>
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: _kText,
-                  foregroundColor: Colors.white,
+                  backgroundColor: textColor,
+                  foregroundColor: isDark ? _kBg : Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   elevation: 4,
@@ -199,7 +205,8 @@ class _HealthDashboardPageState extends State<HealthDashboardPage>
     return mostFrequent;
   }
 
-  Widget _buildChart() {
+  Widget _buildChart(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     // Divide os eventos pelas partes do dia: Manhã (06-12), Tarde (12-18), Noite (18-06)
     int morning = 0;
     int afternoon = 0;
@@ -261,19 +268,19 @@ class _HealthDashboardPageState extends State<HealthDashboardPage>
           show: true,
           drawVerticalLine: false,
           horizontalInterval: 2,
-          getDrawingHorizontalLine: (value) => FlLine(color: const Color(0xFFF1F5F9), strokeWidth: 1),
+          getDrawingHorizontalLine: (value) => FlLine(color: isDark ? Theme.of(context).dividerColor : const Color(0xFFF1F5F9), strokeWidth: 1),
         ),
         borderData: FlBorderData(show: false),
         barGroups: [
-          _makeGroupData(0, morning.toDouble(), _kBlue),
-          _makeGroupData(1, afternoon.toDouble(), const Color(0xFFF59E0B)),
-          _makeGroupData(2, night.toDouble(), const Color(0xFFEF4444)),
+          _makeGroupData(0, morning.toDouble(), _kBlue, isDark),
+          _makeGroupData(1, afternoon.toDouble(), const Color(0xFFF59E0B), isDark),
+          _makeGroupData(2, night.toDouble(), const Color(0xFFEF4444), isDark),
         ],
       ),
     );
   }
 
-  BarChartGroupData _makeGroupData(int x, double y, Color color) {
+  BarChartGroupData _makeGroupData(int x, double y, Color color, bool isDark) {
     return BarChartGroupData(
       x: x,
       barRods: [
@@ -285,7 +292,7 @@ class _HealthDashboardPageState extends State<HealthDashboardPage>
           backDrawRodData: BackgroundBarChartRodData(
             show: true,
             toY: 10, // Mock fixed background height
-            color: const Color(0xFFF8FAFC),
+            color: isDark ? Colors.grey.shade800 : const Color(0xFFF8FAFC),
           ),
         ),
       ],
@@ -312,12 +319,17 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = isDark ? Theme.of(context).cardColor : Colors.white;
+    final textColor = isDark ? Colors.white : const Color(0xFF0F172A);
+    final mutedText = isDark ? Colors.white70 : const Color(0xFF334155);
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Colors.white,
+            bgColor,
             color.withValues(alpha: 0.05),
           ],
           begin: Alignment.topLeft,
@@ -350,7 +362,7 @@ class _StatCard extends StatelessWidget {
             style: TextStyle(
               fontSize: isValueText ? 16 : 28,
               fontWeight: FontWeight.w800,
-              color: const Color(0xFF0F172A),
+              color: textColor,
               height: 1.2,
             ),
             maxLines: 2,
@@ -359,7 +371,7 @@ class _StatCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             title,
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF334155)),
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: mutedText),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),

@@ -246,7 +246,7 @@ class _MapPageState extends State<MapPage>
                   ColorFiltered(
                     colorFilter: ColorFilter.mode(
                       Theme.of(context).brightness == Brightness.dark
-                          ? const Color(0xFF1E293B).withValues(alpha: 0.5)
+                          ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.15)
                           : Colors.transparent,
                       BlendMode.color,
                     ),
