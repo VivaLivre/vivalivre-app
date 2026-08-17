@@ -7,50 +7,50 @@ class ApiClient {
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
   ApiClient() {
-    // Determine Base URL based on Platform
-    // 10.0.2.2 is the address to access localhost from Android Emulator
-    String baseUrl = 'http://localhost:8080';
-    
-    // Se estiver usando adb reverse ou emulador, localhost funciona.
-    // Para dispositivos físicos sem adb reverse, descomente e ajuste o IP abaixo.
-    // if (!kIsWeb && Platform.isAndroid) {
-    //   baseUrl = 'http://192.168.18.5:8080';
-    // }
+    // Determine Base URL
+    // Aceita a URL via variável de ambiente ou usa o Railway por defeito
+    String baseUrl = const String.fromEnvironment(
+      'API_URL',
+      defaultValue: 'https://vivalivre-backend-production.up.railway.app',
+    );
 
-    dio = Dio(BaseOptions(
-      baseUrl: baseUrl,
-      connectTimeout: const Duration(seconds: 15),
-      receiveTimeout: const Duration(seconds: 15),
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-    ));
+    dio = Dio(
+      BaseOptions(
+        baseUrl: baseUrl,
+        connectTimeout: const Duration(seconds: 15),
+        receiveTimeout: const Duration(seconds: 15),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      ),
+    );
 
     // Add Security Interceptor
-    dio.interceptors.add(InterceptorsWrapper(
-      onRequest: (options, handler) async {
-        final token = await _storage.read(key: 'jwt_token');
-        if (token != null) {
-          options.headers['Authorization'] = 'Bearer $token';
-        }
-        return handler.next(options);
-      },
-      onError: (DioException e, handler) {
-        if (e.response?.statusCode == 401) {
-          // You could trigger a logout event here via a stream if needed
-          debugPrint('Unauthorized access - 401');
-        }
-        return handler.next(e);
-      },
-    ));
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) async {
+          final token = await _storage.read(key: 'jwt_token');
+          if (token != null) {
+            options.headers['Authorization'] = 'Bearer $token';
+          }
+          return handler.next(options);
+        },
+        onError: (DioException e, handler) {
+          if (e.response?.statusCode == 401) {
+            // You could trigger a logout event here via a stream if needed
+            debugPrint('Unauthorized access - 401');
+          }
+          return handler.next(e);
+        },
+      ),
+    );
 
     // Log interceptor for debug mode
     if (kDebugMode) {
-      dio.interceptors.add(LogInterceptor(
-        requestBody: true,
-        responseBody: true,
-      ));
+      dio.interceptors.add(
+        LogInterceptor(requestBody: true, responseBody: true),
+      );
     }
   }
 }
