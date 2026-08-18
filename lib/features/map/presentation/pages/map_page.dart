@@ -17,6 +17,7 @@ import 'package:viva_livre_app/features/map/presentation/widgets/bathroom_card.d
 import 'package:viva_livre_app/features/map/presentation/widgets/emergency_button.dart';
 import 'package:viva_livre_app/features/map/presentation/widgets/map_search_bar.dart';
 import 'package:viva_livre_app/features/ratings/presentation/pages/ratings_page.dart';
+import 'package:viva_livre_app/features/ratings/presentation/bloc/rating_bloc.dart';
 
 const _kInitialZoom = 17.0;
 
@@ -32,6 +33,7 @@ class _MapPageState extends State<MapPage>
   final MapController _mapController = MapController();
   final TextEditingController _searchController = TextEditingController();
   bool _showEmergency = false;
+  Bathroom? _lastSelectedBathroom;
 
   @override
   bool get wantKeepAlive => true;
@@ -162,6 +164,13 @@ class _MapPageState extends State<MapPage>
             _showSnack(state.message);
           }
           if (state is MapLoaded) {
+            if (state.selectedBathroom != _lastSelectedBathroom) {
+              if (state.selectedBathroom != null) {
+                context.read<RatingBloc>().add(LoadBathroomReviews(bathroomId: state.selectedBathroom!.id.toString()));
+              }
+              _lastSelectedBathroom = state.selectedBathroom;
+            }
+
             if (state.targetCameraPosition != null) {
               _animatedMove(state.targetCameraPosition!, _mapController.camera.zoom < 15 ? _kInitialZoom : _mapController.camera.zoom);
               context.read<MapBloc>().add(const CameraMovementHandled());

@@ -1,19 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'add_bathroom_theme.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:image_picker/image_picker.dart';
 
-const _kBlue = Color(0xFF2563EB);
-
-extension AddBathroomTheme on BuildContext {
-  bool get isDark => Theme.of(this).brightness == Brightness.dark;
-  Color get bg => isDark ? Theme.of(this).scaffoldBackgroundColor : const Color(0xFFF3F4F6);
-  Color get cardBg => isDark ? Theme.of(this).cardColor : const Color(0xFFF9FAFB);
-  Color get border => isDark ? Theme.of(this).dividerColor : const Color(0xFFE5E7EB);
-  Color get textDark => isDark ? Colors.white : const Color(0xFF111827);
-  Color get textGray => isDark ? Colors.white70 : const Color(0xFF9CA3AF);
-  Color get sheetBg => isDark ? Theme.of(this).cardColor : Colors.white;
-}
 
 class CircleButton extends StatelessWidget {
   final IconData icon;
@@ -55,7 +45,7 @@ class SectionLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: _kBlue),
+        Icon(icon, size: 16, color: kAddBathroomBlue),
         const SizedBox(width: 6),
         Text(
           label,
@@ -98,7 +88,7 @@ class ToggleRow extends StatelessWidget {
             value: value,
             onChanged: onChanged,
             activeThumbColor: Colors.white,
-            activeTrackColor: _kBlue,
+            activeTrackColor: kAddBathroomBlue,
             inactiveThumbColor: Colors.white,
             inactiveTrackColor: const Color(0xFFD1D5DB),
           ),
@@ -222,14 +212,14 @@ class PhotoPicker extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.add_a_photo_rounded, color: _kBlue, size: 32),
+            Icon(Icons.add_a_photo_rounded, color: kAddBathroomBlue, size: 32),
             SizedBox(height: 8),
             Text(
               'Tirar ou escolher foto',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: _kBlue,
+                color: kAddBathroomBlue,
               ),
             ),
             SizedBox(height: 2),
@@ -268,7 +258,7 @@ class PhotoOptionTile extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(icon, color: _kBlue, size: 22),
+            Icon(icon, color: kAddBathroomBlue, size: 22),
             const SizedBox(width: 14),
             Text(
               label,
