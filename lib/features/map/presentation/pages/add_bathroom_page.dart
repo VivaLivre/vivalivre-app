@@ -13,18 +13,9 @@ import 'package:latlong2/latlong.dart';
 import 'package:viva_livre_app/features/map/presentation/bloc/add_bathroom_bloc.dart';
 import '../widgets/add_bathroom_form_widgets.dart';
 import '../widgets/add_bathroom_schedule_widgets.dart';
+import '../widgets/add_bathroom_theme.dart';
 
-const _kBlue = Color(0xFF2563EB);
 
-extension AddBathroomTheme on BuildContext {
-  bool get isDark => Theme.of(this).brightness == Brightness.dark;
-  Color get bg => isDark ? Theme.of(this).scaffoldBackgroundColor : const Color(0xFFF3F4F6);
-  Color get cardBg => isDark ? Theme.of(this).cardColor : const Color(0xFFF9FAFB);
-  Color get border => isDark ? Theme.of(this).dividerColor : const Color(0xFFE5E7EB);
-  Color get textDark => isDark ? Colors.white : const Color(0xFF111827);
-  Color get textGray => isDark ? Colors.white70 : const Color(0xFF9CA3AF);
-  Color get sheetBg => isDark ? Theme.of(this).cardColor : Colors.white;
-}
 
 
 class AddBathroomPage extends StatefulWidget {
@@ -337,7 +328,7 @@ class _AddBathroomPageState extends State<AddBathroomPage>
                               width: 48 + (lift * 8),
                               height: 48 + (lift * 8),
                               decoration: BoxDecoration(
-                                color: _kBlue,
+                                color: kAddBathroomBlue,
                                 shape: BoxShape.circle,
                                 border: Border.all(
                                   color: Colors.white,
@@ -346,7 +337,7 @@ class _AddBathroomPageState extends State<AddBathroomPage>
                                 boxShadow: [
                                   BoxShadow(
                                     color:
-                                        _kBlue.withValues(alpha: 0.4 + lift * 0.2),
+                                        kAddBathroomBlue.withValues(alpha: 0.4 + lift * 0.2),
                                     blurRadius: 16 + (lift * 8),
                                     offset: Offset(0, 4 + lift * 4),
                                   ),
@@ -372,7 +363,7 @@ class _AddBathroomPageState extends State<AddBathroomPage>
                               height: 12 - (lift * 4),
                               decoration: BoxDecoration(
                                 color:
-                                    _kBlue.withValues(alpha: 0.3 - lift * 0.15),
+                                    kAddBathroomBlue.withValues(alpha: 0.3 - lift * 0.15),
                                 shape: BoxShape.circle,
                               ),
                             );
@@ -469,7 +460,7 @@ class _AddBathroomPageState extends State<AddBathroomPage>
                             height: 16,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: _kBlue,
+                              color: kAddBathroomBlue,
                             ),
                           ),
                           const SizedBox(width: 10),
@@ -483,7 +474,7 @@ class _AddBathroomPageState extends State<AddBathroomPage>
                           ),
                         ] else ...[
                           const Icon(Icons.location_on_rounded,
-                              color: _kBlue, size: 18),
+                              color: kAddBathroomBlue, size: 18),
                           const SizedBox(width: 8),
                           Flexible(
                             child: Text(
@@ -566,7 +557,7 @@ class _AddBathroomPageState extends State<AddBathroomPage>
                                       height: 18,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2,
-                                        color: _kBlue,
+                                        color: kAddBathroomBlue,
                                       ),
                                     ),
                                   )
@@ -737,10 +728,10 @@ class _AddBathroomPageState extends State<AddBathroomPage>
                           child: ElevatedButton(
                             onPressed: isLoading ? null : _handleSubmit,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: _kBlue,
+                              backgroundColor: kAddBathroomBlue,
                               foregroundColor: Colors.white,
                               disabledBackgroundColor:
-                                  _kBlue.withValues(alpha: 0.6),
+                                  kAddBathroomBlue.withValues(alpha: 0.6),
                               disabledForegroundColor:
                                   Colors.white.withValues(alpha: 0.8),
                               minimumSize:
@@ -817,7 +808,7 @@ class _AddBathroomPageState extends State<AddBathroomPage>
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: _kBlue, width: 2),
+        borderSide: const BorderSide(color: kAddBathroomBlue, width: 2),
       ),
     );
   }

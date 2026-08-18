@@ -5,7 +5,7 @@ import 'package:viva_livre_app/features/ratings/presentation/bloc/rating_bloc.da
 
 // Cores dinâmicas definidas no build
 
-class BathroomCard extends StatefulWidget {
+class BathroomCard extends StatelessWidget {
   final Bathroom bathroom;
   final String distanceText;
   final VoidCallback onClose;
@@ -20,29 +20,6 @@ class BathroomCard extends StatefulWidget {
   });
 
   @override
-  State<BathroomCard> createState() => _BathroomCardState();
-}
-
-class _BathroomCardState extends State<BathroomCard> {
-  @override
-  void initState() {
-    super.initState();
-    _loadRatings();
-  }
-
-  @override
-  void didUpdateWidget(BathroomCard oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.bathroom.id != widget.bathroom.id) {
-      _loadRatings();
-    }
-  }
-
-  void _loadRatings() {
-    context.read<RatingBloc>().add(LoadBathroomReviews(bathroomId: widget.bathroom.id.toString()));
-  }
-
-  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final _kBlue = theme.colorScheme.primary;
@@ -52,8 +29,8 @@ class _BathroomCardState extends State<BathroomCard> {
     final _kSubText = theme.colorScheme.onSurface.withValues(alpha: 0.6);
     final _kGray = theme.dividerColor;
 
-    final isOpen = widget.bathroom.isOpen;
-    final tags = widget.bathroom.tags;
+    final isOpen = bathroom.isOpen;
+    final tags = bathroom.tags;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -73,13 +50,13 @@ class _BathroomCardState extends State<BathroomCard> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Photo Preview
-          if (widget.bathroom.photoUrl != null && widget.bathroom.photoUrl!.isNotEmpty)
+          if (bathroom.photoUrl != null && bathroom.photoUrl!.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: Image.network(
-                  widget.bathroom.photoUrl!,
+                  bathroom.photoUrl!,
                   height: 120,
                   width: double.infinity,
                   fit: BoxFit.cover,
@@ -155,7 +132,7 @@ class _BathroomCardState extends State<BathroomCard> {
                       children: [
                         Expanded(
                           child: Text(
-                            widget.bathroom.name,
+                            bathroom.name,
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
@@ -199,7 +176,7 @@ class _BathroomCardState extends State<BathroomCard> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${widget.distanceText} de distância',
+                      '${distanceText} de distância',
                       style: TextStyle(fontSize: 13, color: _kSubText),
                     ),
                   ],
@@ -207,7 +184,7 @@ class _BathroomCardState extends State<BathroomCard> {
               ),
               // Close button
               GestureDetector(
-                onTap: widget.onClose,
+                onTap: onClose,
                 child: Container(
                   width: 32,
                   height: 32,
@@ -226,8 +203,8 @@ class _BathroomCardState extends State<BathroomCard> {
           ),
 
           // Observations (admin notes)
-          if (widget.bathroom.observations != null &&
-              widget.bathroom.observations!.isNotEmpty) ...[
+          if (bathroom.observations != null &&
+              bathroom.observations!.isNotEmpty) ...[
             const SizedBox(height: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -244,7 +221,7 @@ class _BathroomCardState extends State<BathroomCard> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      widget.bathroom.observations!,
+                      bathroom.observations!,
                       style: const TextStyle(
                         fontSize: 12,
                         color: Color(0xFF92400E),
@@ -263,7 +240,7 @@ class _BathroomCardState extends State<BathroomCard> {
             spacing: 6,
             runSpacing: 6,
             children: [
-              if (widget.bathroom.isAccessible)
+              if (bathroom.isAccessible)
                 _TagChip(
                   icon: Icons.accessible_outlined,
                   label: 'Acessível',
@@ -271,7 +248,7 @@ class _BathroomCardState extends State<BathroomCard> {
                   border: _kBlueBorder,
                   fg: _kBlue,
                 ),
-              if (widget.bathroom.hasChangingTable)
+              if (bathroom.hasChangingTable)
                 _TagChip(
                   icon: Icons.child_care_outlined,
                   label: 'Trocador',
@@ -279,7 +256,7 @@ class _BathroomCardState extends State<BathroomCard> {
                   border: _kBlueBorder,
                   fg: _kBlue,
                 ),
-              if (widget.bathroom.isFree)
+              if (bathroom.isFree)
                 _TagChip(
                   icon: Icons.local_offer_outlined,
                   label: 'Gratuito',
@@ -335,7 +312,7 @@ class _BathroomCardState extends State<BathroomCard> {
           SizedBox(
             width: double.infinity,
             child: TextButton.icon(
-              onPressed: widget.onDetails,
+              onPressed: onDetails,
               icon: Icon(
                 Icons.info_outline_rounded,
                 size: 18,

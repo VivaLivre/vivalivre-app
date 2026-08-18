@@ -1,18 +1,8 @@
 import 'package:flutter/material.dart';
+import 'add_bathroom_theme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:viva_livre_app/features/map/presentation/bloc/add_bathroom_bloc.dart';
 
-const _kBlue = Color(0xFF2563EB);
-
-extension AddBathroomTheme on BuildContext {
-  bool get isDark => Theme.of(this).brightness == Brightness.dark;
-  Color get bg => isDark ? Theme.of(this).scaffoldBackgroundColor : const Color(0xFFF3F4F6);
-  Color get cardBg => isDark ? Theme.of(this).cardColor : const Color(0xFFF9FAFB);
-  Color get border => isDark ? Theme.of(this).dividerColor : const Color(0xFFE5E7EB);
-  Color get textDark => isDark ? Colors.white : const Color(0xFF111827);
-  Color get textGray => isDark ? Colors.white70 : const Color(0xFF9CA3AF);
-  Color get sheetBg => isDark ? Theme.of(this).cardColor : Colors.white;
-}
 
 class OperatingHoursChip extends StatelessWidget {
   final String label;
@@ -35,10 +25,10 @@ class OperatingHoursChip extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: isSelected ? _kBlue.withValues(alpha: 0.08) : context.cardBg,
+          color: isSelected ? kAddBathroomBlue.withValues(alpha: 0.08) : context.cardBg,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? _kBlue : context.border,
+            color: isSelected ? kAddBathroomBlue : context.border,
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -48,7 +38,7 @@ class OperatingHoursChip extends StatelessWidget {
             Icon(
               icon,
               size: 18,
-              color: isSelected ? _kBlue : context.textGray,
+              color: isSelected ? kAddBathroomBlue : context.textGray,
             ),
             const SizedBox(width: 8),
             Text(
@@ -56,7 +46,7 @@ class OperatingHoursChip extends StatelessWidget {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: isSelected ? _kBlue : context.textDark,
+                color: isSelected ? kAddBathroomBlue : context.textDark,
               ),
             ),
           ],
@@ -179,7 +169,7 @@ class DayRow extends StatelessWidget {
             width: 32,
             child: Checkbox(
               value: isOpen,
-              activeColor: _kBlue,
+              activeColor: kAddBathroomBlue,
               onChanged: (val) {
                 if (val != null) {
                   context.read<AddBathroomBloc>().add(ToggleDayEvent(day, val));
