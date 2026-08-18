@@ -7,7 +7,7 @@ import 'package:viva_livre_app/features/health/domain/entities/health_entry.dart
 abstract class IHealthRepository {
   /// Adiciona um novo registo clínico no Firestore.
   /// Lança [Exception] em caso de falha de rede ou permissão negada.
-  Future<void> addEntry(HealthEntry entry);
+  Future<HealthEntry> addEntry(HealthEntry entry);
 
   /// Elimina um registo pelo seu [docId].
   /// O [userId] é passado para validação defensiva antes da operação.

@@ -10,15 +10,16 @@ class HealthRepositoryImpl implements IHealthRepository {
   HealthRepositoryImpl({required ApiClient apiClient}) : _apiClient = apiClient;
 
   @override
-  Future<void> addEntry(HealthEntry entry) async {
+  Future<HealthEntry> addEntry(HealthEntry entry) async {
     try {
-      await _apiClient.dio.post('/api/health/entries', data: {
+      final response = await _apiClient.dio.post('/api/health/entries', data: {
         'type': entry.type,
         'description': entry.notes,
         'severity': entry.severity,
         'symptoms': entry.symptoms,
       });
       debugPrint('[HealthRepository] addEntry: sucesso');
+      return HealthEntryModel.fromJson(response.data);
     } catch (e) {
       debugPrint('[HealthRepository] addEntry ERROR: $e');
       rethrow;

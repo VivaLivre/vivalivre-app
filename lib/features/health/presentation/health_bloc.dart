@@ -49,9 +49,16 @@ class HealthBloc extends Bloc<HealthEvent, HealthState> {
     emit(HealthEntryAdding());
 
     try {
-      await _healthRepository.addEntry(event.entry);
-      // ✅ Recarregar lista imediatamente após inserção bem-sucedida
-      add(WatchHealthEntries(event.entry.userId.toString()));
+      final newEntry = await _healthRepository.addEntry(event.entry);
+      // ✅ Inserir imediatamente no estado em vez de re-fetch completo
+      if (previousState is HealthEntriesLoaded) {
+        final updatedList = List<HealthEntry>.from(previousState.entries)..insert(0, newEntry);
+        // Garantir ordenação descrescente por data
+        updatedList.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+        emit(HealthEntriesLoaded(updatedList));
+      } else {
+        add(WatchHealthEntries(event.entry.userId.toString()));
+      }
     } catch (e) {
       emit(const HealthError('Não foi possível guardar o registo. Verifique a sua ligação.'));
       if (previousState is HealthEntriesLoaded) {
