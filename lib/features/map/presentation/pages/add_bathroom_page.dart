@@ -11,6 +11,8 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:viva_livre_app/features/map/presentation/bloc/add_bathroom_bloc.dart';
+import '../widgets/add_bathroom_form_widgets.dart';
+import '../widgets/add_bathroom_schedule_widgets.dart';
 
 const _kBlue = Color(0xFF2563EB);
 
@@ -171,7 +173,7 @@ class _AddBathroomPageState extends State<AddBathroomPage>
               ),
             ),
             const SizedBox(height: 20),
-            _PhotoOptionTile(
+            PhotoOptionTile(
               icon: Icons.camera_alt_rounded,
               label: 'Tirar Foto',
               onTap: () {
@@ -180,7 +182,7 @@ class _AddBathroomPageState extends State<AddBathroomPage>
               },
             ),
             const SizedBox(height: 12),
-            _PhotoOptionTile(
+            PhotoOptionTile(
               icon: Icons.photo_library_rounded,
               label: 'Escolher da Galeria',
               onTap: () {
@@ -408,7 +410,7 @@ class _AddBathroomPageState extends State<AddBathroomPage>
                   ),
                   child: Row(
                     children: [
-                      _CircleButton(
+                      CircleButton(
                         icon: Icons.arrow_back_rounded,
                         onTap: () => Navigator.of(context).pop(),
                       ),
@@ -424,7 +426,7 @@ class _AddBathroomPageState extends State<AddBathroomPage>
                         ),
                       ),
                       // Crosshair / re-center button
-                      _CircleButton(
+                      CircleButton(
                         icon: Icons.my_location_rounded,
                         onTap: () {
                           if (widget.initialPosition != null) {
@@ -544,7 +546,7 @@ class _AddBathroomPageState extends State<AddBathroomPage>
                         ),
 
                         // ── Address Field (editable) ──
-                        const _SectionLabel(
+                        const SectionLabel(
                             icon: Icons.pin_drop_rounded,
                             label: 'Endereço'),
                         const SizedBox(height: 8),
@@ -575,7 +577,7 @@ class _AddBathroomPageState extends State<AddBathroomPage>
                         const SizedBox(height: 20),
 
                         // ── Name Field ──
-                        const _SectionLabel(
+                        const SectionLabel(
                             icon: Icons.storefront_rounded,
                             label: 'Nome do Local'),
                         const SizedBox(height: 8),
@@ -589,7 +591,7 @@ class _AddBathroomPageState extends State<AddBathroomPage>
                         const SizedBox(height: 24),
 
                         // ── Photo Section ──
-                        const _SectionLabel(
+                        const SectionLabel(
                             icon: Icons.camera_alt_rounded,
                             label: 'Foto do Local'),
                         const SizedBox(height: 4),
@@ -598,7 +600,7 @@ class _AddBathroomPageState extends State<AddBathroomPage>
                           style: TextStyle(fontSize: 12, color: context.textGray),
                         ),
                         const SizedBox(height: 10),
-                        _PhotoPicker(
+                        PhotoPicker(
                           photo: state.photo,
                           onAdd: _showPhotoOptions,
                           onRemove: () => context
@@ -615,7 +617,7 @@ class _AddBathroomPageState extends State<AddBathroomPage>
                           ),
                           child: Column(
                             children: [
-                              _ToggleRow(
+                              ToggleRow(
                                 icon: '♿',
                                 label: 'Acessível para PCD',
                                 value: state.isAccessible,
@@ -624,7 +626,7 @@ class _AddBathroomPageState extends State<AddBathroomPage>
                                     .add(const ToggleAccessible()),
                               ),
                               Divider(height: 1, color: context.border),
-                              _ToggleRow(
+                              ToggleRow(
                                 icon: '🍼',
                                 label: 'Possui Trocador',
                                 value: state.hasChangingTable,
@@ -633,7 +635,7 @@ class _AddBathroomPageState extends State<AddBathroomPage>
                                     .add(const ToggleChangingTable()),
                               ),
                               Divider(height: 1, color: context.border),
-                              _ToggleRow(
+                              ToggleRow(
                                 icon: '🆓',
                                 label: 'Gratuito',
                                 value: state.isFree,
@@ -647,7 +649,7 @@ class _AddBathroomPageState extends State<AddBathroomPage>
                         const SizedBox(height: 24),
 
                         // ── Operating Hours ──
-                        const _SectionLabel(
+                        const SectionLabel(
                             icon: Icons.schedule_rounded,
                             label: 'Horário de Funcionamento'),
                         const SizedBox(height: 4),
@@ -659,7 +661,7 @@ class _AddBathroomPageState extends State<AddBathroomPage>
                         Row(
                           children: [
                             Expanded(
-                              child: _OperatingHoursChip(
+                              child: OperatingHoursChip(
                                 label: 'Não sei',
                                 icon: Icons.help_outline_rounded,
                                 isSelected:
@@ -672,7 +674,7 @@ class _AddBathroomPageState extends State<AddBathroomPage>
                             ),
                             const SizedBox(width: 12),
                             Expanded(
-                              child: _OperatingHoursChip(
+                              child: OperatingHoursChip(
                                 label: '24 Horas',
                                 icon: Icons.all_inclusive_rounded,
                                 isSelected:
@@ -685,7 +687,7 @@ class _AddBathroomPageState extends State<AddBathroomPage>
                           ],
                         ),
                         const SizedBox(height: 12),
-                        _OperatingHoursChip(
+                        OperatingHoursChip(
                           label: 'Personalizado',
                           icon: Icons.edit_calendar_rounded,
                           isSelected: state.operatingHoursType == 'custom',
@@ -695,7 +697,7 @@ class _AddBathroomPageState extends State<AddBathroomPage>
                         ),
                         if (state.operatingHoursType == 'custom') ...[
                           const SizedBox(height: 16),
-                          _CustomScheduleWidget(
+                          CustomScheduleWidget(
                               customSchedule: state.customSchedule),
                         ],
                         const SizedBox(height: 24),
@@ -703,7 +705,7 @@ class _AddBathroomPageState extends State<AddBathroomPage>
                         // ── Comment ──
                         Row(
                           children: [
-                            const _SectionLabel(
+                            const SectionLabel(
                                 icon: Icons.comment_rounded,
                                 label: 'Comentário'),
                             const SizedBox(width: 6),
@@ -824,518 +826,3 @@ class _AddBathroomPageState extends State<AddBathroomPage>
 // ═══════════════════════════════════════════════════════════════════════════════
 //  WIDGETS AUXILIARES
 // ═══════════════════════════════════════════════════════════════════════════════
-
-class _CircleButton extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback onTap;
-
-  const _CircleButton({required this.icon, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 44,
-        height: 44,
-        decoration: BoxDecoration(
-          color: context.sheetBg,
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Icon(icon, color: context.textDark, size: 20),
-      ),
-    );
-  }
-}
-
-class _SectionLabel extends StatelessWidget {
-  final IconData icon;
-  final String label;
-
-  const _SectionLabel({required this.icon, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, size: 16, color: _kBlue),
-        const SizedBox(width: 6),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: context.textDark,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _ToggleRow extends StatelessWidget {
-  final String icon;
-  final String label;
-  final bool value;
-  final ValueChanged<bool> onChanged;
-
-  const _ToggleRow({
-    required this.icon,
-    required this.label,
-    required this.value,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            '$icon  $label',
-            style: TextStyle(fontSize: 15, color: context.textDark),
-          ),
-          Switch(
-            value: value,
-            onChanged: onChanged,
-            activeThumbColor: Colors.white,
-            activeTrackColor: _kBlue,
-            inactiveThumbColor: Colors.white,
-            inactiveTrackColor: const Color(0xFFD1D5DB),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _PhotoPicker extends StatelessWidget {
-  final XFile? photo;
-  final VoidCallback onAdd;
-  final VoidCallback onRemove;
-
-  const _PhotoPicker({
-    required this.photo,
-    required this.onAdd,
-    required this.onRemove,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    if (photo != null) {
-      return Stack(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: kIsWeb
-                ? Image.network(
-                    photo!.path,
-                    width: double.infinity,
-                    height: 180,
-                    fit: BoxFit.cover,
-                  )
-                : Image.file(
-                    File(photo!.path),
-                    width: double.infinity,
-                    height: 180,
-                    fit: BoxFit.cover,
-                  ),
-          ),
-          // Gradient overlay
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    Colors.black.withValues(alpha: 0.4),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          // Remove button
-          Positioned(
-            top: 8,
-            right: 8,
-            child: GestureDetector(
-              onTap: onRemove,
-              child: Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.5),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.close_rounded,
-                    color: Colors.white, size: 18),
-              ),
-            ),
-          ),
-          // Change photo button
-          Positioned(
-            bottom: 12,
-            right: 12,
-            child: GestureDetector(
-              onTap: onAdd,
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                decoration: BoxDecoration(
-                  color: context.sheetBg.withValues(alpha: 0.9),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.edit_rounded, size: 14, color: context.textDark),
-                    SizedBox(width: 6),
-                    Text(
-                      'Alterar',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: context.textDark,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      );
-    }
-
-    // Empty state — add photo button
-    return GestureDetector(
-      onTap: onAdd,
-      child: Container(
-        height: 120,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: context.border, width: 1.5),
-          color: context.bg,
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.add_a_photo_rounded, color: _kBlue, size: 32),
-            SizedBox(height: 8),
-            Text(
-              'Tirar ou escolher foto',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: _kBlue,
-              ),
-            ),
-            SizedBox(height: 2),
-            Text(
-              'JPEG, PNG ou WebP — máx. 10 MB',
-              style: TextStyle(fontSize: 11, color: context.textGray),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _PhotoOptionTile extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  const _PhotoOptionTile({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(14),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        decoration: BoxDecoration(
-          color: context.bg,
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, color: _kBlue, size: 22),
-            const SizedBox(width: 14),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: context.textDark,
-              ),
-            ),
-            const Spacer(),
-            Icon(Icons.chevron_right_rounded, color: context.textGray, size: 20),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _OperatingHoursChip extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _OperatingHoursChip({
-    required this.label,
-    required this.icon,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: isSelected ? _kBlue.withValues(alpha: 0.08) : context.cardBg,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? _kBlue : context.border,
-            width: isSelected ? 2 : 1,
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: 18,
-              color: isSelected ? _kBlue : context.textGray,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: isSelected ? _kBlue : context.textDark,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _CustomScheduleWidget extends StatelessWidget {
-  final Map<int, Map<String, String>> customSchedule;
-
-  const _CustomScheduleWidget({required this.customSchedule});
-
-  static const _days = {
-    1: 'Segunda',
-    2: 'Terça',
-    3: 'Quarta',
-    4: 'Quinta',
-    5: 'Sexta',
-    6: 'Sábado',
-    7: 'Domingo',
-  };
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: context.bg,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: context.border),
-      ),
-      child: Column(
-        children: _days.entries.map((entry) {
-          final day = entry.key;
-          final name = entry.value;
-          final isOpen = customSchedule.containsKey(day);
-          final openTime = isOpen ? customSchedule[day]!['open']! : '08:00';
-          final closeTime = isOpen ? customSchedule[day]!['close']! : '18:00';
-
-          return _DayRow(
-            day: day,
-            name: name,
-            isOpen: isOpen,
-            openTime: openTime,
-            closeTime: closeTime,
-            isLast: day == 7,
-          );
-        }).toList(),
-      ),
-    );
-  }
-}
-
-class _DayRow extends StatelessWidget {
-  final int day;
-  final String name;
-  final bool isOpen;
-  final String openTime;
-  final String closeTime;
-  final bool isLast;
-
-  const _DayRow({
-    required this.day,
-    required this.name,
-    required this.isOpen,
-    required this.openTime,
-    required this.closeTime,
-    required this.isLast,
-  });
-
-  Future<void> _selectTime(BuildContext context, bool isStart) async {
-    if (!isOpen) return;
-
-    final initialTimeStr = isStart ? openTime : closeTime;
-    final initialParts = initialTimeStr.split(':');
-    final initialTime = TimeOfDay(
-      hour: int.tryParse(initialParts[0]) ?? 8,
-      minute: int.tryParse(initialParts[1]) ?? 0,
-    );
-
-    final selected = await showTimePicker(
-      context: context,
-      initialTime: initialTime,
-      builder: (context, child) {
-        return MediaQuery(
-          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
-          child: child!,
-        );
-      },
-    );
-
-    if (selected != null) {
-      final hour = selected.hour.toString().padLeft(2, '0');
-      final minute = selected.minute.toString().padLeft(2, '0');
-      final newTime = '$hour:$minute';
-
-      if (context.mounted) {
-        context.read<AddBathroomBloc>().add(UpdateDayTimeEvent(
-              day,
-              isStart ? newTime : openTime,
-              isStart ? closeTime : newTime,
-            ));
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        border: isLast
-            ? null
-            : Border(bottom: BorderSide(color: context.border)),
-      ),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 32,
-            child: Checkbox(
-              value: isOpen,
-              activeColor: _kBlue,
-              onChanged: (val) {
-                if (val != null) {
-                  context.read<AddBathroomBloc>().add(ToggleDayEvent(day, val));
-                }
-              },
-            ),
-          ),
-          SizedBox(
-            width: 70,
-            child: Text(
-              name,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: isOpen ? context.textDark : context.textGray,
-              ),
-            ),
-          ),
-          const Spacer(),
-          _TimeButton(
-            time: openTime,
-            isEnabled: isOpen,
-            onTap: () => _selectTime(context, true),
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 8),
-            child: Text('-', style: TextStyle(color: context.textGray)),
-          ),
-          _TimeButton(
-            time: closeTime,
-            isEnabled: isOpen,
-            onTap: () => _selectTime(context, false),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TimeButton extends StatelessWidget {
-  final String time;
-  final bool isEnabled;
-  final VoidCallback onTap;
-
-  const _TimeButton({
-    required this.time,
-    required this.isEnabled,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: isEnabled ? onTap : null,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: isEnabled ? context.sheetBg : context.bg,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isEnabled ? context.border : Colors.transparent,
-          ),
-        ),
-        child: Text(
-          time,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: isEnabled ? context.textDark : context.textGray.withValues(alpha: 0.5),
-          ),
-        ),
-      ),
-    );
-  }
-}
