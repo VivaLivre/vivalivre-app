@@ -31,12 +31,30 @@ class AuthRepository {
     return null;
   }
 
-  Future<UserModel?> register(String name, String email, String password) async {
+  Future<UserModel?> register({
+    required String name,
+    required String email,
+    required String password,
+    required String cpf,
+    required String dateOfBirth,
+    required String gender,
+    double? weight,
+    double? height,
+    required String clinicalCondition,
+    required List<String> comorbidities,
+  }) async {
     try {
       final response = await _apiClient.dio.post('/auth/register', data: {
         'name': name,
         'email': email,
         'password': password,
+        'cpf': cpf,
+        'date_of_birth': dateOfBirth,
+        'gender': gender,
+        'weight': weight,
+        'height': height,
+        'clinical_condition': clinicalCondition,
+        'comorbidities': comorbidities,
       });
 
       if (response.statusCode == 201) {
