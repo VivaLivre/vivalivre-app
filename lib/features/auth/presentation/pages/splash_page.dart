@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:viva_livre_app/features/auth/presentation/auth_bloc.dart';
-import 'package:viva_livre_app/features/auth/data/repositories/auth_repository.dart';
+import 'package:viva_livre_app/features/auth/data/repositories/onboarding_repository.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -22,8 +22,8 @@ class _SplashPageState extends State<SplashPage> {
     await Future.delayed(const Duration(seconds: 1));
     if (!mounted) return;
 
-    final authRepository = context.read<AuthRepository>();
-    final hasSeenOnboarding = await authRepository.hasSeenOnboarding();
+    final onboardingRepository = context.read<OnboardingRepository>();
+    final hasSeenOnboarding = await onboardingRepository.hasSeenOnboarding();
 
     if (!mounted) return;
 

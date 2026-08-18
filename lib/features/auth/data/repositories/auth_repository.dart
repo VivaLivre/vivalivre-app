@@ -1,8 +1,5 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:dio/dio.dart';
-import 'package:image_picker/image_picker.dart';
 import '../../../../core/api/api_client.dart';
 import '../../../../core/models/user_model.dart';
 
@@ -118,48 +115,4 @@ class AuthRepository {
     return null;
   }
 
-  Future<UserModel?> updateProfile({
-    required String email,
-    int? height,
-    double? weight,
-    XFile? photo,
-  }) async {
-    try {
-      final formData = FormData.fromMap({
-        'email': email,
-        if (height != null) 'height': height.toString(),
-        if (weight != null) 'weight': weight.toString(),
-        if (photo != null)
-          'photo': MultipartFile.fromBytes(
-            await photo.readAsBytes(),
-            filename: photo.name,
-          ),
-      });
-
-      final response = await _apiClient.dio.put(
-        '/api/users/profile',
-        data: formData,
-        options: Options(
-          contentType: 'multipart/form-data',
-        ),
-      );
-
-      if (response.statusCode == 200) {
-        return UserModel.fromJson(response.data);
-      }
-    } catch (e) {
-      rethrow;
-    }
-    return null;
-  }
-
-  Future<void> setOnboardingSeen() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('has_seen_onboarding', true);
-  }
-
-  Future<bool> hasSeenOnboarding() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool('has_seen_onboarding') ?? false;
-  }
 }

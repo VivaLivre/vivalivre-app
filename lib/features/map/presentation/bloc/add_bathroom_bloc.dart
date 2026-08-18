@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -53,17 +53,13 @@ class AddBathroomBloc extends Bloc<AddBathroomEvent, AddBathroomState> {
     ));
 
     try {
-      final uri = Uri.parse(
+      final response = await Dio().get(
         'https://nominatim.openstreetmap.org/reverse?format=json&lat=${event.latitude}&lon=${event.longitude}&zoom=18&addressdetails=1',
-      );
-
-      final response = await http.get(
-        uri,
-        headers: {'User-Agent': 'VivaLivreApp/1.0 (suporte@vivalivre.com)'},
+        options: Options(headers: {'User-Agent': 'VivaLivreApp/1.0 (suporte@vivalivre.com)'}),
       );
 
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
+        final data = response.data;
         final addressData = data['address'] as Map<String, dynamic>?;
 
         if (addressData != null) {
@@ -219,7 +215,7 @@ class AddBathroomBloc extends Bloc<AddBathroomEvent, AddBathroomState> {
         } else if (e.type == DioExceptionType.connectionError || e.type == DioExceptionType.connectionTimeout) {
           message = 'Sem conexão com o servidor. Verifique a sua internet.';
         }
-      } else if (e.toString().contains('SocketException') || e.toString().contains('Connection')) {
+      } else if (e is SocketException || e.toString().contains('Connection')) {
         message = 'Sem conexão com o servidor. Verifique a sua internet.';
       }
 
