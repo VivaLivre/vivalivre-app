@@ -43,7 +43,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     _nameController = TextEditingController(text: user?.name ?? '');
     _emailController = TextEditingController(text: user?.email ?? '');
     _heightController = TextEditingController(
-      text: user?.height != null ? (user!.height! / 100).toStringAsFixed(2).replaceAll('.', ',') : '',
+      text: user?.height != null ? user!.height!.toString() : '',
     );
     _weightController = TextEditingController(
       text: user?.weight != null ? user!.weight!.toInt().toString() : '',
@@ -424,15 +424,16 @@ class _EditProfilePageState extends State<EditProfilePage> {
                               // Height
                               Expanded(
                                 child: _buildTextField(
-                                  label: 'Altura (m)',
+                                  label: 'Altura (cm)',
                                   controller: _heightController,
                                   icon: Icons.height_rounded,
                                   fillColor: _kInputBg,
-                                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                  keyboardType: TextInputType.number,
+                                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                                   validator: (value) {
                                     if (value != null && value.isNotEmpty) {
-                                      final h = double.tryParse(value.replaceAll(',', '.'));
-                                      if (h == null || h <= 0 || h > 3) {
+                                      final h = int.tryParse(value);
+                                      if (h == null || h <= 0 || h > 300) {
                                         return 'Inválida';
                                       }
                                     }

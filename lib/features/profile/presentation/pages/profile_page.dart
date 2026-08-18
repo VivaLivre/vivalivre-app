@@ -311,7 +311,7 @@ class _ProfilePageState extends State<ProfilePage>
                         child: _MetricCard(
                           title: 'Altura',
                           value: user?.height != null 
-                              ? '${(user!.height! / 100).toStringAsFixed(2).replaceAll('.', ',')} m' 
+                              ? '${user!.height!.toInt()} cm' 
                               : '--',
                           icon: Icons.height_rounded,
                           color: const Color(0xFF2563EB),

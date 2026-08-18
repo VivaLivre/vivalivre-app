@@ -204,14 +204,14 @@ class _RegisterPageState extends State<RegisterPage> {
     final dateOfBirth = DateFormat('yyyy-MM-dd').format(_selectedDate!);
     final gender = _selectedGender!;
     
-    final weightStr = _weightController.text.replaceAll(',', '.').trim();
-    final heightStr = _heightController.text.replaceAll(',', '.').trim();
+    final weightStr = _weightController.text.trim();
+    final heightStr = _heightController.text.trim();
     final weightRaw = weightStr.isNotEmpty ? double.tryParse(weightStr) : null;
     final heightRaw = heightStr.isNotEmpty ? double.tryParse(heightStr) : null;
     
-    // Converter peso para inteiro e altura para cm
-    final weight = weightRaw?.roundToDouble();
-    final height = heightRaw != null ? (heightRaw * 100).roundToDouble() : null;
+    // Converter para double (inteiro)
+    final weight = weightRaw;
+    final height = heightRaw;
 
     final clinicalCondition = _selectedCondition == 'Outra' ? _customConditionController.text.trim() : _selectedCondition!;
     final comorbidities = _selectedComorbidities.toList();
@@ -582,7 +582,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                 controller: _weightController,
                                 keyboardType: TextInputType.number,
                                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                                hintText: 'Peso',
+                                hintText: 'Peso (kg)',
                                 prefixIcon: Icon(Icons.monitor_weight_outlined, color: iconColor),
                               ),
                             ),
@@ -590,9 +590,9 @@ class _RegisterPageState extends State<RegisterPage> {
                             Expanded(
                               child: CustomTextField(
                                 controller: _heightController,
-                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                                inputFormatters: [_heightFormatter],
-                                hintText: 'Altura',
+                                keyboardType: TextInputType.number,
+                                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                hintText: 'Altura (cm)',
                                 prefixIcon: Icon(Icons.height_outlined, color: iconColor),
                               ),
                             ),
