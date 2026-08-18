@@ -23,6 +23,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
+  int _passwordScore = 0;
 
   // -- Step 2: Dados Pessoais --
   final _step2FormKey = GlobalKey<FormState>();
@@ -39,7 +40,12 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _customConditionController = TextEditingController();
   final TextEditingController _weightController = TextEditingController();
   final TextEditingController _heightController = TextEditingController();
+  final _heightFormatter = _HeightInputFormatter();
   String? _selectedCondition;
+
+  // -- Step 4: Comorbidades --
+  final _step4FormKey = GlobalKey<FormState>();
+  final TextEditingController _comorbitySearchController = TextEditingController();
   final Set<String> _selectedComorbidities = {};
 
   bool _obscurePassword = true;
@@ -69,15 +75,33 @@ class _RegisterPageState extends State<RegisterPage> {
     'Prefiro não dizer',
   ];
 
-  static const List<String> _comorbiditiesList = [
+  List<String> _comorbiditiesList = [
     'Diabetes',
     'Hipertensão',
     'Hipotireoidismo',
-    'Nenhuma',
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _passwordController.addListener(_updatePasswordScore);
+  }
+
+  void _updatePasswordScore() {
+    final password = _passwordController.text;
+    int score = 0;
+    if (password.length >= 8) score++;
+    if (RegExp(r'[A-Z]').hasMatch(password)) score++;
+    if (RegExp(r'[0-9]').hasMatch(password)) score++;
+    if (RegExp(r'[^A-Za-z0-9]').hasMatch(password)) score++;
+    setState(() {
+      _passwordScore = score;
+    });
+  }
+
+  @override
   void dispose() {
+    _passwordController.removeListener(_updatePasswordScore);
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
@@ -86,6 +110,7 @@ class _RegisterPageState extends State<RegisterPage> {
     _customConditionController.dispose();
     _weightController.dispose();
     _heightController.dispose();
+    _comorbitySearchController.dispose();
     super.dispose();
   }
 
@@ -138,6 +163,10 @@ class _RegisterPageState extends State<RegisterPage> {
           _showSnack('Descreva a sua condição clínica.');
           return;
         }
+        setState(() => _currentStep += 1);
+      }
+    } else if (_currentStep == 3) {
+      if (_step4FormKey.currentState?.validate() ?? false) {
         _onRegisterPressed();
       }
     }
@@ -240,8 +269,8 @@ class _RegisterPageState extends State<RegisterPage> {
                       Expanded(
                         child: CustomPrimaryButton(
                           onPressed: isLoading ? null : details.onStepContinue,
-                          label: _currentStep == 2 ? 'Finalizar Registo' : 'Continuar',
-                          isLoading: isLoading && _currentStep == 2,
+                          label: _currentStep == 3 ? 'Finalizar Registo' : 'Continuar',
+                          isLoading: isLoading && _currentStep == 3,
                           loadingLabel: 'A criar conta...',
                         ),
                       ),
@@ -282,6 +311,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         CustomTextField(
                           controller: _nameController,
                           hintText: 'Nome Completo',
+                          textCapitalization: TextCapitalization.words,
                           prefixIcon: Icon(Icons.person_outline, color: iconColor),
                           textInputAction: TextInputAction.next,
                           validator: (value) {
@@ -307,7 +337,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         CustomTextField(
                           controller: _passwordController,
                           obscureText: _obscurePassword,
-                          hintText: 'Palavra-passe (mín. 6 chars)',
+                          hintText: 'Palavra-passe',
                           prefixIcon: Icon(Icons.lock_outline, color: iconColor),
                           suffixIcon: IconButton(
                             icon: Icon(_obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: iconColor),
@@ -315,10 +345,57 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) return 'Informe a sua senha.';
-                            if (value.trim().length < 6) return 'Mínimo de 6 caracteres.';
+                            if (_passwordScore < 3) return 'Senha muito fraca. Use letras, números e no mínimo 8 caracteres.';
                             return null;
                           },
                         ),
+                        if (_passwordController.text.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8, bottom: 4, left: 4, right: 4),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Container(
+                                    height: 4,
+                                    decoration: BoxDecoration(
+                                      color: _passwordScore >= 1 ? Colors.red : Colors.grey.withValues(alpha: 0.3),
+                                      borderRadius: BorderRadius.circular(2),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Expanded(
+                                  child: Container(
+                                    height: 4,
+                                    decoration: BoxDecoration(
+                                      color: _passwordScore >= 2 ? Colors.orange : Colors.grey.withValues(alpha: 0.3),
+                                      borderRadius: BorderRadius.circular(2),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Expanded(
+                                  child: Container(
+                                    height: 4,
+                                    decoration: BoxDecoration(
+                                      color: _passwordScore >= 3 ? Colors.amber : Colors.grey.withValues(alpha: 0.3),
+                                      borderRadius: BorderRadius.circular(2),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Expanded(
+                                  child: Container(
+                                    height: 4,
+                                    decoration: BoxDecoration(
+                                      color: _passwordScore >= 4 ? Colors.green : Colors.grey.withValues(alpha: 0.3),
+                                      borderRadius: BorderRadius.circular(2),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         const SizedBox(height: 12),
                         CustomTextField(
                           controller: _confirmPasswordController,
@@ -484,7 +561,7 @@ class _RegisterPageState extends State<RegisterPage> {
                               child: CustomTextField(
                                 controller: _weightController,
                                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                                hintText: 'Peso (kg)',
+                                hintText: 'Peso',
                                 prefixIcon: Icon(Icons.monitor_weight_outlined, color: iconColor),
                               ),
                             ),
@@ -493,49 +570,91 @@ class _RegisterPageState extends State<RegisterPage> {
                               child: CustomTextField(
                                 controller: _heightController,
                                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                                hintText: 'Altura (m)',
+                                inputFormatters: [_heightFormatter],
+                                hintText: 'Altura',
                                 prefixIcon: Icon(Icons.height_outlined, color: iconColor),
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 24),
+                      ],
+                    ),
+                  ),
+                ),
 
-                        // Comorbidades
+                // STEP 4: COMORBIDADES
+                Step(
+                  title: Text('Comorbidades', style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 18)),
+                  isActive: _currentStep >= 3,
+                  content: Form(
+                    key: _step4FormKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const SizedBox(height: 16),
                         Text(
-                          'Comorbidades / Outras Condições',
-                          style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 16),
+                          'Adicione outras condições médicas (opcional)',
+                          style: TextStyle(color: iconColor, fontSize: 14),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 12),
+                        CustomTextField(
+                          controller: _comorbitySearchController,
+                          hintText: 'Pesquisar condição...',
+                          prefixIcon: Icon(Icons.search, color: iconColor),
+                          onChanged: (val) => setState(() {}),
+                        ),
+                        const SizedBox(height: 16),
                         Container(
                           decoration: BoxDecoration(
                             color: cardColor,
                             borderRadius: BorderRadius.circular(16),
                           ),
-                          child: Column(
-                            children: _comorbiditiesList.map((comorbity) {
-                              return CheckboxListTile(
-                                title: Text(comorbity, style: TextStyle(color: textDark)),
-                                value: _selectedComorbidities.contains(comorbity),
-                                checkColor: Colors.white,
-                                activeColor: const Color(0xFF2563EB),
-                                onChanged: (checked) {
-                                  setState(() {
-                                    if (comorbity == 'Nenhuma' && checked == true) {
-                                      _selectedComorbidities.clear();
-                                      _selectedComorbidities.add('Nenhuma');
-                                    } else {
-                                      _selectedComorbidities.remove('Nenhuma');
-                                      if (checked == true) {
-                                        _selectedComorbidities.add(comorbity);
-                                      } else {
-                                        _selectedComorbidities.remove(comorbity);
-                                      }
-                                    }
-                                  });
-                                },
+                          child: Builder(
+                            builder: (context) {
+                              final query = _comorbitySearchController.text.trim().toLowerCase();
+                              final filtered = _comorbiditiesList.where((c) => c.toLowerCase().contains(query)).toList();
+                              final exactMatch = _comorbiditiesList.any((c) => c.toLowerCase() == query);
+
+                              return Column(
+                                children: [
+                                  if (query.isNotEmpty && !exactMatch)
+                                    ListTile(
+                                      leading: const Icon(Icons.add_circle_outline, color: Color(0xFF2563EB)),
+                                      title: Text('Adicionar "$query"', style: const TextStyle(color: Color(0xFF2563EB), fontWeight: FontWeight.bold)),
+                                      onTap: () {
+                                        setState(() {
+                                          final newC = _comorbitySearchController.text.trim();
+                                          _comorbiditiesList.add(newC);
+                                          _selectedComorbidities.add(newC);
+                                          _comorbitySearchController.clear();
+                                        });
+                                      },
+                                    ),
+                                  if (filtered.isEmpty && query.isEmpty)
+                                    const Padding(
+                                      padding: EdgeInsets.all(16.0),
+                                      child: Text('Nenhuma condição listada'),
+                                    ),
+                                  ...filtered.map((comorbity) {
+                                    return CheckboxListTile(
+                                      title: Text(comorbity, style: TextStyle(color: textDark)),
+                                      value: _selectedComorbidities.contains(comorbity),
+                                      checkColor: Colors.white,
+                                      activeColor: const Color(0xFF2563EB),
+                                      onChanged: (checked) {
+                                        setState(() {
+                                          if (checked == true) {
+                                            _selectedComorbidities.add(comorbity);
+                                          } else {
+                                            _selectedComorbidities.remove(comorbity);
+                                          }
+                                        });
+                                      },
+                                    );
+                                  }),
+                                ],
                               );
-                            }).toList(),
+                            }
                           ),
                         ),
                       ],
@@ -548,5 +667,28 @@ class _RegisterPageState extends State<RegisterPage> {
         },
       ),
     );
+  }
+}
+
+class _HeightInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    String text = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
+    if (text.isEmpty) return newValue.copyWith(text: '');
+    if (text.length == 1) return newValue.copyWith(text: text);
+    if (text.length == 2) {
+      return newValue.copyWith(
+        text: '${text[0]},${text[1]}', 
+        selection: const TextSelection.collapsed(offset: 3)
+      );
+    }
+    if (text.length >= 3) {
+      String formatted = '${text[0]},${text.substring(1, 3)}';
+      return newValue.copyWith(
+        text: formatted, 
+        selection: const TextSelection.collapsed(offset: 4)
+      );
+    }
+    return newValue;
   }
 }
