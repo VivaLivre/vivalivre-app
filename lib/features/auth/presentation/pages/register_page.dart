@@ -77,9 +77,24 @@ class _RegisterPageState extends State<RegisterPage> {
   ];
 
   final List<String> _comorbiditiesList = [
+    'Ansiedade',
+    'Artrite Reumatoide',
+    'Asma',
+    'Cálculo Renal',
+    'Colesterol Alto',
+    'Depressão',
     'Diabetes',
+    'Doença Celíaca',
+    'Endometriose',
+    'Fibromialgia',
+    'Gastrite',
     'Hipertensão',
     'Hipotireoidismo',
+    'Lúpus',
+    'Obesidade',
+    'Osteoporose',
+    'Síndrome de Sjögren',
+    'Trombose',
   ];
 
   @override

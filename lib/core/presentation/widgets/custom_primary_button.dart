@@ -23,17 +23,22 @@ class CustomPrimaryButton extends StatelessWidget {
     return ElevatedButton(
       onPressed: isLoading ? null : onPressed,
       child: child ??
-          (isLoading
-              ? Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const CustomLoadingIndicator(),
-                    const SizedBox(width: 12),
-                    Text(loadingLabel),
-                  ],
-                )
-              : Text(label)),
+            (isLoading
+                ? Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const CustomLoadingIndicator(),
+                      const SizedBox(width: 12),
+                      Flexible(
+                        child: Text(
+                          loadingLabel,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  )
+                : Text(label)),
     );
   }
 }
