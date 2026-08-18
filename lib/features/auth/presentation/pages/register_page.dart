@@ -580,7 +580,8 @@ class _RegisterPageState extends State<RegisterPage> {
                             Expanded(
                               child: CustomTextField(
                                 controller: _weightController,
-                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                keyboardType: TextInputType.number,
+                                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                                 hintText: 'Peso',
                                 prefixIcon: Icon(Icons.monitor_weight_outlined, color: iconColor),
                               ),
