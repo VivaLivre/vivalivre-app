@@ -359,14 +359,15 @@ class _TagChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
+        color: bg,
+        border: Border.all(color: border),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[
-            Icon(icon, size: 12, color: Theme.of(context).colorScheme.onSurface),
+            Icon(icon, size: 12, color: fg),
             const SizedBox(width: 3),
           ],
           Text(
@@ -374,7 +375,7 @@ class _TagChip extends StatelessWidget {
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w600,
-              color: Theme.of(context).colorScheme.onSurface,
+              color: fg,
             ),
           ),
         ],
