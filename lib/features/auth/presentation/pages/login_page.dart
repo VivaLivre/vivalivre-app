@@ -37,6 +37,81 @@ class _LoginPageState extends State<LoginPage> {
     context.read<AuthBloc>().add(AuthLoginRequested(email, password));
   }
 
+  void _showForgotPasswordModal(BuildContext context) {
+    final emailCtrl = TextEditingController(text: _emailController.text);
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(ctx).viewInsets.bottom,
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Theme.of(ctx).scaffoldBackgroundColor,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Recuperar Senha',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(ctx).colorScheme.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Informe o seu e-mail para receber as instruções de recuperação.',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Theme.of(ctx).colorScheme.onSurface.withValues(alpha: 0.7),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                const FieldLabel('E-mail'),
+                const SizedBox(height: 8),
+                CustomTextField(
+                  controller: emailCtrl,
+                  hintText: 'exemplo@email.com',
+                  keyboardType: TextInputType.emailAddress,
+                  prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFF94A3B8)),
+                ),
+                const SizedBox(height: 24),
+                CustomPrimaryButton(
+                  onPressed: () {
+                    final email = emailCtrl.text.trim();
+                    if (email.isEmpty || !_emailRegex.hasMatch(email)) {
+                      ScaffoldMessenger.of(ctx).showSnackBar(
+                        const SnackBar(content: Text('Por favor, introduza um e-mail válido.')),
+                      );
+                      return;
+                    }
+                    Navigator.pop(ctx);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Instruções de recuperação enviadas para o seu e-mail!'),
+                        backgroundColor: Color(0xFF10B981),
+                      ),
+                    );
+                  },
+                  label: 'Enviar Instruções',
+                ),
+                const SizedBox(height: 8),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -161,7 +236,7 @@ class _LoginPageState extends State<LoginPage> {
                       Align(
                         alignment: Alignment.centerRight,
                         child: TextButton(
-                          onPressed: isLoading ? null : () {},
+                          onPressed: isLoading ? null : () => _showForgotPasswordModal(context),
                           style: TextButton.styleFrom(
                             padding: EdgeInsets.zero,
                             minimumSize: const Size(0, 0),
