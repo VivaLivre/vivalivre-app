@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 
-const _kBlue = Color(0xFF2563EB);
-const _kSurface = Color(0xFFF1F5F9);
-
 class EmergencyButton extends StatelessWidget {
   final VoidCallback onAddBathroom;
   final VoidCallback onEmergency;
@@ -24,25 +21,25 @@ class EmergencyButton extends StatelessWidget {
             child: Container(
               height: 54,
               decoration: BoxDecoration(
-                color: _kBlue,
+                color: Theme.of(context).colorScheme.primary,
                 borderRadius: BorderRadius.circular(30),
                 boxShadow: [
                   BoxShadow(
-                    color: _kBlue.withValues(alpha: 0.45),
+                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.45),
                     blurRadius: 20,
                     offset: const Offset(0, 6),
                   ),
                 ],
               ),
-              child: const Row(
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.bolt_rounded, color: Colors.white, size: 22),
-                  SizedBox(width: 8),
+                  Icon(Icons.bolt_rounded, color: Theme.of(context).colorScheme.onPrimary, size: 22),
+                  const SizedBox(width: 8),
                   Text(
                     'Achar Banheiro Agora',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.onPrimary,
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
                     ),
@@ -71,7 +68,7 @@ class EmergencyButton extends StatelessWidget {
                 ),
               ],
             ),
-            child: const Icon(Icons.add_rounded, color: _kBlue, size: 26),
+            child: Icon(Icons.add_rounded, color: Theme.of(context).colorScheme.primary, size: 26),
           ),
         ),
       ],
