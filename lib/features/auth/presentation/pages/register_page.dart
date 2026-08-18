@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:intl/intl.dart';
@@ -75,7 +76,7 @@ class _RegisterPageState extends State<RegisterPage> {
     'Prefiro não dizer',
   ];
 
-  List<String> _comorbiditiesList = [
+  final List<String> _comorbiditiesList = [
     'Diabetes',
     'Hipertensão',
     'Hipotireoidismo',
