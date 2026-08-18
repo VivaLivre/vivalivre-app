@@ -324,7 +324,7 @@ class _ProfilePageState extends State<ProfilePage>
                         child: _MetricCard(
                           title: 'Peso',
                           value: user?.weight != null 
-                              ? '${user!.weight!.toStringAsFixed(1).replaceAll('.', ',')} kg' 
+                              ? '${user!.weight!.toInt()} kg' 
                               : '--',
                           icon: Icons.monitor_weight_outlined,
                           color: const Color(0xFF10B981),

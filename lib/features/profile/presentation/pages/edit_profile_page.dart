@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
@@ -41,10 +42,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
     _nameController = TextEditingController(text: user?.name ?? '');
     _emailController = TextEditingController(text: user?.email ?? '');
     _heightController = TextEditingController(
-      text: user?.height != null ? user!.height.toString() : '',
+      text: user?.height != null ? (user!.height! / 100).toStringAsFixed(2).replaceAll('.', ',') : '',
     );
     _weightController = TextEditingController(
-      text: user?.weight != null ? user!.weight.toString() : '',
+      text: user?.weight != null ? user!.weight!.toInt().toString() : '',
     );
 
     _selectedBirthDate = user?.birthDate;
@@ -400,15 +401,15 @@ class _EditProfilePageState extends State<EditProfilePage> {
                               // Height
                               Expanded(
                                 child: _buildTextField(
-                                  label: 'Altura (cm)',
+                                  label: 'Altura (m)',
                                   controller: _heightController,
                                   icon: Icons.height_rounded,
                                   fillColor: _kInputBg,
-                                  keyboardType: TextInputType.number,
+                                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
                                   validator: (value) {
                                     if (value != null && value.isNotEmpty) {
-                                      final h = int.tryParse(value);
-                                      if (h == null || h <= 0 || h > 300) {
+                                      final h = double.tryParse(value.replaceAll(',', '.'));
+                                      if (h == null || h <= 0 || h > 3) {
                                         return 'Inválida';
                                       }
                                     }
@@ -424,12 +425,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                   controller: _weightController,
                                   icon: Icons.monitor_weight_outlined,
                                   fillColor: _kInputBg,
-                                  keyboardType: const TextInputType.numberWithOptions(
-                                    decimal: true,
-                                  ),
+                                  keyboardType: TextInputType.number,
+                                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                                   validator: (value) {
                                     if (value != null && value.isNotEmpty) {
-                                      final w = double.tryParse(value.replaceAll(',', '.'));
+                                      final w = double.tryParse(value);
                                       if (w == null || w <= 0 || w > 500) {
                                         return 'Inválido';
                                       }
