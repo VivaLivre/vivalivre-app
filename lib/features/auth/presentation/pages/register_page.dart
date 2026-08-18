@@ -632,6 +632,7 @@ class _RegisterPageState extends State<RegisterPage> {
                               final exactMatch = _comorbiditiesList.any((c) => c.toLowerCase() == query);
 
                               return Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
                                   if (query.isNotEmpty && !exactMatch)
                                     ListTile(
@@ -643,6 +644,8 @@ class _RegisterPageState extends State<RegisterPage> {
                                           _comorbiditiesList.add(newC);
                                           _selectedComorbidities.add(newC);
                                           _comorbitySearchController.clear();
+                                          // Ordenar a lista após adição para manter organizado
+                                          _comorbiditiesList.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
                                         });
                                       },
                                     ),
@@ -651,23 +654,45 @@ class _RegisterPageState extends State<RegisterPage> {
                                       padding: EdgeInsets.all(16.0),
                                       child: Text('Nenhuma condição listada'),
                                     ),
-                                  ...filtered.map((comorbity) {
-                                    return CheckboxListTile(
-                                      title: Text(comorbity, style: TextStyle(color: textDark)),
-                                      value: _selectedComorbidities.contains(comorbity),
-                                      checkColor: Colors.white,
-                                      activeColor: const Color(0xFF2563EB),
-                                      onChanged: (checked) {
-                                        setState(() {
-                                          if (checked == true) {
-                                            _selectedComorbidities.add(comorbity);
-                                          } else {
-                                            _selectedComorbidities.remove(comorbity);
-                                          }
-                                        });
-                                      },
-                                    );
-                                  }),
+                                  if (filtered.isNotEmpty)
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                                      child: Wrap(
+                                        spacing: 8.0,
+                                        runSpacing: 8.0,
+                                        children: filtered.map((comorbity) {
+                                          final isSelected = _selectedComorbidities.contains(comorbity);
+                                          return FilterChip(
+                                            label: Text(comorbity),
+                                            selected: isSelected,
+                                            showCheckmark: false,
+                                            selectedColor: const Color(0xFF2563EB).withValues(alpha: 0.15),
+                                            backgroundColor: Colors.transparent,
+                                            labelStyle: TextStyle(
+                                              color: isSelected ? const Color(0xFF2563EB) : textDark,
+                                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                            ),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(24),
+                                              side: BorderSide(
+                                                color: isSelected ? const Color(0xFF2563EB) : iconColor.withValues(alpha: 0.3),
+                                                width: isSelected ? 1.5 : 1.0,
+                                              ),
+                                            ),
+                                            onSelected: (checked) {
+                                              setState(() {
+                                                if (checked) {
+                                                  _selectedComorbidities.add(comorbity);
+                                                } else {
+                                                  _selectedComorbidities.remove(comorbity);
+                                                }
+                                              });
+                                            },
+                                          );
+                                        }).toList(),
+                                      ),
+                                    ),
+                                  const SizedBox(height: 8),
                                 ],
                               );
                             }
