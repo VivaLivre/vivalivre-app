@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:viva_livre_app/features/auth/data/repositories/auth_repository.dart';
+import 'package:viva_livre_app/features/auth/data/repositories/onboarding_repository.dart';
 
 class OnboardingPage extends StatefulWidget {
   const OnboardingPage({super.key});
@@ -24,7 +24,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
               alignment: Alignment.topRight,
               child: TextButton(
                 onPressed: () async {
-                  await context.read<AuthRepository>().setOnboardingSeen();
+                  await context.read<OnboardingRepository>().setOnboardingSeen();
                   if (!mounted) return;
                   Navigator.of(context).pushReplacementNamed('/login');
                 },
@@ -78,7 +78,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                   ElevatedButton(
                     onPressed: () async {
                       if (_currentPage == 2) {
-                        await context.read<AuthRepository>().setOnboardingSeen();
+                        await context.read<OnboardingRepository>().setOnboardingSeen();
                         if (!mounted) return;
                         Navigator.of(context).pushReplacementNamed('/login');
                       } else {

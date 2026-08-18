@@ -12,8 +12,11 @@ import 'package:viva_livre_app/features/ratings/data/datasources/rating_remote_d
 import 'package:viva_livre_app/app.dart';
 import 'package:viva_livre_app/core/api/api_client.dart';
 import 'package:viva_livre_app/features/auth/data/repositories/auth_repository.dart';
+import 'package:viva_livre_app/features/auth/data/repositories/onboarding_repository.dart';
+import 'package:viva_livre_app/features/profile/data/repositories/profile_repository.dart';
 import 'package:viva_livre_app/features/crowdsource/data/repositories/crowdsource_repository_impl.dart';
 import 'package:viva_livre_app/features/crowdsource/presentation/bloc/crowdsource_bloc.dart';
+import 'package:viva_livre_app/features/map/domain/repositories/i_bathroom_repository.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,6 +25,8 @@ void main() async {
   // Initialize Core Services
   final apiClient = ApiClient();
   final authRepository = AuthRepository(apiClient: apiClient);
+  final profileRepository = ProfileRepository(apiClient: apiClient);
+  final onboardingRepository = OnboardingRepository();
 
   // Repositories
   final healthRepository = HealthRepositoryImpl(apiClient: apiClient);
@@ -34,6 +39,9 @@ void main() async {
     MultiRepositoryProvider(
       providers: [
         RepositoryProvider.value(value: authRepository),
+        RepositoryProvider.value(value: profileRepository),
+        RepositoryProvider.value(value: onboardingRepository),
+        RepositoryProvider<IBathroomRepository>.value(value: bathroomRepository),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -44,7 +52,7 @@ void main() async {
             create: (_) => HealthBloc(healthRepository: healthRepository),
           ),
           BlocProvider<MapBloc>(
-            create: (_) => MapBloc(repository: bathroomRepository)..add(const RequestGpsLocation()),
+            create: (_) => MapBloc(repository: bathroomRepository),
           ),
           BlocProvider<RatingBloc>(
             create: (_) => RatingBloc(ratingRepository: ratingRepository),

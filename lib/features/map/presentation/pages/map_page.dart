@@ -12,6 +12,7 @@ import 'package:viva_livre_app/features/map/domain/entities/bathroom.dart';
 import 'package:viva_livre_app/features/map/presentation/bloc/map_bloc.dart' hide MapEvent;
 import 'package:viva_livre_app/features/map/presentation/bloc/add_bathroom_bloc.dart';
 import 'package:viva_livre_app/features/map/presentation/pages/add_bathroom_page.dart';
+import 'package:viva_livre_app/features/map/domain/repositories/i_bathroom_repository.dart';
 import 'package:viva_livre_app/features/map/presentation/widgets/bathroom_card.dart';
 import 'package:viva_livre_app/features/map/presentation/widgets/emergency_button.dart';
 import 'package:viva_livre_app/features/map/presentation/widgets/map_search_bar.dart';
@@ -402,7 +403,7 @@ class _MapPageState extends State<MapPage>
                           MaterialPageRoute(
                             builder: (_) => BlocProvider(
                               create: (_) => AddBathroomBloc(
-                                repository: context.read<MapBloc>().repository,
+                                repository: context.read<IBathroomRepository>(),
                               ),
                               child: AddBathroomPage(initialPosition: pos),
                             ),

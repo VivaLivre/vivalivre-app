@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:viva_livre_app/features/auth/presentation/auth_bloc.dart';
-import 'package:viva_livre_app/features/auth/data/repositories/auth_repository.dart';
+import 'package:viva_livre_app/features/profile/data/repositories/profile_repository.dart';
 import 'package:viva_livre_app/core/models/user_model.dart';
 import 'package:viva_livre_app/core/theme/app_colors.dart';
 
@@ -136,8 +136,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
       final height = int.tryParse(_heightController.text.trim());
       final weight = double.tryParse(_weightController.text.trim());
       
-      final authRepo = RepositoryProvider.of<AuthRepository>(context);
-      final updatedUser = await authRepo.updateProfile(
+      final profileRepo = RepositoryProvider.of<ProfileRepository>(context);
+      final updatedUser = await profileRepo.updateProfile(
         email: email,
         height: height,
         weight: weight,
