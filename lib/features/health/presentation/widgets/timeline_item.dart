@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:viva_livre_app/features/health/presentation/health_bloc.dart';
 import 'package:viva_livre_app/features/health/domain/entities/health_entry.dart';
+import 'package:viva_livre_app/core/widgets/confirm_delete_dialog.dart';
 import 'entry_detail_dialog.dart';
 
 class TimelineItem extends StatelessWidget {
@@ -84,52 +85,24 @@ class TimelineItem extends StatelessWidget {
                   ),
                 ),
                 subtitle: const Text('Esta acção não pode ser desfeita'),
-                onTap: () {
+                onTap: () async {
                   Navigator.pop(context);
-                  showDialog(
+                  final confirm = await showDialog<bool>(
                     context: context,
-                    builder: (ctx) => AlertDialog(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      title: const Text(
-                        'Eliminar registo?',
-                        style: TextStyle(fontWeight: FontWeight.w700),
-                      ),
-                      content: const Text(
-                        'Este registo será removido permanentemente do seu histórico clínico.',
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(ctx),
-                          child: Text(
-                            'Cancelar',
-                            style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
-                          ),
-                        ),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFEF4444),
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            elevation: 0,
-                          ),
-                          onPressed: () {
-                            Navigator.pop(ctx);
-                            context.read<HealthBloc>().add(
-                              DeleteHealthEntry(docId: entry.id, userId: ''),
-                            );
-                          },
-                          child: const Text(
-                            'Eliminar',
-                            style: TextStyle(fontWeight: FontWeight.w700),
-                          ),
-                        ),
-                      ],
+                    builder: (ctx) => const ConfirmDeleteDialog(
+                      title: 'Eliminar registo?',
+                      content: 'Este registo será removido permanentemente do seu histórico clínico.',
                     ),
                   );
+
+                  if (confirm == true && context.mounted) {
+                    context.read<HealthBloc>().add(
+                      DeleteHealthEntry(
+                        docId: entry.id,
+                        userId: '',
+                      ),
+                    );
+                  }
                 },
               ),
             ],
