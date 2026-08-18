@@ -495,6 +495,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     VoidCallback? onTap,
     TextInputType? keyboardType,
     FormFieldValidator<String>? validator,
+    List<TextInputFormatter>? inputFormatters,
   }) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
@@ -505,6 +506,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       onTap: onTap,
       keyboardType: keyboardType,
       validator: validator,
+      inputFormatters: inputFormatters,
       style: TextStyle(
         fontWeight: FontWeight.w600,
         fontSize: 15,
