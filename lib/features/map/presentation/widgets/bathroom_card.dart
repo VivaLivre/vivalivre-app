@@ -1,5 +1,7 @@
+import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:viva_livre_app/features/map/domain/entities/bathroom.dart';
 import 'package:viva_livre_app/features/ratings/presentation/bloc/rating_bloc.dart';
 
@@ -18,6 +20,33 @@ class BathroomCard extends StatelessWidget {
     required this.onClose,
     this.onDetails,
   });
+
+  Future<void> _launchNavigation(BuildContext context) async {
+    final lat = bathroom.location.latitude;
+    final lng = bathroom.location.longitude;
+    final name = Uri.encodeComponent(bathroom.name);
+    
+    // O URI 'geo:' aciona o seletor nativo do Android ("Apenas uma vez" / "Sempre")
+    // Para iOS, usamos o 'maps:' nativo.
+    final uri = Platform.isIOS 
+        ? Uri.parse('maps:?q=$name&ll=$lat,$lng')
+        : Uri.parse('geo:$lat,$lng?q=$lat,$lng($name)');
+
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    } else {
+      // Fallback para o browser se não houver NENHUM mapa instalado
+      final webUri = Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lng');
+      if (await canLaunchUrl(webUri)) {
+        await launchUrl(webUri, mode: LaunchMode.externalApplication);
+      } else {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Não foi possível abrir o mapa.')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -288,7 +317,7 @@ class BathroomCard extends StatelessWidget {
             children: [
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: isOpen ? () {} : null,
+                  onPressed: isOpen ? () => _launchNavigation(context) : null,
                   icon: Icon(
                     isOpen
                         ? Icons.navigation_rounded

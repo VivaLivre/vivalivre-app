@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "br.com.gabriel.vivalivre"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 36 // Forçado para 36 devido ao bug BAKLAVA no sqflite_android
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
