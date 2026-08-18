@@ -310,7 +310,9 @@ class _ProfilePageState extends State<ProfilePage>
                       Expanded(
                         child: _MetricCard(
                           title: 'Altura',
-                          value: user?.height != null ? '${user!.height} cm' : '--',
+                          value: user?.height != null 
+                              ? '${(user!.height! / 100).toStringAsFixed(2).replaceAll('.', ',')} m' 
+                              : '--',
                           icon: Icons.height_rounded,
                           color: const Color(0xFF2563EB),
                           cardBg: _kCardBg,
@@ -321,7 +323,9 @@ class _ProfilePageState extends State<ProfilePage>
                       Expanded(
                         child: _MetricCard(
                           title: 'Peso',
-                          value: user?.weight != null ? '${user!.weight!.toStringAsFixed(1)} kg' : '--',
+                          value: user?.weight != null 
+                              ? '${user!.weight!.toStringAsFixed(1).replaceAll('.', ',')} kg' 
+                              : '--',
                           icon: Icons.monitor_weight_outlined,
                           color: const Color(0xFF10B981),
                           cardBg: _kCardBg,

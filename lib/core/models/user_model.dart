@@ -27,7 +27,9 @@ class UserModel {
       avatarUrl: json['avatar_url'],
       height: json['height'],
       weight: json['weight'] != null ? (json['weight'] as num).toDouble() : null,
-      birthDate: json['birth_date'] != null ? DateTime.parse(json['birth_date']) : null,
+      birthDate: json['date_of_birth'] != null 
+          ? DateTime.parse(json['date_of_birth']) 
+          : (json['birth_date'] != null ? DateTime.parse(json['birth_date']) : null),
       createdAt: DateTime.parse(json['created_at']),
     );
   }
