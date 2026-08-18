@@ -21,8 +21,8 @@ class HealthEntryModel extends HealthEntry {
       severity: json['severity'] ?? 'Leve',
       notes: json['description'] ?? json['notes'] ?? '',
       timestamp: json['created_at'] != null 
-          ? DateTime.parse(json['created_at']) 
-          : (json['entry_date'] != null ? DateTime.parse(json['entry_date']) : DateTime.now()),
+          ? DateTime.parse(json['created_at']).toLocal() 
+          : (json['entry_date'] != null ? DateTime.parse(json['entry_date']).toLocal() : DateTime.now()),
       type: json['type'] ?? 'sintoma',
     );
   }
