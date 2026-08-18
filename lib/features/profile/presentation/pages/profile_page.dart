@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:viva_livre_app/features/auth/presentation/auth_bloc.dart';
 import 'package:viva_livre_app/core/theme/app_colors.dart';
 import 'package:viva_livre_app/features/health/presentation/health_bloc.dart';
-import 'package:viva_livre_app/features/health/presentation/health_state.dart';
 import 'package:viva_livre_app/features/health/domain/entities/health_entry.dart';
 import 'package:viva_livre_app/features/health/presentation/pages/health_page.dart' show HealthRecord;
 
