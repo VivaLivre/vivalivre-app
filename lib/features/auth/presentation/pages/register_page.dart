@@ -617,6 +617,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           controller: _comorbitySearchController,
                           hintText: 'Pesquisar condição...',
                           prefixIcon: Icon(Icons.search, color: iconColor),
+                          textCapitalization: TextCapitalization.words,
                           onChanged: (val) => setState(() {}),
                         ),
                         const SizedBox(height: 16),
