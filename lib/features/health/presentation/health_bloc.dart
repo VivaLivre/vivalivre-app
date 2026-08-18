@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:intl/intl.dart';
 import 'package:viva_livre_app/features/health/domain/entities/health_entry.dart';
 import 'package:viva_livre_app/features/health/domain/repositories/i_health_repository.dart';
 
@@ -8,11 +9,15 @@ part 'health_state.dart';
 
 class HealthBloc extends Bloc<HealthEvent, HealthState> {
   final IHealthRepository _healthRepository;
+  DateTime _currentDate = DateTime.now();
+
+  DateTime get currentDate => _currentDate;
 
   HealthBloc({required IHealthRepository healthRepository})
       : _healthRepository = healthRepository,
         super(HealthInitial()) {
     on<WatchHealthEntries>(_onWatchHealthEntries);
+    on<ChangeHealthDate>(_onChangeHealthDate);
     on<AddHealthEntry>(_onAddHealthEntry);
     on<DeleteHealthEntry>(_onDeleteHealthEntry);
   }
@@ -25,7 +30,8 @@ class HealthBloc extends Bloc<HealthEvent, HealthState> {
     emit(HealthLoading());
 
     try {
-      final entries = await _healthRepository.getEntries(event.userId, filterDate: 'today');
+      final dateStr = DateFormat('yyyy-MM-dd').format(_currentDate);
+      final entries = await _healthRepository.getEntries(event.userId, filterDate: dateStr);
       emit(HealthEntriesLoaded(entries));
     } catch (e) {
       emit(const HealthError('Não foi possível carregar os registos. Verifique a sua ligação.'));
@@ -69,5 +75,14 @@ class HealthBloc extends Bloc<HealthEvent, HealthState> {
       emit(const HealthError('Não foi possível eliminar o registo. Verifique a sua ligação.'));
       if (previousState is HealthEntriesLoaded) emit(previousState);
     }
+  }
+
+  /// Muda a data visualizada e recarrega os dados.
+  Future<void> _onChangeHealthDate(
+    ChangeHealthDate event,
+    Emitter<HealthState> emit,
+  ) async {
+    _currentDate = event.date;
+    add(WatchHealthEntries(event.userId));
   }
 }

@@ -247,10 +247,13 @@ class _HealthPageState extends State<HealthPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final today = DateFormat("dd 'de' MMMM", 'pt_BR').format(DateTime.now());
 
     return BlocBuilder<HealthBloc, HealthState>(
       builder: (context, state) {
+        final currentDate = context.read<HealthBloc>().currentDate;
+        final dateStr = DateFormat("dd 'de' MMMM", 'pt_BR').format(currentDate);
+        final isToday = DateFormat('yyyy-MM-dd').format(currentDate) == DateFormat('yyyy-MM-dd').format(DateTime.now());
+
         final entries = state is HealthEntriesLoaded
             ? state.entries
             : <HealthEntry>[];
@@ -295,12 +298,50 @@ class _HealthPageState extends State<HealthPage>
                                 ),
                               ),
                               const SizedBox(height: 4),
-                              Text(
-                                today,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                                ),
+                              Row(
+                                children: [
+                                  GestureDetector(
+                                    onTap: () {
+                                      final newDate = currentDate.subtract(const Duration(days: 1));
+                                      context.read<HealthBloc>().add(ChangeHealthDate(date: newDate, userId: ''));
+                                    },
+                                    child: Icon(Icons.chevron_left_rounded, size: 24, color: Theme.of(context).colorScheme.primary),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  GestureDetector(
+                                    onTap: () async {
+                                      final selected = await showDatePicker(
+                                        context: context,
+                                        initialDate: currentDate,
+                                        firstDate: DateTime(2020),
+                                        lastDate: DateTime.now(),
+                                      );
+                                      if (selected != null && context.mounted) {
+                                        context.read<HealthBloc>().add(ChangeHealthDate(date: selected, userId: ''));
+                                      }
+                                    },
+                                    child: Text(
+                                      isToday ? 'Hoje, $dateStr' : dateStr,
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  GestureDetector(
+                                    onTap: isToday ? null : () {
+                                      final newDate = currentDate.add(const Duration(days: 1));
+                                      context.read<HealthBloc>().add(ChangeHealthDate(date: newDate, userId: ''));
+                                    },
+                                    child: Icon(
+                                      Icons.chevron_right_rounded, 
+                                      size: 24, 
+                                      color: isToday ? Colors.transparent : Theme.of(context).colorScheme.primary
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
