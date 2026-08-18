@@ -42,13 +42,15 @@ class _LoginPageState extends State<LoginPage> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(ctx).viewInsets.bottom,
-          ),
-          child: Container(
+        return SafeArea(
+          child: Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(ctx).viewInsets.bottom,
+            ),
+            child: Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               color: Theme.of(ctx).scaffoldBackgroundColor,
@@ -107,7 +109,7 @@ class _LoginPageState extends State<LoginPage> {
               ],
             ),
           ),
-        );
+        ));
       },
     );
   }
