@@ -206,8 +206,12 @@ class _RegisterPageState extends State<RegisterPage> {
     
     final weightStr = _weightController.text.replaceAll(',', '.').trim();
     final heightStr = _heightController.text.replaceAll(',', '.').trim();
-    final weight = weightStr.isNotEmpty ? double.tryParse(weightStr) : null;
-    final height = heightStr.isNotEmpty ? double.tryParse(heightStr) : null;
+    final weightRaw = weightStr.isNotEmpty ? double.tryParse(weightStr) : null;
+    final heightRaw = heightStr.isNotEmpty ? double.tryParse(heightStr) : null;
+    
+    // Converter peso para inteiro e altura para cm
+    final weight = weightRaw?.roundToDouble();
+    final height = heightRaw != null ? (heightRaw * 100).roundToDouble() : null;
 
     final clinicalCondition = _selectedCondition == 'Outra' ? _customConditionController.text.trim() : _selectedCondition!;
     final comorbidities = _selectedComorbidities.toList();
