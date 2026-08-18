@@ -65,7 +65,9 @@ class BathroomCard extends StatelessWidget {
                       height: 120,
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF3F4F6),
+                        color: Theme.of(context).brightness == Brightness.dark 
+                            ? const Color(0xFF1F2937) 
+                            : const Color(0xFFF3F4F6),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Center(
