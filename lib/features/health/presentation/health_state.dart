@@ -23,8 +23,15 @@ class HealthEntriesLoaded extends HealthState {
   List<Object> get props => [entries];
 }
 
-/// Estado transitório enquanto um novo registo está a ser gravado no Firestore.
-class HealthEntryAdding extends HealthState {}
+/// Estado transitório enquanto um novo registo está a ser gravado no servidor.
+class HealthEntryAdding extends HealthState {
+  final List<HealthEntry> entries;
+
+  const HealthEntryAdding(this.entries);
+
+  @override
+  List<Object> get props => [entries];
+}
 
 /// Erro na camada de dados (rede, permissão, etc.).
 class HealthError extends HealthState {

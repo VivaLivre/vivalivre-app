@@ -45,8 +45,9 @@ class HealthBloc extends Bloc<HealthEvent, HealthState> {
     Emitter<HealthState> emit,
   ) async {
     final previousState = state;
+    final currentEntries = previousState is HealthEntriesLoaded ? previousState.entries : <HealthEntry>[];
 
-    emit(HealthEntryAdding());
+    emit(HealthEntryAdding(currentEntries));
 
     try {
       final newEntry = await _healthRepository.addEntry(event.entry);

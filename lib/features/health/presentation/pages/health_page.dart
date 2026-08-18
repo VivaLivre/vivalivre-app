@@ -256,7 +256,9 @@ class _HealthPageState extends State<HealthPage>
 
         final entries = state is HealthEntriesLoaded
             ? state.entries
-            : <HealthEntry>[];
+            : state is HealthEntryAdding
+                ? state.entries
+                : <HealthEntry>[];
         final records = entries.map(HealthRecord.fromEntry).toList();
         final isLoading = state is HealthLoading;
 
