@@ -347,20 +347,6 @@ class _HealthPageState extends State<HealthPage>
                               ),
                             ],
                           ),
-                          IconButton(
-                            icon: Icon(
-                              Icons.bar_chart_rounded,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                            tooltip: 'Ver Resumo',
-                            onPressed: () {
-                              Navigator.pushNamed(
-                                context,
-                                '/health-dashboard',
-                                arguments: records,
-                              );
-                            },
-                          ),
                         ],
                       ),
                       const SizedBox(height: 24),
@@ -447,7 +433,11 @@ class _HealthPageState extends State<HealthPage>
             elevation: 4,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
-              side: BorderSide(color: Colors.grey.shade200),
+              side: BorderSide(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white.withValues(alpha: 0.1)
+                    : Colors.grey.shade200,
+              ),
             ),
           ),
         );

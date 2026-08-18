@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:viva_livre_app/features/auth/presentation/auth_bloc.dart';
 import 'package:viva_livre_app/core/theme/app_colors.dart';
+import 'package:viva_livre_app/features/health/presentation/health_bloc.dart';
+import 'package:viva_livre_app/features/health/presentation/health_state.dart';
+import 'package:viva_livre_app/features/health/domain/entities/health_entry.dart';
+import 'package:viva_livre_app/features/health/presentation/pages/health_page.dart' show HealthRecord;
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -348,6 +352,78 @@ class _ProfilePageState extends State<ProfilePage>
                   ),
 
                   const SizedBox(height: 24),
+
+                  // ── 2.5 Resumo de Saúde (Dashboard) ──
+                  GestureDetector(
+                    onTap: () {
+                      final healthState = context.read<HealthBloc>().state;
+                      final entries = healthState is HealthEntriesLoaded
+                          ? healthState.entries
+                          : healthState is HealthEntryAdding
+                              ? healthState.entries
+                              : <HealthEntry>[];
+                      final records = entries.map(HealthRecord.fromEntry).toList();
+                      Navigator.pushNamed(context, '/health-dashboard', arguments: records);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: _kCardBg,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.withValues(alpha: 0.1)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.02),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(Icons.bar_chart_rounded, color: Theme.of(context).colorScheme.primary, size: 24),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Resumo de Saúde',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 16,
+                                    color: _kText,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Estatísticas e gráficos dos seus sintomas',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: _kSubText,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            color: _kSubText,
+                            size: 16,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
 
                   // ── 3. Relatório PDF Prominente ──
                   GestureDetector(

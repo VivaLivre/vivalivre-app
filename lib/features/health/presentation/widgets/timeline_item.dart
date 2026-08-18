@@ -165,7 +165,7 @@ class TimelineItem extends StatelessWidget {
               ),
               if (!isLast)
                 Expanded(
-                  child: Container(width: 2, color: Theme.of(context).dividerColor),
+                  child: Container(width: 2, color: Colors.transparent),
                 ),
             ],
           ),
