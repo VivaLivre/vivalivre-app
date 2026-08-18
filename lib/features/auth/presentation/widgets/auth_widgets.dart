@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:viva_livre_app/core/theme/app_colors.dart';
 
 /// Botão Google padronizado para uso em Login e Cadastro.
@@ -57,42 +58,13 @@ class _GoogleLogo extends StatelessWidget {
         shape: BoxShape.circle,
         color: Colors.transparent,
       ),
-      child: CustomPaint(
-        painter: _GoogleLogoPainter(),
+      child: SvgPicture.asset(
+        'assets/icons/google.svg',
+        width: 22,
+        height: 22,
       ),
     );
   }
-}
-
-class _GoogleLogoPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2;
-
-    // Fundo circular branco
-    canvas.drawCircle(center, radius, Paint()..color = Colors.white);
-
-    final textPainter = TextPainter(
-      text: const TextSpan(
-        text: 'G',
-        style: TextStyle(
-          color: Color(0xFF4285F4),
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    );
-    textPainter.layout();
-    textPainter.paint(
-      canvas,
-      Offset(center.dx - textPainter.width / 2, center.dy - textPainter.height / 2),
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 /// Divisor com texto "Ou continue com"

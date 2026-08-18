@@ -16,6 +16,16 @@ class WatchHealthEntries extends HealthEvent {
   List<Object> get props => [userId];
 }
 
+/// Altera a data atual visualizada no histórico.
+class ChangeHealthDate extends HealthEvent {
+  final DateTime date;
+  final String userId;
+  const ChangeHealthDate({required this.date, required this.userId});
+
+  @override
+  List<Object> get props => [date, userId];
+}
+
 /// Adiciona um novo registo clínico.
 class AddHealthEntry extends HealthEvent {
   final HealthEntry entry;
