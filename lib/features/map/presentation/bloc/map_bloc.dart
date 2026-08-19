@@ -195,10 +195,12 @@ class MapBloc extends Bloc<MapEvent, MapState> {
             nearestBathroom: nearest,
             selectedBathroom: nearest,
             bathrooms: bathroomMap.values.toList(),
+            actionTimestamp: DateTime.now().millisecondsSinceEpoch,
           ));
         } else {
           emit(currentState.copyWith(
-            errorMessage: 'Nenhum banheiro aberto encontrado na sua região.',
+            errorMessage: 'Nenhum banheiro aberto encontrado num raio de 10km.',
+            actionTimestamp: DateTime.now().millisecondsSinceEpoch,
           ));
           emit(currentState.copyWith(clearError: true));
         }

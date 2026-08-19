@@ -168,7 +168,13 @@ class AddBathroomBloc extends Bloc<AddBathroomEvent, AddBathroomState> {
       return;
     }
 
-    // Foto removida da validação obrigatória (opcional)
+    if (state.photo == null) {
+      emit(state.copyWith(
+        submissionStatus: SubmissionStatus.error,
+        errorMessage: 'É obrigatório enviar uma foto.',
+      ));
+      return;
+    }
 
     emit(state.copyWith(submissionStatus: SubmissionStatus.loading));
 
@@ -204,7 +210,9 @@ class AddBathroomBloc extends Bloc<AddBathroomEvent, AddBathroomState> {
       String message = 'Falha ao enviar sugestão. Tente novamente.';
       
       if (e is DioException) {
-        if (e.response?.statusCode == 429) {
+        if (e.response?.data != null && e.response?.data is Map && e.response?.data['error'] != null) {
+          message = e.response?.data['error'];
+        } else if (e.response?.statusCode == 429) {
           message = 'Limite diário de 10 requisições atingido.';
         } else if (e.type == DioExceptionType.connectionError || e.type == DioExceptionType.connectionTimeout) {
           message = 'Sem conexão com o servidor. Verifique a sua internet.';

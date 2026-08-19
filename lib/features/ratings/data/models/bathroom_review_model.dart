@@ -18,6 +18,8 @@ class BathroomReviewModel extends BathroomReview {
     required super.photos,
     required super.createdAt,
     required super.updatedAt,
+    super.userName,
+    super.userAvatar,
   });
 
   /// Converte JSON para modelo
@@ -38,6 +40,8 @@ class BathroomReviewModel extends BathroomReview {
       photos: List<String>.from(json['photos'] as List? ?? []),
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
+      userName: json['user_name'] as String?,
+      userAvatar: json['user_avatar'] as String?,
     );
   }
 
@@ -59,6 +63,8 @@ class BathroomReviewModel extends BathroomReview {
       'photos': photos,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
+      'user_name': userName,
+      'user_avatar': userAvatar,
     };
   }
 }

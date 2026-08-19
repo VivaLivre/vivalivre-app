@@ -6,6 +6,7 @@ class Bathroom extends Equatable {
   final String name;
   final LatLng location;
   final double rating;
+  final int reviewsCount;
   final List<String> tags;
   final String? address;
   final bool isAccessible;
@@ -22,6 +23,7 @@ class Bathroom extends Equatable {
     required this.name,
     required this.location,
     required this.rating,
+    this.reviewsCount = 0,
     required this.tags,
     this.address,
     this.isAccessible = false,
@@ -88,6 +90,7 @@ class Bathroom extends Equatable {
         name,
         location,
         rating,
+        reviewsCount,
         tags,
         address,
         isAccessible,

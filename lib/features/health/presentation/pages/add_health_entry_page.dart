@@ -54,7 +54,10 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
       _notesController.text = widget.entryToEdit!.notes;
       _severity = widget.entryToEdit!.severity;
       _type = widget.entryToEdit!.type;
-      _selectedSymptoms.addAll(widget.entryToEdit!.symptoms);
+      // Filter out 'Ida ao Banheiro' just in case it was saved in the past
+      _selectedSymptoms.addAll(
+        widget.entryToEdit!.symptoms.where((s) => s != 'Ida ao Banheiro')
+      );
     }
   }
 

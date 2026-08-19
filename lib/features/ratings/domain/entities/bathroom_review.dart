@@ -17,6 +17,8 @@ class BathroomReview extends Equatable {
   final List<String> photos;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final String? userName;
+  final String? userAvatar;
 
   const BathroomReview({
     required this.id,
@@ -34,6 +36,8 @@ class BathroomReview extends Equatable {
     required this.photos,
     required this.createdAt,
     required this.updatedAt,
+    this.userName,
+    this.userAvatar,
   });
 
   @override
@@ -53,6 +57,8 @@ class BathroomReview extends Equatable {
     photos,
     createdAt,
     updatedAt,
+    userName,
+    userAvatar,
   ];
 }
 

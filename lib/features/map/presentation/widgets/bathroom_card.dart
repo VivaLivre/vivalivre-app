@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:viva_livre_app/features/map/domain/entities/bathroom.dart';
-import 'package:viva_livre_app/features/ratings/presentation/bloc/rating_bloc.dart';
+
 
 // Cores dinâmicas definidas no build
 
@@ -174,35 +174,21 @@ class BathroomCard extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        BlocBuilder<RatingBloc, RatingState>(
-                          builder: (context, state) {
-                            if (state is BathroomReviewsLoaded) {
-                              if (state.total == 0) return const SizedBox.shrink();
-                              return Row(
-                                children: [
-                                  const Icon(Icons.star_rounded, size: 14, color: Color(0xFFF59E0B)),
-                                  const SizedBox(width: 2),
-                                  Text(
-                                    '${state.averageRating.toStringAsFixed(1)} (${state.total})',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                      color: _kSubText,
-                                    ),
-                                  ),
-                                ],
-                              );
-                            }
-                            if (state is RatingLoading) {
-                              return const SizedBox(
-                                width: 12,
-                                height: 12,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              );
-                            }
-                            return const SizedBox.shrink();
-                          },
-                        ),
+                        if (bathroom.reviewsCount > 0)
+                          Row(
+                            children: [
+                              const Icon(Icons.star_rounded, size: 14, color: Color(0xFFF59E0B)),
+                              const SizedBox(width: 2),
+                              Text(
+                                '${bathroom.rating.toStringAsFixed(1)} (${bathroom.reviewsCount})',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: _kSubText,
+                                ),
+                              ),
+                            ],
+                          ),
                       ],
                     ),
                     const SizedBox(height: 2),
