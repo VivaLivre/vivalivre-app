@@ -267,7 +267,11 @@ class _RegisterPageState extends State<RegisterPage> {
                 backgroundColor: Color(0xFF10B981),
               ),
             );
-            Navigator.pushReplacementNamed(context, '/home');
+            if (state.user.clinicalCondition == null || state.user.clinicalCondition!.isEmpty) {
+              Navigator.pushReplacementNamed(context, '/complete-profile');
+            } else {
+              Navigator.pushReplacementNamed(context, '/home');
+            }
           }
         },
         builder: (context, state) {
