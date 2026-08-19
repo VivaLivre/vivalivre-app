@@ -3,8 +3,8 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:viva_livre_app/features/health/presentation/pages/health_page.dart';
 import 'package:viva_livre_app/features/auth/presentation/auth_bloc.dart';
-import '../utils/health_data_aggregator.dart';
-import '../utils/pdf_generator_service.dart';
+import '../../utils/health_data_aggregator.dart';
+import '../../utils/pdf_generator_service.dart';
 
 class HealthDashboardPage extends StatefulWidget {
   final List<HealthRecord> records;
