@@ -20,12 +20,14 @@ class HealthRecord {
   final String title;
   final DateTime timestamp;
   final String type; // 'banheiro' | 'sintoma'
+  final String? severity; // 'Leve' | 'Moderado' | 'Grave'
 
   HealthRecord({
     required this.id,
     required this.title,
     required this.timestamp,
     required this.type,
+    this.severity,
   });
 
   /// Converte uma [HealthEntry] do domínio para o formato do Dashboard.
@@ -37,6 +39,7 @@ class HealthRecord {
           : 'Registo sem sintoma',
       timestamp: entry.timestamp,
       type: entry.type,
+      severity: entry.severity,
     );
   }
 }

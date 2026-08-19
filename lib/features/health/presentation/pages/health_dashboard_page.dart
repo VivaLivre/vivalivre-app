@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:viva_livre_app/features/health/presentation/pages/health_page.dart';
+import '../../utils/health_data_aggregator.dart';
 
 class HealthDashboardPage extends StatefulWidget {
   final List<HealthRecord> records;
@@ -31,6 +32,24 @@ class _HealthDashboardPageState extends State<HealthDashboardPage>
     final surfaceColor = isDark ? Theme.of(context).cardColor : Colors.white;
     final textColor = isDark ? Colors.white : _kText;
     final mutedText = isDark ? Colors.white70 : const Color(0xFF64748B);
+
+    final filteredRecords = HealthDataAggregator.filterRecords(widget.records, _selectedFilter);
+    final bathroomCount = HealthDataAggregator.countBathroomTrips(filteredRecords);
+    final frequentSymptomData = HealthDataAggregator.getMostFrequentSymptom(filteredRecords);
+    
+    final frequentSymptom = frequentSymptomData?.key ?? 'Nenhum';
+    final frequentSeverity = frequentSymptomData?.value;
+    final severityColor = HealthDataAggregator.getSeverityColor(frequentSeverity);
+
+    final symptomDistribution = HealthDataAggregator.getSymptomDistribution(filteredRecords);
+
+    // Ajusta os textos de contexto
+    String subtitleText = '';
+    switch (_selectedFilter) {
+      case 'Hoje': subtitleText = 'nas últimas 24h'; break;
+      case 'Últimos 7 dias': subtitleText = 'nos últimos 7 dias'; break;
+      case 'Mês': subtitleText = 'neste mês'; break;
+    }
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -86,12 +105,13 @@ class _HealthDashboardPageState extends State<HealthDashboardPage>
                 children: [
                   // ── Destaques (Cards) ──
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
                         child: _StatCard(
                           title: 'Idas ao Banheiro',
-                          value: _getBathroomCount(),
-                          subtitle: 'nas últimas 24h',
+                          value: bathroomCount.toString(),
+                          subtitle: subtitleText,
                           icon: Icons.wc_rounded,
                           color: _kBlue,
                         ),
@@ -100,25 +120,71 @@ class _HealthDashboardPageState extends State<HealthDashboardPage>
                       Expanded(
                         child: _StatCard(
                           title: 'Sintoma Frequente',
-                          value: _getMostFrequentSymptom(),
-                          subtitle: 'mais recorrente',
+                          value: frequentSymptom,
+                          subtitle: frequentSymptom == 'Nenhum' ? 'Sem dados' : subtitleText,
                           icon: Icons.healing_rounded,
-                          color: const Color(0xFFF59E0B),
+                          color: frequentSymptom == 'Nenhum' ? const Color(0xFFF59E0B) : severityColor,
                           isValueText: true,
+                          badgeText: frequentSymptom == 'Nenhum' ? null : frequentSeverity,
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 32),
 
-                  // ── Gráfico de Atividade ──
+                  // ── Gráfico de Pizza: Distribuição de Sintomas ──
+                  if (symptomDistribution.isNotEmpty) ...[
+                    Text(
+                      'Distribuição de Sintomas',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: textColor),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Quais foram os sintomas mais recorrentes $subtitleText',
+                      style: TextStyle(fontSize: 13, color: mutedText),
+                    ),
+                    const SizedBox(height: 24),
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: surfaceColor,
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.03),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          SizedBox(
+                            height: 200,
+                            child: PieChart(
+                              PieChartData(
+                                sectionsSpace: 2,
+                                centerSpaceRadius: 40,
+                                sections: _buildPieChartSections(symptomDistribution, isDark),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          _buildPieChartLegend(symptomDistribution, isDark),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                  ],
+
+                  // ── Gráfico de Atividade (Barras) ──
                   Text(
-                    'Atividade ao Longo do Dia',
+                    'Atividade por Período',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: textColor),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Distribuição de sintomas e eventos nas últimas 24h',
+                    'Distribuição de sintomas e eventos $subtitleText',
                     style: TextStyle(fontSize: 13, color: mutedText),
                   ),
                   const SizedBox(height: 24),
@@ -137,37 +203,10 @@ class _HealthDashboardPageState extends State<HealthDashboardPage>
                         ),
                       ],
                     ),
-                    child: _buildChart(context),
+                    child: _buildBarChart(filteredRecords, context),
                   ),
                   const SizedBox(height: 40),
                 ],
-              ),
-            ),
-
-            // ── Botão Exportar ──
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Relatório gerado com sucesso! Pronto para compartilhar com o seu médico.'),
-                      backgroundColor: Color(0xFF10B981),
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: textColor,
-                  foregroundColor: isDark ? _kBg : Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  elevation: 4,
-                ),
-                icon: const Icon(Icons.ios_share_rounded, size: 20),
-                label: const Text(
-                  'Exportar para o Médico',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-                ),
               ),
             ),
           ],
@@ -176,62 +215,143 @@ class _HealthDashboardPageState extends State<HealthDashboardPage>
     );
   }
 
-  // ── Lógica de Agregação de Dados ──
+  // ── Helpers de Gráficos ──
 
-  String _getBathroomCount() {
-    // Conta registos do tipo "banheiro"
-    final count = widget.records.where((r) => r.type == 'banheiro').length;
-    return count.toString();
+  List<Color> _getChartColors(bool isDark) {
+    return [
+      _kBlue,
+      const Color(0xFF10B981), // Verde
+      const Color(0xFFF59E0B), // Laranja
+      const Color(0xFF8B5CF6), // Roxo
+      const Color(0xFFEF4444), // Vermelho
+      const Color(0xFF06B6D4), // Ciano
+    ];
   }
 
-  String _getMostFrequentSymptom() {
-    final symptoms = widget.records.where((r) => r.type == 'sintoma').toList();
-    if (symptoms.isEmpty) return 'Nenhum';
-
-    final map = <String, int>{};
-    for (var s in symptoms) {
-      map[s.title] = (map[s.title] ?? 0) + 1;
-    }
-
-    var mostFrequent = '';
-    var maxCount = 0;
-    map.forEach((key, value) {
-      if (value > maxCount) {
-        maxCount = value;
-        mostFrequent = key;
-      }
-    });
-
-    return mostFrequent;
+  List<PieChartSectionData> _buildPieChartSections(Map<String, double> data, bool isDark) {
+    final colors = _getChartColors(isDark);
+    int i = 0;
+    
+    return data.entries.map((entry) {
+      final color = colors[i % colors.length];
+      i++;
+      return PieChartSectionData(
+        color: color,
+        value: entry.value,
+        title: '${entry.value.toStringAsFixed(0)}%',
+        radius: 50,
+        titleStyle: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
+      );
+    }).toList();
   }
 
-  Widget _buildChart(BuildContext context) {
+  Widget _buildPieChartLegend(Map<String, double> data, bool isDark) {
+    final colors = _getChartColors(isDark);
+    int i = 0;
+
+    return Wrap(
+      spacing: 16,
+      runSpacing: 12,
+      alignment: WrapAlignment.center,
+      children: data.entries.map((entry) {
+        final color = colors[i % colors.length];
+        i++;
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 12,
+              height: 12,
+              decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              entry.key,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: isDark ? Colors.white70 : _kText,
+              ),
+            ),
+          ],
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildBarChart(List<HealthRecord> records, BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    // Divide os eventos pelas partes do dia: Manhã (06-12), Tarde (12-18), Noite (18-06)
-    int morning = 0;
-    int afternoon = 0;
-    int night = 0;
 
-    for (var r in widget.records) {
-      final hour = r.timestamp.hour;
-      if (hour >= 6 && hour < 12) {
-        morning++;
-      } else if (hour >= 12 && hour < 18) {
-        afternoon++;
-      } else {
-        night++;
+    // Lógica para 'Hoje' (Por Partes do Dia)
+    if (_selectedFilter == 'Hoje') {
+      int morning = 0;
+      int afternoon = 0;
+      int night = 0;
+
+      for (var r in records) {
+        final hour = r.timestamp.hour;
+        if (hour >= 6 && hour < 12) {
+          morning++;
+        } else if (hour >= 12 && hour < 18) {
+          afternoon++;
+        } else {
+          night++;
+        }
       }
+
+      // Mock caso vazio
+      if (records.isEmpty) { morning = 2; afternoon = 5; night = 1; }
+
+      final maxY = [morning, afternoon, night].reduce((a, b) => a > b ? a : b).toDouble() + 2;
+
+      return _renderBarChart(
+        maxY: maxY,
+        isDark: isDark,
+        labels: ['Manhã', 'Tarde', 'Noite'],
+        values: [morning.toDouble(), afternoon.toDouble(), night.toDouble()],
+      );
+    }
+    
+    // Lógica para 'Últimos 7 dias' ou 'Mês'
+    // Agrupamento por Dia
+    final map = <int, int>{};
+    for (var r in records) {
+      final key = r.timestamp.day; // Simplificado: usa o dia
+      map[key] = (map[key] ?? 0) + 1;
     }
 
-    // Se não houver dados, mostra um gráfico mock para visualização do design
-    if (widget.records.isEmpty) {
-      morning = 2;
-      afternoon = 5;
-      night = 8;
+    if (map.isEmpty) {
+      // Mock vazio para ver a UI
+      return _renderBarChart(
+        maxY: 5,
+        isDark: isDark,
+        labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex'],
+        values: [1, 2, 0, 3, 1],
+      );
     }
 
-    final maxY = [morning, afternoon, night].reduce((a, b) => a > b ? a : b).toDouble() + 2;
+    // Ordenar os dias para exibir
+    final sortedKeys = map.keys.toList()..sort();
+    // Limitar a exibir os últimos 5 a 7 itens no gráfico para não apertar
+    final recentKeys = sortedKeys.length > 7 ? sortedKeys.sublist(sortedKeys.length - 7) : sortedKeys;
 
+    final labels = recentKeys.map((day) => 'Dia $day').toList();
+    final values = recentKeys.map((day) => map[day]!.toDouble()).toList();
+    final maxY = values.reduce((a, b) => a > b ? a : b) + 2;
+
+    return _renderBarChart(
+      maxY: maxY,
+      isDark: isDark,
+      labels: labels,
+      values: values,
+    );
+  }
+
+  Widget _renderBarChart({required double maxY, required bool isDark, required List<String> labels, required List<double> values}) {
     return BarChart(
       BarChartData(
         alignment: BarChartAlignment.spaceAround,
@@ -243,18 +363,14 @@ class _HealthDashboardPageState extends State<HealthDashboardPage>
             sideTitles: SideTitles(
               showTitles: true,
               getTitlesWidget: (value, meta) {
-                String text;
-                switch (value.toInt()) {
-                  case 0: text = 'Manhã'; break;
-                  case 1: text = 'Tarde'; break;
-                  case 2: text = 'Noite'; break;
-                  default: text = '';
-                }
+                final int index = value.toInt();
+                if (index < 0 || index >= labels.length) return const SizedBox.shrink();
+                
                 return Padding(
                   padding: const EdgeInsets.only(top: 8),
                   child: Text(
-                    text,
-                    style: const TextStyle(color: Color(0xFF64748B), fontSize: 12, fontWeight: FontWeight.w600),
+                    labels[index],
+                    style: const TextStyle(color: Color(0xFF64748B), fontSize: 11, fontWeight: FontWeight.w600),
                   ),
                 );
               },
@@ -267,31 +383,28 @@ class _HealthDashboardPageState extends State<HealthDashboardPage>
         gridData: FlGridData(
           show: true,
           drawVerticalLine: false,
-          horizontalInterval: 2,
           getDrawingHorizontalLine: (value) => FlLine(color: isDark ? Theme.of(context).dividerColor : const Color(0xFFF1F5F9), strokeWidth: 1),
         ),
         borderData: FlBorderData(show: false),
-        barGroups: [
-          _makeGroupData(0, morning.toDouble(), _kBlue, isDark),
-          _makeGroupData(1, afternoon.toDouble(), const Color(0xFFF59E0B), isDark),
-          _makeGroupData(2, night.toDouble(), const Color(0xFFEF4444), isDark),
-        ],
+        barGroups: List.generate(values.length, (index) {
+          return _makeGroupData(index, values[index], _kBlue, isDark, maxY);
+        }),
       ),
     );
   }
 
-  BarChartGroupData _makeGroupData(int x, double y, Color color, bool isDark) {
+  BarChartGroupData _makeGroupData(int x, double y, Color color, bool isDark, double maxY) {
     return BarChartGroupData(
       x: x,
       barRods: [
         BarChartRodData(
           toY: y,
           color: color,
-          width: 32,
-          borderRadius: BorderRadius.circular(8),
+          width: 24, // um pouco mais fino para suportar mais dias
+          borderRadius: BorderRadius.circular(6),
           backDrawRodData: BackgroundBarChartRodData(
             show: true,
-            toY: 10, // Mock fixed background height
+            toY: maxY, // Utiliza o limite máximo verdadeiro para o fundo
             color: isDark ? Colors.grey.shade800 : const Color(0xFFF8FAFC),
           ),
         ),
@@ -307,6 +420,7 @@ class _StatCard extends StatelessWidget {
   final IconData icon;
   final Color color;
   final bool isValueText;
+  final String? badgeText;
 
   const _StatCard({
     required this.title,
@@ -315,6 +429,7 @@ class _StatCard extends StatelessWidget {
     required this.icon,
     required this.color,
     this.isValueText = false,
+    this.badgeText,
   });
 
   @override
@@ -336,7 +451,7 @@ class _StatCard extends StatelessWidget {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: color.withValues(alpha: 0.1), width: 1),
+        border: Border.all(color: color.withValues(alpha: 0.2), width: 1),
         boxShadow: [
           BoxShadow(
             color: color.withValues(alpha: 0.08),
@@ -348,13 +463,34 @@ class _StatCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: color, size: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: color, size: 20),
+              ),
+              if (badgeText != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    badgeText!,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+            ],
           ),
           const SizedBox(height: 16),
           Text(
@@ -368,7 +504,7 @@ class _StatCard extends StatelessWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 6),
           Text(
             title,
             style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: mutedText),

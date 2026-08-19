@@ -8,6 +8,7 @@ import 'package:viva_livre_app/features/health/presentation/pages/health_dashboa
 import 'package:viva_livre_app/features/health/presentation/pages/add_health_entry_page.dart';
 import 'package:viva_livre_app/features/health/presentation/pages/health_page.dart';
 import 'package:viva_livre_app/features/profile/presentation/pages/edit_profile_page.dart';
+import 'package:viva_livre_app/features/profile/presentation/pages/complete_profile_page.dart';
 import 'package:viva_livre_app/core/theme/app_theme.dart';
 
 final GlobalKey<NavigatorState> globalNavigatorKey = GlobalKey<NavigatorState>();
@@ -42,6 +43,7 @@ class App extends StatelessWidget {
         },
         '/add-health-entry': (_) => const AddHealthEntryPage(),
         '/edit-profile': (_) => const EditProfilePage(),
+        '/complete-profile': (_) => const CompleteProfilePage(),
       },
     );
   }

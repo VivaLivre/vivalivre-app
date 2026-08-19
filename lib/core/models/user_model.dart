@@ -6,6 +6,7 @@ class UserModel {
   final int? height;
   final double? weight;
   final DateTime? birthDate;
+  final String? clinicalCondition;
   final DateTime createdAt;
 
   UserModel({
@@ -16,6 +17,7 @@ class UserModel {
     this.height,
     this.weight,
     this.birthDate,
+    this.clinicalCondition,
     required this.createdAt,
   });
 
@@ -30,6 +32,7 @@ class UserModel {
       birthDate: json['date_of_birth'] != null 
           ? DateTime.parse(json['date_of_birth']) 
           : (json['birth_date'] != null ? DateTime.parse(json['birth_date']) : null),
+      clinicalCondition: json['clinical_condition'],
       createdAt: DateTime.parse(json['created_at']),
     );
   }
@@ -43,6 +46,7 @@ class UserModel {
       'height': height,
       'weight': weight,
       'birth_date': birthDate?.toIso8601String(),
+      'clinical_condition': clinicalCondition,
       'created_at': createdAt.toIso8601String(),
     };
   }
@@ -54,6 +58,7 @@ class UserModel {
     int? height,
     double? weight,
     DateTime? birthDate,
+    String? clinicalCondition,
   }) {
     return UserModel(
       id: id,
@@ -63,6 +68,7 @@ class UserModel {
       height: height ?? this.height,
       weight: weight ?? this.weight,
       birthDate: birthDate ?? this.birthDate,
+      clinicalCondition: clinicalCondition ?? this.clinicalCondition,
       createdAt: createdAt,
     );
   }

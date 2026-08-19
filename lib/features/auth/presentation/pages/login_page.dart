@@ -131,7 +131,11 @@ class _LoginPageState extends State<LoginPage> {
               ),
             );
           } else if (state is AuthAuthenticated) {
-            Navigator.pushReplacementNamed(context, '/home');
+            if (state.user.clinicalCondition == null || state.user.clinicalCondition!.isEmpty) {
+              Navigator.pushReplacementNamed(context, '/complete-profile');
+            } else {
+              Navigator.pushReplacementNamed(context, '/home');
+            }
           }
         },
         builder: (context, state) {
