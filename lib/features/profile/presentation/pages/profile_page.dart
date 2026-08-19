@@ -5,6 +5,8 @@ import 'package:viva_livre_app/core/theme/app_colors.dart';
 import 'package:viva_livre_app/features/health/presentation/health_bloc.dart';
 import 'package:viva_livre_app/features/health/domain/entities/health_entry.dart';
 import 'package:viva_livre_app/features/health/presentation/pages/health_page.dart' show HealthRecord;
+import 'package:viva_livre_app/features/health/utils/pdf_generator_service.dart';
+import 'package:viva_livre_app/core/models/user_model.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -31,26 +33,103 @@ class _ProfilePageState extends State<ProfilePage>
     return age;
   }
 
-  Future<void> _exportPdfReport() async {
-    setState(() {
-      _isGeneratingPdf = true;
-    });
+  void _showExportOptionsDialog(BuildContext context, List<HealthRecord> allRecords, UserModel user) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (BuildContext ctx) {
+        final theme = Theme.of(ctx);
+        final isDark = theme.brightness == Brightness.dark;
+        final bgColor = isDark ? theme.scaffoldBackgroundColor : Colors.white;
+        final textColor = isDark ? Colors.white : theme.colorScheme.onSurface;
+        final mutedText = isDark ? Colors.white70 : const Color(0xFF64748B);
 
-    // Simulate PDF generation delay
-    await Future.delayed(const Duration(seconds: 2));
+        return Container(
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Exportar Relatório', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor)),
+              const SizedBox(height: 8),
+              Text('Selecione o período que deseja exportar para o seu médico:', style: TextStyle(fontSize: 14, color: mutedText)),
+              const SizedBox(height: 24),
+              // Option 1: 30 days (Default)
+              _buildExportOption(ctx, 'Últimos 30 dias', 30, Icons.date_range_rounded, isDark, allRecords, user, true),
+              const SizedBox(height: 12),
+              // Option 2: 60 days
+              _buildExportOption(ctx, 'Últimos 60 dias', 60, Icons.date_range_rounded, isDark, allRecords, user, false),
+              const SizedBox(height: 12),
+              // Option 3: 90 days (3 months)
+              _buildExportOption(ctx, 'Últimos 90 dias', 90, Icons.calendar_month_rounded, isDark, allRecords, user, false),
+              const SizedBox(height: 32),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
-    if (mounted) {
-      setState(() {
-        _isGeneratingPdf = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Relatório PDF exportado com sucesso! Salvo na pasta Downloads.'),
-          backgroundColor: AppColors.successText,
-          behavior: SnackBarBehavior.floating,
+  Widget _buildExportOption(BuildContext context, String title, int days, IconData icon, bool isDark, List<HealthRecord> allRecords, UserModel user, bool isRecommended) {
+    return InkWell(
+      onTap: () async {
+        Navigator.pop(context);
+        
+        setState(() {
+          _isGeneratingPdf = true;
+        });
+
+        // Filtrar
+        final now = DateTime.now();
+        final start = DateTime(now.year, now.month, now.day).subtract(Duration(days: days));
+        final filteredRecords = allRecords.where((r) => r.timestamp.isAfter(start)).toList();
+
+        // Gerar
+        await PdfGeneratorService.generateAndPreviewPdf(
+          records: filteredRecords,
+          filter: title,
+          userName: user.name,
+          clinicalCondition: user.clinicalCondition ?? 'Não especificada',
+        );
+
+        if (mounted) {
+          setState(() {
+            _isGeneratingPdf = false;
+          });
+        }
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        decoration: BoxDecoration(
+          color: isRecommended ? (isDark ? AppColors.primary.withValues(alpha: 0.1) : AppColors.primary.withValues(alpha: 0.05)) : null,
+          border: Border.all(color: isRecommended ? AppColors.primary : (isDark ? Colors.grey.shade800 : Colors.grey.shade200)),
+          borderRadius: BorderRadius.circular(16),
         ),
-      );
-    }
+        child: Row(
+          children: [
+            Icon(icon, color: AppColors.primary),
+            const SizedBox(width: 16),
+            Text(title, style: TextStyle(fontSize: 16, fontWeight: isRecommended ? FontWeight.w700 : FontWeight.w600)),
+            if (isRecommended) ...[
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(4)),
+                child: const Text('Recomendado', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+              ),
+            ],
+            const Spacer(),
+            const Icon(Icons.chevron_right_rounded, color: Colors.grey),
+          ],
+        ),
+      ),
+    );
   }
 
   void _showPrivacyDialog() {
@@ -424,9 +503,19 @@ class _ProfilePageState extends State<ProfilePage>
                   ),
                   const SizedBox(height: 12),
 
-                  // ── 3. Relatório PDF Prominente ──
                   GestureDetector(
-                    onTap: _isGeneratingPdf ? null : _exportPdfReport,
+                    onTap: _isGeneratingPdf ? null : () {
+                      final healthState = context.read<HealthBloc>().state;
+                      final entries = healthState is HealthEntriesLoaded
+                          ? healthState.entries
+                          : healthState is HealthEntryAdding
+                              ? healthState.entries
+                              : <HealthEntry>[];
+                      final records = entries.map(HealthRecord.fromEntry).toList();
+                      if (user != null) {
+                        _showExportOptionsDialog(context, records, user);
+                      }
+                    },
                     child: Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(

@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:viva_livre_app/features/health/presentation/pages/health_page.dart';
-import 'package:viva_livre_app/features/auth/presentation/auth_bloc.dart';
 import '../../utils/health_data_aggregator.dart';
-import '../../utils/pdf_generator_service.dart';
 
 class HealthDashboardPage extends StatefulWidget {
   final List<HealthRecord> records;
@@ -212,108 +209,6 @@ class _HealthDashboardPageState extends State<HealthDashboardPage>
                 ],
               ),
             ),
-
-            // ── Botão Exportar ──
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  final authState = context.read<AuthBloc>().state;
-                  String userName = 'Paciente VivaLivre';
-                  String condition = 'Não especificada';
-                  if (authState is AuthAuthenticated) {
-                    userName = authState.user.name;
-                    condition = authState.user.clinicalCondition ?? 'Não especificada';
-                  }
-
-                  _showExportDialog(context, userName, condition, widget.records);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: textColor,
-                  foregroundColor: isDark ? _kBg : Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  elevation: 4,
-                ),
-                icon: const Icon(Icons.ios_share_rounded, size: 20),
-                label: const Text(
-                  'Exportar para o Médico',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ── Helpers de Exportação ──
-  
-  void _showExportDialog(BuildContext context, String userName, String condition, List<HealthRecord> allRecords) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (BuildContext ctx) {
-        final isDark = Theme.of(ctx).brightness == Brightness.dark;
-        final bgColor = isDark ? Theme.of(ctx).scaffoldBackgroundColor : Colors.white;
-        final textColor = isDark ? Colors.white : _kText;
-        final mutedText = isDark ? Colors.white70 : const Color(0xFF64748B);
-
-        return Container(
-          decoration: BoxDecoration(
-            color: bgColor,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Exportar Relatório', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor)),
-              const SizedBox(height: 8),
-              Text('Selecione o período que deseja exportar para o seu médico:', style: TextStyle(fontSize: 14, color: mutedText)),
-              const SizedBox(height: 24),
-              _buildExportOption(ctx, 'Hoje', Icons.today_rounded, isDark, allRecords, userName, condition),
-              const SizedBox(height: 12),
-              _buildExportOption(ctx, 'Últimos 7 dias', Icons.date_range_rounded, isDark, allRecords, userName, condition),
-              const SizedBox(height: 12),
-              _buildExportOption(ctx, 'Mês', Icons.calendar_month_rounded, isDark, allRecords, userName, condition),
-              const SizedBox(height: 32),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildExportOption(BuildContext context, String filterName, IconData icon, bool isDark, List<HealthRecord> allRecords, String userName, String condition) {
-    return InkWell(
-      onTap: () {
-        Navigator.pop(context);
-        final filteredRecords = HealthDataAggregator.filterRecords(allRecords, filterName);
-        PdfGeneratorService.generateAndPreviewPdf(
-          records: filteredRecords,
-          filter: filterName,
-          userName: userName,
-          clinicalCondition: condition,
-        );
-      },
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        decoration: BoxDecoration(
-          border: Border.all(color: isDark ? Colors.grey.shade800 : Colors.grey.shade200),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, color: _kBlue),
-            const SizedBox(width: 16),
-            Text(filterName, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-            const Spacer(),
-            const Icon(Icons.chevron_right_rounded, color: Colors.grey),
           ],
         ),
       ),
