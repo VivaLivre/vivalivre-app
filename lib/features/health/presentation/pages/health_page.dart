@@ -143,8 +143,8 @@ class _HealthPageState extends State<HealthPage>
   Future<void> _showBathroomModal() async {
     Vibration.vibrate(duration: 80);
 
-    final List<String>? extraSymptoms =
-        await showModalBottomSheet<List<String>>(
+    final BathroomExtrasResult? result =
+        await showModalBottomSheet<BathroomExtrasResult>(
           context: context,
           isScrollControlled: true,
           useSafeArea: true,
@@ -154,7 +154,8 @@ class _HealthPageState extends State<HealthPage>
 
     if (!mounted) return;
 
-    final symptoms = ['Ida ao Banheiro', ...?extraSymptoms];
+    final symptoms = ['Ida ao Banheiro', ...?(result?.symptoms)];
+    final notes = result?.notes ?? '';
 
     final severity = HealthEntry.calculateSeverity(symptoms);
 
@@ -163,7 +164,7 @@ class _HealthPageState extends State<HealthPage>
       userId: '',
       symptoms: symptoms,
       severity: severity,
-      notes: '',
+      notes: notes,
       timestamp: DateTime.now(),
       type: 'banheiro',
     );
@@ -210,7 +211,7 @@ class _HealthPageState extends State<HealthPage>
       backgroundColor: Colors.transparent,
       builder: (context) => SymptomSearchModal(
         availableSymptoms: _customSymptoms,
-        onAdd: (List<String> symptoms) {
+        onAdd: (List<String> symptoms, String notes) {
           bool addedAny = false;
           for (var symptom in symptoms) {
             if (!_customSymptoms.contains(symptom)) {
@@ -231,7 +232,7 @@ class _HealthPageState extends State<HealthPage>
             userId: '',
             symptoms: symptoms,
             severity: severity,
-            notes: '',
+            notes: notes,
             timestamp: DateTime.now(),
             type: 'sintoma',
           );

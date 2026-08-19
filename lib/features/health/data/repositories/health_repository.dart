@@ -57,6 +57,41 @@ class HealthRepositoryImpl implements IHealthRepository {
         await db.delete('health_entries', where: 'local_id = ?', whereArgs: [map['local_id']]);
       }
     }
+
+    // Obter registos pendentes de atualização (sync_status = 3)
+    final pendingUpdates = await db.query('health_entries', where: 'sync_status = ?', whereArgs: [3]);
+    for (var map in pendingUpdates) {
+      final remoteId = map['remote_id'] as String?;
+      if (remoteId != null && remoteId.isNotEmpty) {
+        try {
+          final symptoms = (jsonDecode(map['symptoms'] as String) as List).cast<String>();
+          await _apiClient.dio.patch('/api/health/entries/$remoteId', data: {
+            'type': map['type'],
+            'description': map['description'],
+            'severity': map['severity'],
+            'symptoms': symptoms,
+          });
+          
+          await db.update(
+            'health_entries',
+            {'sync_status': 0},
+            where: 'local_id = ?',
+            whereArgs: [map['local_id']],
+          );
+        } catch (e) {
+          debugPrint('[HealthRepository] sync pending update ERROR: $e');
+        }
+      } else {
+        // Atualização de um registo que ainda nem foi sincronizado para criar?
+        // Neste caso, mudamos o status para 1 (Pendente Inserção) para que seja criado na próxima tentativa.
+        await db.update(
+            'health_entries',
+            {'sync_status': 1},
+            where: 'local_id = ?',
+            whereArgs: [map['local_id']],
+        );
+      }
+    }
   }
 
   @override
@@ -127,6 +162,52 @@ class HealthRepositoryImpl implements IHealthRepository {
 
     // Tentar sincronizar silenciosamente
     syncPendingEntries();
+  }
+
+  @override
+  Future<HealthEntry> updateEntry(HealthEntry entry) async {
+    final db = await LocalDatabase.instance.database;
+
+    // Verificar se o ID passado é local_id ou remote_id
+    final result = await db.query('health_entries', where: 'local_id = ? OR remote_id = ?', whereArgs: [entry.id, entry.id]);
+    
+    if (result.isNotEmpty) {
+      final map = result.first;
+      final localId = map['local_id'] as String;
+      final remoteId = map['remote_id'] as String?;
+      
+      final currentSyncStatus = map['sync_status'] as int;
+      // Se era 1 (pendente criação), continua 1 porque a API ainda não o conhece.
+      // Se era 0 (sincronizado), passa a 3 (pendente atualização).
+      final newSyncStatus = currentSyncStatus == 1 ? 1 : 3;
+
+      await db.update('health_entries', {
+        'type': entry.type,
+        'description': entry.notes,
+        'severity': entry.severity,
+        'symptoms': jsonEncode(entry.symptoms),
+        'sync_status': newSyncStatus,
+      }, where: 'local_id = ?', whereArgs: [localId]);
+
+    } else {
+      // Registo não existe localmente (raro, mas possível). Tenta API direta.
+      try {
+        await _apiClient.dio.patch('/api/health/entries/${entry.id}', data: {
+          'type': entry.type,
+          'description': entry.notes,
+          'severity': entry.severity,
+          'symptoms': entry.symptoms,
+        });
+      } catch (e) {
+        debugPrint('[HealthRepository] fallback update ERROR: $e');
+        rethrow;
+      }
+    }
+
+    // Tentar sincronizar silenciosamente
+    syncPendingEntries();
+
+    return entry;
   }
 
   @override

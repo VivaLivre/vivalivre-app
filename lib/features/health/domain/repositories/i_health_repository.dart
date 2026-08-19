@@ -5,9 +5,12 @@ import 'package:viva_livre_app/features/health/domain/entities/health_entry.dart
 /// A camada de Apresentação (BLoC) depende APENAS desta interface,
 /// nunca da implementação concreta — princípio da Inversão de Dependência.
 abstract class IHealthRepository {
-  /// Adiciona um novo registo clínico no Firestore.
-  /// Lança [Exception] em caso de falha de rede ou permissão negada.
-  Future<HealthEntry> addEntry(HealthEntry entry);
+	/// Adiciona um novo registo clínico na API.
+	/// Lança [Exception] em caso de falha de rede ou permissão negada.
+	Future<HealthEntry> addEntry(HealthEntry entry);
+
+	/// Atualiza um registo clínico existente na API.
+	Future<HealthEntry> updateEntry(HealthEntry entry);
 
   /// Elimina um registo pelo seu [docId].
   Future<void> deleteEntry(String docId);

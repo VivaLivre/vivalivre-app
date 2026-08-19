@@ -41,3 +41,12 @@ class DeleteHealthEntry extends HealthEvent {
   @override
   List<Object> get props => [docId];
 }
+
+/// Atualiza um registo clínico existente.
+class UpdateHealthEntry extends HealthEvent {
+  final HealthEntry entry;
+  const UpdateHealthEntry(this.entry);
+
+  @override
+  List<Object> get props => [entry];
+}

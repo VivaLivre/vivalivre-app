@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:viva_livre_app/features/health/domain/entities/health_entry.dart';
 import 'package:viva_livre_app/features/health/domain/repositories/i_health_repository.dart';
@@ -19,6 +20,7 @@ class HealthBloc extends Bloc<HealthEvent, HealthState> {
     on<WatchHealthEntries>(_onWatchHealthEntries);
     on<ChangeHealthDate>(_onChangeHealthDate);
     on<AddHealthEntry>(_onAddHealthEntry);
+    on<UpdateHealthEntry>(_onUpdateHealthEntry);
     on<DeleteHealthEntry>(_onDeleteHealthEntry);
   }
 
@@ -39,7 +41,6 @@ class HealthBloc extends Bloc<HealthEvent, HealthState> {
   }
 
   /// Grava um novo registo de saúde.
-  /// Após sucesso, recarrega a lista imediatamente.
   Future<void> _onAddHealthEntry(
     AddHealthEntry event,
     Emitter<HealthState> emit,
@@ -51,10 +52,8 @@ class HealthBloc extends Bloc<HealthEvent, HealthState> {
 
     try {
       final newEntry = await _healthRepository.addEntry(event.entry);
-      // ✅ Inserir imediatamente no estado em vez de re-fetch completo
       if (previousState is HealthEntriesLoaded) {
         final updatedList = List<HealthEntry>.from(previousState.entries)..insert(0, newEntry);
-        // Garantir ordenação descrescente por data
         updatedList.sort((a, b) => b.timestamp.compareTo(a.timestamp));
         emit(HealthEntriesLoaded(updatedList));
       } else {
@@ -68,8 +67,36 @@ class HealthBloc extends Bloc<HealthEvent, HealthState> {
     }
   }
 
+  /// Atualiza um registo de saúde.
+  Future<void> _onUpdateHealthEntry(
+    UpdateHealthEntry event,
+    Emitter<HealthState> emit,
+  ) async {
+    final previousState = state;
+    final currentEntries = previousState is HealthEntriesLoaded ? previousState.entries : <HealthEntry>[];
+
+    emit(HealthEntryAdding(currentEntries));
+
+    try {
+      final updatedEntry = await _healthRepository.updateEntry(event.entry);
+      if (previousState is HealthEntriesLoaded) {
+        final updatedList = previousState.entries.map((e) {
+          return e.id == updatedEntry.id ? updatedEntry : e;
+        }).toList();
+        updatedList.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+        emit(HealthEntriesLoaded(updatedList));
+      } else {
+        add(const WatchHealthEntries());
+      }
+    } catch (e) {
+      emit(const HealthError('Não foi possível atualizar o registo. Verifique a sua ligação.'));
+      if (previousState is HealthEntriesLoaded) {
+        emit(previousState);
+      }
+    }
+  }
+
   /// Elimina um registo de saúde.
-  /// Após sucesso, recarrega a lista imediatamente.
   Future<void> _onDeleteHealthEntry(
     DeleteHealthEntry event,
     Emitter<HealthState> emit,
@@ -77,7 +104,6 @@ class HealthBloc extends Bloc<HealthEvent, HealthState> {
     final previousState = state;
     try {
       await _healthRepository.deleteEntry(event.docId);
-      // ✅ Recarregar lista imediatamente após deleção bem-sucedida
       add(const WatchHealthEntries());
     } catch (e) {
       emit(const HealthError('Não foi possível eliminar o registo. Verifique a sua ligação.'));

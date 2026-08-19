@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:vibration/vibration.dart';
 
+import 'package:viva_livre_app/core/presentation/widgets/custom_text_field.dart';
+
 class SymptomSearchModal extends StatefulWidget {
   final List<String> availableSymptoms;
-  final Function(List<String>) onAdd;
+  final Function(List<String>, String) onAdd;
 
   const SymptomSearchModal({
     required this.availableSymptoms,
@@ -16,6 +18,7 @@ class SymptomSearchModal extends StatefulWidget {
 
 class SymptomSearchModalState extends State<SymptomSearchModal> {
   final TextEditingController _searchCtrl = TextEditingController();
+  final TextEditingController _notesCtrl = TextEditingController();
   List<String> _filtered = [];
   List<String> selectedSymptoms = [];
 
@@ -40,6 +43,7 @@ class SymptomSearchModalState extends State<SymptomSearchModal> {
   @override
   void dispose() {
     _searchCtrl.dispose();
+    _notesCtrl.dispose();
     super.dispose();
   }
 
@@ -194,6 +198,31 @@ class SymptomSearchModalState extends State<SymptomSearchModal> {
               ),
             ),
           ),
+          
+          // ── Observações ──
+          Padding(
+            padding: EdgeInsets.only(
+              left: 24, 
+              right: 24, 
+              top: 16, 
+              bottom: MediaQuery.of(context).viewInsets.bottom > 0 ? 16 : 8,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Observações (Opcional)',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 8),
+                CustomTextField(
+                  controller: _notesCtrl,
+                  maxLines: 2,
+                  hintText: 'Algum detalhe adicional?',
+                ),
+              ],
+            ),
+          ),
 
           // ── Botão Salvar ──
           SafeArea(
@@ -208,7 +237,7 @@ class SymptomSearchModalState extends State<SymptomSearchModal> {
                       ? null
                       : () {
                           Vibration.vibrate(duration: 150, amplitude: 255);
-                          widget.onAdd(selectedSymptoms);
+                          widget.onAdd(selectedSymptoms, _notesCtrl.text.trim());
                           Navigator.pop(context);
                         },
                   style: ElevatedButton.styleFrom(

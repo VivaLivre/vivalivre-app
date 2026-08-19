@@ -8,7 +8,9 @@ import 'package:viva_livre_app/features/health/domain/entities/health_entry.dart
 import 'package:viva_livre_app/features/health/presentation/health_bloc.dart';
 
 class AddHealthEntryPage extends StatefulWidget {
-  const AddHealthEntryPage({super.key});
+  final HealthEntry? entryToEdit;
+
+  const AddHealthEntryPage({super.key, this.entryToEdit});
 
   @override
   State<AddHealthEntryPage> createState() => _AddHealthEntryPageState();
@@ -46,6 +48,17 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    if (widget.entryToEdit != null) {
+      _notesController.text = widget.entryToEdit!.notes;
+      _severity = widget.entryToEdit!.severity;
+      _type = widget.entryToEdit!.type;
+      _selectedSymptoms.addAll(widget.entryToEdit!.symptoms);
+    }
+  }
+
+  @override
   void dispose() {
     _notesController.dispose();
     super.dispose();
@@ -58,20 +71,24 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
     final formState = _formKey.currentState;
     if (formState == null || !formState.validate()) return;
 
-    // Validação extra: pelo menos 1 sintoma selecionado
-    if (_selectedSymptoms.isEmpty) return;
+    // Validação extra: pelo menos 1 sintoma selecionado SE for do tipo sintoma
+    if (_type == 'sintoma' && _selectedSymptoms.isEmpty) return;
 
     final entry = HealthEntry(
-      id: '',
-      userId: '',
+      id: widget.entryToEdit?.id ?? '',
+      userId: widget.entryToEdit?.userId ?? '',
       symptoms: List<String>.from(_selectedSymptoms),
       severity: _severity,
       notes: _notesController.text.trim(),
-      timestamp: DateTime.now(),
+      timestamp: widget.entryToEdit?.timestamp ?? DateTime.now(),
       type: _type,
     );
 
-    context.read<HealthBloc>().add(AddHealthEntry(entry));
+    if (widget.entryToEdit != null) {
+      context.read<HealthBloc>().add(UpdateHealthEntry(entry));
+    } else {
+      context.read<HealthBloc>().add(AddHealthEntry(entry));
+    }
     Navigator.pop(context);
   }
 
@@ -97,7 +114,7 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
           elevation: 0,
           iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onSurface),
           title: Text(
-            'Registar Sintoma / Crise',
+            widget.entryToEdit != null ? 'Editar Registo' : 'Registar Sintoma / Crise',
             style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.w700, fontSize: 18),
           ),
           centerTitle: true,
@@ -145,62 +162,57 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
               ),
               const SizedBox(height: 28),
 
-              // ── Gravidade ──
-              _SectionLabel('Gravidade'),
+              // ── Gravidade (Automática) ──
+              _SectionLabel('Gravidade (Calculada automaticamente)'),
               const SizedBox(height: 12),
-              Row(
-                children: _severityOptions.map((option) {
-                  final isSelected = _severity == option;
-                  final color = option == 'Leve'
-                      ? const Color(0xFF10B981)
-                      : option == 'Observação'
-                          ? const Color(0xFFF59E0B)
-                          : const Color(0xFFEF4444);
-                  return Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: GestureDetector(
-                        onTap: () => setState(() => _severity = option),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 180),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          decoration: BoxDecoration(
-                            color: isSelected ? color.withValues(alpha: 0.15) : Theme.of(context).cardColor,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: isSelected ? color : Theme.of(context).dividerColor,
-                              width: isSelected ? 2 : 1,
-                            ),
-                          ),
-                          child: Text(
-                            option,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: isSelected ? color : _kSubText,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                decoration: BoxDecoration(
+                  color: (_severity == 'Leve'
+                          ? const Color(0xFF10B981)
+                          : _severity == 'Observação'
+                              ? const Color(0xFFF59E0B)
+                              : const Color(0xFFEF4444))
+                      .withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: _severity == 'Leve'
+                        ? const Color(0xFF10B981)
+                        : _severity == 'Observação'
+                            ? const Color(0xFFF59E0B)
+                            : const Color(0xFFEF4444),
+                    width: 2,
+                  ),
+                ),
+                child: Text(
+                  _severity,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: _severity == 'Leve'
+                        ? const Color(0xFF10B981)
+                        : _severity == 'Observação'
+                            ? const Color(0xFFF59E0B)
+                            : const Color(0xFFEF4444),
+                  ),
+                ),
               ),
               const SizedBox(height: 28),
 
               // ── Sintomas ──
               _SectionLabel('Sintomas'),
               const SizedBox(height: 4),
-              const Text(
-                'Selecione pelo menos um.',
-                style: TextStyle(fontSize: 13, color: Color(0xFF64748B)),
+              Text(
+                _type == 'sintoma' ? 'Selecione pelo menos um.' : 'Opcional para Ida ao Banheiro.',
+                style: const TextStyle(fontSize: 13, color: Color(0xFF64748B)),
               ),
               const SizedBox(height: 12),
               FormField<List<String>>(
                 initialValue: _selectedSymptoms,
                 validator: (value) =>
-                    (value == null || value.isEmpty)
+                    (_type == 'sintoma' && (value == null || value.isEmpty))
                         ? 'Selecione pelo menos um sintoma.'
                         : null,
                 builder: (FormFieldState<List<String>> state) {
