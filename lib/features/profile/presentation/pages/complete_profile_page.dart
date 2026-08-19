@@ -8,6 +8,7 @@ import 'package:viva_livre_app/core/presentation/widgets/custom_text_field.dart'
 import 'package:viva_livre_app/features/auth/presentation/auth_bloc.dart';
 import 'package:viva_livre_app/features/profile/data/repositories/profile_repository.dart';
 import 'package:viva_livre_app/core/theme/app_colors.dart';
+import 'package:dio/dio.dart';
 
 class CompleteProfilePage extends StatefulWidget {
   const CompleteProfilePage({super.key});
@@ -149,8 +150,18 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
       }
     } catch (e) {
       if (mounted) {
+        String errorMessage = 'Não foi possível atualizar o perfil.';
+        if (e is DioException) {
+          final data = e.response?.data;
+          if (data is Map<String, dynamic> && data['error'] != null) {
+            errorMessage = data['error'];
+          }
+        } else {
+          errorMessage = e.toString();
+        }
+        
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro: ${e.toString()}'), backgroundColor: AppColors.error),
+          SnackBar(content: Text(errorMessage), backgroundColor: AppColors.error),
         );
       }
     } finally {
