@@ -160,6 +160,7 @@ class RatingBloc extends Bloc<RatingEvent, RatingState> {
     VoteHelpful event,
     Emitter<RatingState> emit,
   ) async {
+    final previousState = state;
     emit(const VotingHelpful());
 
     try {
@@ -172,8 +173,44 @@ class RatingBloc extends Bloc<RatingEvent, RatingState> {
         helpfulCount: result['helpful_count'] ?? 0,
         unhelpfulCount: result['unhelpful_count'] ?? 0,
       ));
+
+      if (previousState is BathroomReviewsLoaded) {
+        final updatedReviews = previousState.reviews.map((r) {
+          if (r.id == event.reviewId) {
+            return BathroomReview(
+              id: r.id,
+              bathroomId: r.bathroomId,
+              userId: r.userId,
+              rating: r.rating,
+              title: r.title,
+              comment: r.comment,
+              cleanlinessRating: r.cleanlinessRating,
+              accessibilityRating: r.accessibilityRating,
+              spaciosunessRating: r.spaciosunessRating,
+              helpfulCount: result['helpful_count'] ?? 0,
+              unhelpfulCount: result['unhelpful_count'] ?? 0,
+              status: r.status,
+              photos: r.photos,
+              createdAt: r.createdAt,
+              updatedAt: r.updatedAt,
+              userName: r.userName,
+              userAvatar: r.userAvatar,
+            );
+          }
+          return r;
+        }).toList();
+
+        emit(BathroomReviewsLoaded(
+          reviews: updatedReviews,
+          total: previousState.total,
+          averageRating: previousState.averageRating,
+        ));
+      }
     } catch (e) {
       emit(RatingError('Não foi possível registar o voto.'));
+      if (previousState is BathroomReviewsLoaded) {
+        emit(previousState);
+      }
     }
   }
 }

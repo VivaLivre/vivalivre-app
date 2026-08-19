@@ -147,6 +147,30 @@ class _ReviewCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 12,
+                        backgroundColor: theme.colorScheme.primaryContainer,
+                        backgroundImage: review.userAvatar != null && review.userAvatar!.isNotEmpty ? NetworkImage(review.userAvatar!) : null,
+                        child: review.userAvatar == null || review.userAvatar!.isEmpty
+                            ? Text(
+                                (review.userName?.isNotEmpty == true ? review.userName![0] : '?').toUpperCase(),
+                                style: TextStyle(fontSize: 10, color: theme.colorScheme.onPrimaryContainer, fontWeight: FontWeight.bold),
+                              )
+                            : null,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        review.userName?.isNotEmpty == true ? review.userName! : 'Utilizador Anónimo',
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.onSurface,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
                   StarRatingWidget(
                     initialRating: review.rating.toDouble(),
                     readOnly: true,

@@ -154,7 +154,7 @@ class _HealthPageState extends State<HealthPage>
 
     if (!mounted) return;
 
-    final symptoms = ['Ida ao Banheiro', ...?(result?.symptoms)];
+    final symptoms = result?.symptoms ?? [];
     final notes = result?.notes ?? '';
 
     final severity = HealthEntry.calculateSeverity(symptoms);

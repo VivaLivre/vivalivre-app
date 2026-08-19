@@ -22,6 +22,7 @@ class MapLoaded extends MapState {
   final Bathroom? selectedBathroom;
   final Bathroom? nearestBathroom;
   final String? errorMessage;
+  final int? actionTimestamp;
 
   const MapLoaded({
     required this.userPosition,
@@ -30,6 +31,7 @@ class MapLoaded extends MapState {
     this.selectedBathroom,
     this.nearestBathroom,
     this.errorMessage,
+    this.actionTimestamp,
   });
 
   MapLoaded copyWith({
@@ -43,6 +45,7 @@ class MapLoaded extends MapState {
     bool clearNearest = false,
     bool clearTargetCamera = false,
     bool clearError = false,
+    int? actionTimestamp,
   }) {
     return MapLoaded(
       userPosition: userPosition ?? this.userPosition,
@@ -51,6 +54,7 @@ class MapLoaded extends MapState {
       selectedBathroom: clearSelection ? null : (selectedBathroom ?? this.selectedBathroom),
       nearestBathroom: clearNearest ? null : (nearestBathroom ?? this.nearestBathroom),
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+      actionTimestamp: actionTimestamp ?? this.actionTimestamp,
     );
   }
 
@@ -62,6 +66,7 @@ class MapLoaded extends MapState {
         selectedBathroom,
         nearestBathroom,
         errorMessage,
+        actionTimestamp,
       ];
 }
 

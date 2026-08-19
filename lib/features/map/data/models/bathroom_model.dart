@@ -8,6 +8,7 @@ class BathroomModel extends Bathroom {
     required super.name,
     required super.location,
     required super.rating,
+    super.reviewsCount = 0,
     required super.tags,
     super.address,
     super.isAccessible,
@@ -48,7 +49,8 @@ class BathroomModel extends Bathroom {
       id: (map['id'] as int?) ?? 0,
       name: (map['name'] as String?) ?? 'Sem nome',
       location: LatLng(latitude, longitude),
-      rating: (map['rating'] as num?)?.toDouble() ?? 0.0,
+      rating: (map['average_rating'] as num?)?.toDouble() ?? (map['rating'] as num?)?.toDouble() ?? 0.0,
+      reviewsCount: (map['reviews_count'] as int?) ?? 0,
       tags:
           (map['tags'] as List?)?.map((e) => e.toString()).toList() ??
           [if (isAccessible) 'Acessivel'],
@@ -74,6 +76,8 @@ class BathroomModel extends Bathroom {
       'lat': location.latitude,
       'lng': location.longitude,
       'rating': rating,
+      'average_rating': rating,
+      'reviews_count': reviewsCount,
       'tags': tags,
       'is_accessible': isAccessible,
       'has_changing_table': hasChangingTable,

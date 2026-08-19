@@ -190,10 +190,7 @@ class _MapPageState extends State<MapPage>
                   state.selectedBathroom != null) {
                 _animatedMove(state.selectedBathroom!.location, _kInitialZoom);
                 _emergencyTimer?.cancel();
-                _emergencyTimer = Timer(const Duration(milliseconds: 1100), () {
-                  if (!mounted) return;
-                  setState(() => _showEmergency = false);
-                });
+                setState(() => _showEmergency = false);
               } else {
                 setState(() => _showEmergency = false);
               }

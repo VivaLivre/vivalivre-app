@@ -142,9 +142,9 @@ class TimelineItem extends StatelessWidget {
     final dotColor = getSeverityColor(entry.severity);
     final title = isBathroom
         ? (entry.symptoms.where((s) => s != 'Ida ao Banheiro').isNotEmpty
-            ? entry.symptoms.join(', ')
+            ? 'Ida ao Banheiro + ${entry.symptoms.where((s) => s != 'Ida ao Banheiro').join(', ')}'
             : 'Ida ao Banheiro')
-        : (entry.symptoms.isNotEmpty ? entry.symptoms.join(', ') : 'Registo de Sintomas');
+        : (entry.symptoms.isNotEmpty ? entry.symptoms.where((s) => s != 'Ida ao Banheiro').join(', ') : 'Registo de Sintomas');
 
     return IntrinsicHeight(
       child: Row(

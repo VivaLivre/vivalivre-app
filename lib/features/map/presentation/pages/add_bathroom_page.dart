@@ -586,8 +586,8 @@ class _AddBathroomPageState extends State<AddBathroomPage>
                             label: 'Foto do Local'),
                         const SizedBox(height: 4),
                         Text(
-                          'Obrigatória para validação da sugestão',
-                          style: TextStyle(fontSize: 12, color: context.textGray),
+                          'Obrigatória. O ideal é uma foto da frente do banheiro, mas também pode ser uma foto da fachada do estabelecimento.',
+                          style: TextStyle(fontSize: 12, color: context.textGray, height: 1.3),
                         ),
                         const SizedBox(height: 10),
                         PhotoPicker(

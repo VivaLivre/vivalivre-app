@@ -131,11 +131,12 @@ class EntryDetailDialog extends StatelessWidget {
                 children: [
                   DetailSection(
                     icon: Icons.list_alt_rounded,
-                    label: 'Sintomas (${entry.symptoms.length})',
+                    label: 'Sintomas (${entry.symptoms.where((s) => s != 'Ida ao Banheiro').length})',
                     child: Wrap(
                       spacing: 6,
                       runSpacing: 6,
                       children: entry.symptoms
+                          .where((s) => s != 'Ida ao Banheiro')
                           .map(
                             (s) => Container(
                               padding: const EdgeInsets.symmetric(
