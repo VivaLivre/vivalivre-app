@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:viva_livre_app/core/presentation/widgets/custom_loading_indicator.dart';
 import 'package:viva_livre_app/core/presentation/widgets/custom_text_field.dart';
@@ -70,29 +70,25 @@ class _MapSearchBarState extends State<MapSearchBar> {
       final lat = widget.currentPosition.latitude;
       final lon = widget.currentPosition.longitude;
       
-      final uri = Uri.parse(
-          'https://nominatim.openstreetmap.org/search?q=${Uri.encodeComponent(query.trim())}&format=json&limit=5&lat=$lat&lon=$lon');
-
-      final response = await http.get(
-        uri,
+      final dio = Dio(BaseOptions(
         headers: {'User-Agent': 'VivaLivreApp/1.0 (suporte@vivalivre.com)'},
-      );
+      ));
+
+      final uri = 'https://nominatim.openstreetmap.org/search?q=${Uri.encodeComponent(query.trim())}&format=json&limit=5&lat=$lat&lon=$lon';
+
+      final response = await dio.get(uri);
 
       if (response.statusCode == 200 && mounted) {
-        List<dynamic> data = json.decode(response.body);
+        List<dynamic> data = response.data is String ? json.decode(response.data) : response.data;
 
         // Se a busca principal retornar vazia e a query contiver um prefixo de rua, tenta novamente sem o prefixo
         if (data.isEmpty) {
           final strippedQuery = _stripStreetPrefix(query.trim());
           if (strippedQuery != query.trim()) {
-            final fallbackUri = Uri.parse(
-                'https://nominatim.openstreetmap.org/search?q=${Uri.encodeComponent(strippedQuery)}&format=json&limit=5&lat=$lat&lon=$lon');
-            final fallbackResponse = await http.get(
-              fallbackUri,
-              headers: {'User-Agent': 'VivaLivreApp/1.0 (suporte@vivalivre.com)'},
-            );
+            final fallbackUri = 'https://nominatim.openstreetmap.org/search?q=${Uri.encodeComponent(strippedQuery)}&format=json&limit=5&lat=$lat&lon=$lon';
+            final fallbackResponse = await dio.get(fallbackUri);
             if (fallbackResponse.statusCode == 200 && mounted) {
-              data = json.decode(fallbackResponse.body);
+              data = fallbackResponse.data is String ? json.decode(fallbackResponse.data) : fallbackResponse.data;
             }
           }
         }
