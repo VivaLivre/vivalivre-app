@@ -114,7 +114,7 @@ class _HealthPageState extends State<HealthPage>
     _customSymptoms = List.from(_baseSymptoms);
 
     // No novo backend, o userId é inferido do Token JWT.
-    context.read<HealthBloc>().add(const WatchHealthEntries(''));
+    context.read<HealthBloc>().add(const WatchHealthEntries());
   }
 
   // ── Lógica ──
@@ -305,7 +305,7 @@ class _HealthPageState extends State<HealthPage>
                                   GestureDetector(
                                     onTap: () {
                                       final newDate = currentDate.subtract(const Duration(days: 1));
-                                      context.read<HealthBloc>().add(ChangeHealthDate(date: newDate, userId: ''));
+                                      context.read<HealthBloc>().add(ChangeHealthDate(date: newDate));
                                     },
                                     child: Icon(Icons.chevron_left_rounded, size: 24, color: Theme.of(context).colorScheme.primary),
                                   ),
@@ -319,7 +319,7 @@ class _HealthPageState extends State<HealthPage>
                                         lastDate: DateTime.now(),
                                       );
                                       if (selected != null && context.mounted) {
-                                        context.read<HealthBloc>().add(ChangeHealthDate(date: selected, userId: ''));
+                                        context.read<HealthBloc>().add(ChangeHealthDate(date: selected));
                                       }
                                     },
                                     child: Text(
@@ -335,7 +335,7 @@ class _HealthPageState extends State<HealthPage>
                                   GestureDetector(
                                     onTap: isToday ? null : () {
                                       final newDate = currentDate.add(const Duration(days: 1));
-                                      context.read<HealthBloc>().add(ChangeHealthDate(date: newDate, userId: ''));
+                                      context.read<HealthBloc>().add(ChangeHealthDate(date: newDate));
                                     },
                                     child: Icon(
                                       Icons.chevron_right_rounded, 

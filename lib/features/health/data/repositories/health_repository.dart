@@ -27,7 +27,7 @@ class HealthRepositoryImpl implements IHealthRepository {
   }
 
   @override
-  Future<void> deleteEntry(String docId, String userId) async {
+  Future<void> deleteEntry(String docId) async {
     try {
       await _apiClient.dio.delete('/api/health/entries/$docId');
     } catch (e) {
@@ -37,7 +37,7 @@ class HealthRepositoryImpl implements IHealthRepository {
   }
 
   @override
-  Future<List<HealthEntry>> getEntries(String userId, {String? filterDate}) async {
+  Future<List<HealthEntry>> getEntries({String? filterDate}) async {
     try {
       final response = await _apiClient.dio.get(
         '/api/health/entries',

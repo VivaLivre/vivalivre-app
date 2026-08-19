@@ -9,21 +9,19 @@ abstract class HealthEvent extends Equatable {
 
 /// Carrega a lista de registos de saúde do utilizador.
 class WatchHealthEntries extends HealthEvent {
-  final String userId;
-  const WatchHealthEntries(this.userId);
+  const WatchHealthEntries();
 
   @override
-  List<Object> get props => [userId];
+  List<Object> get props => [];
 }
 
 /// Altera a data atual visualizada no histórico.
 class ChangeHealthDate extends HealthEvent {
   final DateTime date;
-  final String userId;
-  const ChangeHealthDate({required this.date, required this.userId});
+  const ChangeHealthDate({required this.date});
 
   @override
-  List<Object> get props => [date, userId];
+  List<Object> get props => [date];
 }
 
 /// Adiciona um novo registo clínico.
@@ -38,9 +36,8 @@ class AddHealthEntry extends HealthEvent {
 /// Elimina um registo clínico pelo seu ID.
 class DeleteHealthEntry extends HealthEvent {
   final String docId;
-  final String userId;
-  const DeleteHealthEntry({required this.docId, required this.userId});
+  const DeleteHealthEntry({required this.docId});
 
   @override
-  List<Object> get props => [docId, userId];
+  List<Object> get props => [docId];
 }

@@ -31,7 +31,7 @@ class HealthBloc extends Bloc<HealthEvent, HealthState> {
 
     try {
       final dateStr = DateFormat('yyyy-MM-dd').format(_currentDate);
-      final entries = await _healthRepository.getEntries(event.userId, filterDate: dateStr);
+      final entries = await _healthRepository.getEntries(filterDate: dateStr);
       emit(HealthEntriesLoaded(entries));
     } catch (e) {
       emit(const HealthError('Não foi possível carregar os registos. Verifique a sua ligação.'));
@@ -58,7 +58,7 @@ class HealthBloc extends Bloc<HealthEvent, HealthState> {
         updatedList.sort((a, b) => b.timestamp.compareTo(a.timestamp));
         emit(HealthEntriesLoaded(updatedList));
       } else {
-        add(WatchHealthEntries(event.entry.userId.toString()));
+        add(const WatchHealthEntries());
       }
     } catch (e) {
       emit(const HealthError('Não foi possível guardar o registo. Verifique a sua ligação.'));
@@ -76,9 +76,9 @@ class HealthBloc extends Bloc<HealthEvent, HealthState> {
   ) async {
     final previousState = state;
     try {
-      await _healthRepository.deleteEntry(event.docId, event.userId);
+      await _healthRepository.deleteEntry(event.docId);
       // ✅ Recarregar lista imediatamente após deleção bem-sucedida
-      add(WatchHealthEntries(event.userId));
+      add(const WatchHealthEntries());
     } catch (e) {
       emit(const HealthError('Não foi possível eliminar o registo. Verifique a sua ligação.'));
       if (previousState is HealthEntriesLoaded) emit(previousState);
@@ -91,6 +91,6 @@ class HealthBloc extends Bloc<HealthEvent, HealthState> {
     Emitter<HealthState> emit,
   ) async {
     _currentDate = event.date;
-    add(WatchHealthEntries(event.userId));
+    add(const WatchHealthEntries());
   }
 }

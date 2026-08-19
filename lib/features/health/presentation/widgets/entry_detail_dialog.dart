@@ -247,7 +247,6 @@ class EntryDetailDialog extends StatelessWidget {
                         context.read<HealthBloc>().add(
                           DeleteHealthEntry(
                             docId: entry.id,
-                            userId: '',
                           ),
                         );
                       }
