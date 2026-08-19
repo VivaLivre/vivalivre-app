@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:viva_livre_app/app.dart';
 
 class ApiClient {
   late final Dio dio;
@@ -8,11 +9,11 @@ class ApiClient {
 
   ApiClient() {
     // Determine Base URL
-    // Aceita a URL via variável de ambiente ou usa o Railway por defeito
-    String baseUrl = const String.fromEnvironment(
-      'API_URL',
-      defaultValue: 'https://vivalivre-backend-production.up.railway.app',
-    );
+    // Aceita a URL via variável de ambiente ou usa o Railway por padrão
+    String envUrl = const String.fromEnvironment('API_URL');
+    String baseUrl = envUrl.isNotEmpty
+        ? envUrl
+        : 'https://vivalivre-backend-production.up.railway.app';
 
     dio = Dio(
       BaseOptions(
@@ -38,8 +39,9 @@ class ApiClient {
         },
         onError: (DioException e, handler) {
           if (e.response?.statusCode == 401) {
-            // You could trigger a logout event here via a stream if needed
             debugPrint('Unauthorized access - 401');
+            _storage.delete(key: 'jwt_token');
+            globalNavigatorKey.currentState?.pushReplacementNamed('/login');
           }
           return handler.next(e);
         },

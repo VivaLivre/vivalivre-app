@@ -11,7 +11,15 @@ class HealthEntryModel extends HealthEntry {
     required super.notes,
     required super.timestamp,
     required super.type,
+    this.localId,
+    this.syncStatus = 0,
   });
+
+  /// ID usado na base de dados local (SQLite)
+  final String? localId;
+
+  /// Estado de sincronização: 0 = Sincronizado, 1 = Pendente Inserção, 2 = Pendente Eliminação
+  final int syncStatus;
 
   factory HealthEntryModel.fromJson(Map<String, dynamic> json) {
     return HealthEntryModel(
@@ -24,6 +32,8 @@ class HealthEntryModel extends HealthEntry {
           ? DateTime.parse(json['created_at']).toLocal() 
           : (json['entry_date'] != null ? DateTime.parse(json['entry_date']).toLocal() : DateTime.now()),
       type: json['type'] ?? 'sintoma',
+      localId: json['local_id']?.toString(),
+      syncStatus: json['sync_status'] ?? 0,
     );
   }
 
@@ -35,6 +45,8 @@ class HealthEntryModel extends HealthEntry {
       'severity': severity,
       'description': notes,
       'type': type,
+      'local_id': localId,
+      'sync_status': syncStatus,
     };
   }
 }

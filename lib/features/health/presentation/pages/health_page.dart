@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vibration/vibration.dart';
 import 'package:viva_livre_app/features/health/domain/entities/health_entry.dart';
 import 'package:viva_livre_app/features/health/presentation/health_bloc.dart';
@@ -112,21 +113,38 @@ class _HealthPageState extends State<HealthPage>
   void initState() {
     super.initState();
     _customSymptoms = List.from(_baseSymptoms);
+    _loadCustomSymptoms();
 
     // No novo backend, o userId é inferido do Token JWT.
-    context.read<HealthBloc>().add(const WatchHealthEntries(''));
+    context.read<HealthBloc>().add(const WatchHealthEntries());
   }
 
   // ── Lógica ──
 
+  Future<void> _loadCustomSymptoms() async {
+    final prefs = await SharedPreferences.getInstance();
+    final saved = prefs.getStringList('custom_symptoms');
+    if (saved != null && saved.isNotEmpty) {
+      setState(() {
+        _customSymptoms = List.from(_baseSymptoms)..addAll(saved.where((s) => !_baseSymptoms.contains(s)));
+      });
+    }
+  }
+
+  Future<void> _saveCustomSymptoms() async {
+    final prefs = await SharedPreferences.getInstance();
+    final extras = _customSymptoms.where((s) => !_baseSymptoms.contains(s)).toList();
+    await prefs.setStringList('custom_symptoms', extras);
+  }
+
   /// Abre o modal "E mais alguma coisa?" antes de gravar a ida ao banheiro.
-  /// Sintomas adicionais são incluídos no MESMO documento Firestore —
-  /// um único .add() mantém o banco de dados leve.
+  /// Sintomas adicionais são incluídos no MESMO registo na API —
+  /// uma única chamada mantém o banco de dados consistente.
   Future<void> _showBathroomModal() async {
     Vibration.vibrate(duration: 80);
 
-    final List<String>? extraSymptoms =
-        await showModalBottomSheet<List<String>>(
+    final BathroomExtrasResult? result =
+        await showModalBottomSheet<BathroomExtrasResult>(
           context: context,
           isScrollControlled: true,
           useSafeArea: true,
@@ -136,7 +154,8 @@ class _HealthPageState extends State<HealthPage>
 
     if (!mounted) return;
 
-    final symptoms = ['Ida ao Banheiro', ...?extraSymptoms];
+    final symptoms = ['Ida ao Banheiro', ...?(result?.symptoms)];
+    final notes = result?.notes ?? '';
 
     final severity = HealthEntry.calculateSeverity(symptoms);
 
@@ -145,7 +164,7 @@ class _HealthPageState extends State<HealthPage>
       userId: '',
       symptoms: symptoms,
       severity: severity,
-      notes: '',
+      notes: notes,
       timestamp: DateTime.now(),
       type: 'banheiro',
     );
@@ -192,11 +211,16 @@ class _HealthPageState extends State<HealthPage>
       backgroundColor: Colors.transparent,
       builder: (context) => SymptomSearchModal(
         availableSymptoms: _customSymptoms,
-        onAdd: (List<String> symptoms) {
+        onAdd: (List<String> symptoms, String notes) {
+          bool addedAny = false;
           for (var symptom in symptoms) {
             if (!_customSymptoms.contains(symptom)) {
               setState(() => _customSymptoms.add(symptom));
+              addedAny = true;
             }
+          }
+          if (addedAny) {
+            _saveCustomSymptoms();
           }
 
           Vibration.vibrate(duration: 150, amplitude: 255);
@@ -208,7 +232,7 @@ class _HealthPageState extends State<HealthPage>
             userId: '',
             symptoms: symptoms,
             severity: severity,
-            notes: '',
+            notes: notes,
             timestamp: DateTime.now(),
             type: 'sintoma',
           );
@@ -305,7 +329,7 @@ class _HealthPageState extends State<HealthPage>
                                   GestureDetector(
                                     onTap: () {
                                       final newDate = currentDate.subtract(const Duration(days: 1));
-                                      context.read<HealthBloc>().add(ChangeHealthDate(date: newDate, userId: ''));
+                                      context.read<HealthBloc>().add(ChangeHealthDate(date: newDate));
                                     },
                                     child: Icon(Icons.chevron_left_rounded, size: 24, color: Theme.of(context).colorScheme.primary),
                                   ),
@@ -319,7 +343,7 @@ class _HealthPageState extends State<HealthPage>
                                         lastDate: DateTime.now(),
                                       );
                                       if (selected != null && context.mounted) {
-                                        context.read<HealthBloc>().add(ChangeHealthDate(date: selected, userId: ''));
+                                        context.read<HealthBloc>().add(ChangeHealthDate(date: selected));
                                       }
                                     },
                                     child: Text(
@@ -335,7 +359,7 @@ class _HealthPageState extends State<HealthPage>
                                   GestureDetector(
                                     onTap: isToday ? null : () {
                                       final newDate = currentDate.add(const Duration(days: 1));
-                                      context.read<HealthBloc>().add(ChangeHealthDate(date: newDate, userId: ''));
+                                      context.read<HealthBloc>().add(ChangeHealthDate(date: newDate));
                                     },
                                     child: Icon(
                                       Icons.chevron_right_rounded, 

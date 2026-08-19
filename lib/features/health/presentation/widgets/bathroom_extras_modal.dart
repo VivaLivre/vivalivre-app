@@ -1,5 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:vibration/vibration.dart';
+import 'package:viva_livre_app/core/presentation/widgets/custom_text_field.dart';
+
+class BathroomExtrasResult {
+  final List<String> symptoms;
+  final String notes;
+
+  BathroomExtrasResult({required this.symptoms, required this.notes});
+}
 
 class BathroomExtrasModal extends StatefulWidget {
   const BathroomExtrasModal();
@@ -24,6 +32,13 @@ class BathroomExtrasModalState extends State<BathroomExtrasModal> {
   ];
 
   final List<String> _selected = [];
+  final _notesController = TextEditingController();
+
+  @override
+  void dispose() {
+    _notesController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -125,6 +140,23 @@ class BathroomExtrasModalState extends State<BathroomExtrasModal> {
               );
             }).toList(),
           ),
+          const SizedBox(height: 16),
+          
+          // ── Notas ──
+          Text(
+            'Observações (Opcional)',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
+          const SizedBox(height: 8),
+          CustomTextField(
+            controller: _notesController,
+            maxLines: 3,
+            hintText: 'Algum detalhe adicional?',
+          ),
           const SizedBox(height: 24),
 
           // ── Botões ──
@@ -133,7 +165,10 @@ class BathroomExtrasModalState extends State<BathroomExtrasModal> {
               // Botão: Não, só isso
               Expanded(
                 child: OutlinedButton(
-                  onPressed: () => Navigator.pop(context, <String>[]),
+                  onPressed: () => Navigator.pop(
+                    context, 
+                    BathroomExtrasResult(symptoms: [], notes: ''),
+                  ),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     side: BorderSide(color: Theme.of(context).dividerColor),
@@ -156,7 +191,13 @@ class BathroomExtrasModalState extends State<BathroomExtrasModal> {
                 child: ElevatedButton(
                   onPressed: () {
                     Vibration.vibrate(duration: 60);
-                    Navigator.pop(context, _selected);
+                    Navigator.pop(
+                      context, 
+                      BathroomExtrasResult(
+                        symptoms: _selected, 
+                        notes: _notesController.text.trim(),
+                      ),
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.primary,

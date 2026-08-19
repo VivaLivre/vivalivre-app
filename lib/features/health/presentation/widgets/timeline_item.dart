@@ -5,6 +5,8 @@ import 'package:viva_livre_app/features/health/presentation/health_bloc.dart';
 import 'package:viva_livre_app/features/health/domain/entities/health_entry.dart';
 import 'package:viva_livre_app/core/widgets/confirm_delete_dialog.dart';
 import 'entry_detail_dialog.dart';
+import 'package:viva_livre_app/features/health/presentation/utils/health_ui_utils.dart';
+import 'package:viva_livre_app/features/health/presentation/pages/add_health_entry_page.dart';
 
 class TimelineItem extends StatelessWidget {
   final HealthEntry entry;
@@ -12,13 +14,7 @@ class TimelineItem extends StatelessWidget {
 
   const TimelineItem({required this.entry, required this.isLast});
 
-  static Color _severityColor(String severity) {
-    return switch (severity) {
-      'Grave' => const Color(0xFFEF4444),
-      'Observação' || 'Moderada' => const Color(0xFFF59E0B),
-      _ => const Color(0xFF10B981),
-    };
-  }
+  // _severityColor has been moved to health_ui_utils.dart
 
   void _showMenu(BuildContext context) {
     showModalBottomSheet(
@@ -68,6 +64,34 @@ class TimelineItem extends StatelessWidget {
                 },
               ),
               const Divider(height: 1),
+              // ── Editar ──
+              ListTile(
+                leading: const CircleAvatar(
+                  backgroundColor: Color(0xFFFFFBEB),
+                  child: Icon(
+                    Icons.edit_rounded,
+                    color: Color(0xFFD97706),
+                  ),
+                ),
+                title: const Text(
+                  'Editar Registo',
+                  style: TextStyle(fontWeight: FontWeight.w600, color: Color(0xFFD97706)),
+                ),
+                subtitle: const Text('Alterar sintomas ou notas'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (ctx) => BlocProvider.value(
+                        value: context.read<HealthBloc>(),
+                        child: AddHealthEntryPage(entryToEdit: entry),
+                      ),
+                    ),
+                  );
+                },
+              ),
+              const Divider(height: 1),
               // ── Eliminar ──
               ListTile(
                 leading: const CircleAvatar(
@@ -99,7 +123,6 @@ class TimelineItem extends StatelessWidget {
                     context.read<HealthBloc>().add(
                       DeleteHealthEntry(
                         docId: entry.id,
-                        userId: '',
                       ),
                     );
                   }
@@ -116,10 +139,12 @@ class TimelineItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final timeStr = DateFormat('HH:mm').format(entry.timestamp);
     final isBathroom = entry.type == 'banheiro';
-    final dotColor = _severityColor(entry.severity);
-    final title = entry.symptoms.isNotEmpty
-        ? entry.symptoms.join(', ')
-        : 'Registo';
+    final dotColor = getSeverityColor(entry.severity);
+    final title = isBathroom
+        ? (entry.symptoms.where((s) => s != 'Ida ao Banheiro').isNotEmpty
+            ? entry.symptoms.join(', ')
+            : 'Ida ao Banheiro')
+        : (entry.symptoms.isNotEmpty ? entry.symptoms.join(', ') : 'Registo de Sintomas');
 
     return IntrinsicHeight(
       child: Row(
@@ -175,76 +200,88 @@ class TimelineItem extends StatelessWidget {
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(bottom: 16),
-              child: Container(
-                padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
-                decoration: BoxDecoration(
-                  color: Color.alphaBlend(
-                    dotColor.withValues(alpha: 0.08),
-                    Theme.of(context).cardColor,
-                  ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (_) => EntryDetailDialog(entry: entry),
+                    );
+                  },
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: dotColor.withValues(alpha: 0.2)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.02),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      isBathroom ? Icons.wc_rounded : Icons.healing_rounded,
-                      color: dotColor,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        title,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+                  child: Container(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+                    decoration: BoxDecoration(
+                      color: Color.alphaBlend(
+                        dotColor.withValues(alpha: 0.08),
+                        Theme.of(context).cardColor,
                       ),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: dotColor.withValues(alpha: 0.2)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.02),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
-                    if (entry.severity != 'Leve')
-                      Container(
-                        margin: const EdgeInsets.only(left: 6),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 7,
-                          vertical: 3,
+                    child: Row(
+                      children: [
+                        Icon(
+                          isBathroom ? Icons.wc_rounded : Icons.healing_rounded,
+                          color: dotColor,
+                          size: 20,
                         ),
-                        decoration: BoxDecoration(
-                          color: dotColor.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          entry.severity,
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            color: dotColor,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            title,
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                      ),
-                    // ── 3 pontos ──
-                    IconButton(
-                      icon: const Icon(
-                        Icons.more_vert_rounded,
-                        color: Color(0xFF94A3B8),
-                        size: 20,
-                      ),
-                      visualDensity: VisualDensity.compact,
-                      padding: EdgeInsets.zero,
-                      tooltip: 'Opções',
-                      onPressed: () => _showMenu(context),
+                        if (entry.severity != 'Leve')
+                          Container(
+                            margin: const EdgeInsets.only(left: 6),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 7,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: dotColor.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              entry.severity,
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                color: dotColor,
+                              ),
+                            ),
+                          ),
+                        // ── 3 pontos ──
+                        IconButton(
+                          icon: const Icon(
+                            Icons.more_vert_rounded,
+                            color: Color(0xFF94A3B8),
+                            size: 20,
+                          ),
+                          visualDensity: VisualDensity.compact,
+                          padding: EdgeInsets.zero,
+                          tooltip: 'Opções',
+                          onPressed: () => _showMenu(context),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),

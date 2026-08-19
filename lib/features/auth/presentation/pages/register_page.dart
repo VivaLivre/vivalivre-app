@@ -41,7 +41,6 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _customConditionController = TextEditingController();
   final TextEditingController _weightController = TextEditingController();
   final TextEditingController _heightController = TextEditingController();
-  final _heightFormatter = _HeightInputFormatter();
   String? _selectedCondition;
 
   // -- Step 4: Comorbidades --

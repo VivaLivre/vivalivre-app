@@ -17,7 +17,7 @@ abstract class IBathroomRepository {
     required bool hasChangingTable,
     required bool isFree,
     String? comment,
-    required dynamic photo,
+    dynamic photo,
     String? operatingHours,
   });
 }

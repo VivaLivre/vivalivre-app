@@ -3,6 +3,7 @@
 // Flutter 3.x  |  flutter_map ^8.3.0  |  latlong2 ^0.9.1
 // ─────────────────────────────────────────────────────────────────────────────
 
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vibration/vibration.dart';
@@ -33,6 +34,7 @@ class _MapPageState extends State<MapPage>
   final MapController _mapController = MapController();
   final TextEditingController _searchController = TextEditingController();
   bool _showEmergency = false;
+  Timer? _emergencyTimer;
   Bathroom? _lastSelectedBathroom;
 
   @override
@@ -48,9 +50,10 @@ class _MapPageState extends State<MapPage>
 
   @override
   void dispose() {
+    _emergencyTimer?.cancel();
     _moveController?.dispose();
-    _searchController.dispose();
     _mapController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -150,7 +153,10 @@ class _MapPageState extends State<MapPage>
 
   void _handleFindNearest() {
     Vibration.vibrate(duration: 150, amplitude: 255);
+    
+    _emergencyTimer?.cancel();
     setState(() => _showEmergency = true);
+    
     context.read<MapBloc>().add(const FindNearestBathroom());
   }
 
@@ -164,6 +170,9 @@ class _MapPageState extends State<MapPage>
             _showSnack(state.message);
           }
           if (state is MapLoaded) {
+            if (state.errorMessage != null) {
+              _showSnack(state.errorMessage!);
+            }
             if (state.selectedBathroom != _lastSelectedBathroom) {
               if (state.selectedBathroom != null) {
                 context.read<RatingBloc>().add(LoadBathroomReviews(bathroomId: state.selectedBathroom!.id.toString()));
@@ -180,7 +189,8 @@ class _MapPageState extends State<MapPage>
               if (state.nearestBathroom != null &&
                   state.selectedBathroom != null) {
                 _animatedMove(state.selectedBathroom!.location, _kInitialZoom);
-                Future.delayed(const Duration(milliseconds: 1100), () {
+                _emergencyTimer?.cancel();
+                _emergencyTimer = Timer(const Duration(milliseconds: 1100), () {
                   if (!mounted) return;
                   setState(() => _showEmergency = false);
                 });

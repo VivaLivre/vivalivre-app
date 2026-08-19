@@ -3,8 +3,7 @@
 // Uber-style bathroom suggestion page with fixed center pin
 // ─────────────────────────────────────────────────────────────────────────────
 
-import 'dart:io';
-import 'package:flutter/foundation.dart' show kIsWeb;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';

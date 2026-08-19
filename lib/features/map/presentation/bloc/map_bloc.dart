@@ -52,6 +52,7 @@ class MapBloc extends Bloc<MapEvent, MapState> {
       final serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         emit(const MapError('GPS desativado. Ativa o GPS nas definições do dispositivo.'));
+        return;
       } else {
         // ── 2. Verifica / pede permissão ──
         var permission = await Geolocator.checkPermission();
@@ -61,13 +62,12 @@ class MapBloc extends Bloc<MapEvent, MapState> {
         if (permission == LocationPermission.denied ||
             permission == LocationPermission.deniedForever) {
           emit(const MapError('Permissão de localização negada. Usando posição padrão.'));
+          // Continua para buscar banheiros na posição padrão
         } else {
           // ── 2.5. Verificação de Precisão ──
           final accuracy = await Geolocator.getLocationAccuracy();
           if (accuracy == LocationAccuracyStatus.reduced) {
             emit(const MapError('O VivaLivre precisa da localização EXATA. Altere nas configurações.'));
-            await Future.delayed(const Duration(seconds: 2));
-            await Geolocator.openAppSettings();
           } else {
             // ── 3. Limpeza de cache — descarta a última posição conhecida ──
             final LocationSettings locationSettings;
@@ -92,7 +92,7 @@ class MapBloc extends Bloc<MapEvent, MapState> {
               );
             }
 
-            // ── 5. Pede posição FRESCA ao chip GPS ──
+            // ── 4. Pede posição FRESCA ao chip GPS ──
             final pos = await Geolocator.getCurrentPosition(
               locationSettings: locationSettings,
             );
@@ -103,7 +103,7 @@ class MapBloc extends Bloc<MapEvent, MapState> {
               emit(MapError('Precisão baixa (±${pos.accuracy.toInt()} m). Vai para um local aberto.'));
             }
 
-            // ── 6. Inicia o stream contínuo de localização (Configuração Otimizada) ──
+            // ── 5. Inicia o stream contínuo de localização (Configuração Otimizada) ──
             _positionSubscription?.cancel();
             
             final streamSettings = defaultTargetPlatform == TargetPlatform.android
@@ -140,8 +140,10 @@ class MapBloc extends Bloc<MapEvent, MapState> {
       }
     } on TimeoutException {
       emit(const MapError('GPS sem sinal. Vai para um local aberto e tenta novamente.'));
+      return;
     } catch (e) {
       emit(MapError('Não foi possível obter a localização real: $e'));
+      return;
     }
 
     // Após obter a localização (real ou fallback), buscar banheiros no backend
@@ -150,6 +152,7 @@ class MapBloc extends Bloc<MapEvent, MapState> {
       bathrooms = await _repository.getBathrooms(currentPosition.latitude, currentPosition.longitude);
     } catch (e) {
       emit(MapError('Erro ao carregar banheiros: $e'));
+      return;
     }
 
     emit(MapLoaded(
@@ -194,12 +197,16 @@ class MapBloc extends Bloc<MapEvent, MapState> {
             bathrooms: bathroomMap.values.toList(),
           ));
         } else {
-          emit(const MapError('Nenhum banheiro aberto encontrado na sua região.'));
-          emit(currentState);
+          emit(currentState.copyWith(
+            errorMessage: 'Nenhum banheiro aberto encontrado na sua região.',
+          ));
+          emit(currentState.copyWith(clearError: true));
         }
       } catch (e) {
-        emit(MapError('Erro ao buscar banheiros próximos.'));
-        emit(currentState);
+        emit(currentState.copyWith(
+          errorMessage: 'Erro ao buscar banheiros próximos.',
+        ));
+        emit(currentState.copyWith(clearError: true));
       }
     }
   }

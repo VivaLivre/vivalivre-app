@@ -160,7 +160,7 @@ class AddBathroomBloc extends Bloc<AddBathroomEvent, AddBathroomState> {
       return;
     }
 
-    if (state.address.isEmpty || state.address == 'Endereço não encontrado') {
+    if (state.address.isEmpty || state.address == 'Endereço não encontrado' || state.address == 'Não foi possível obter o endereço') {
       emit(state.copyWith(
         submissionStatus: SubmissionStatus.error,
         errorMessage: 'Mova o mapa para selecionar uma localização válida.',
@@ -168,13 +168,7 @@ class AddBathroomBloc extends Bloc<AddBathroomEvent, AddBathroomState> {
       return;
     }
 
-    if (state.photo == null) {
-      emit(state.copyWith(
-        submissionStatus: SubmissionStatus.error,
-        errorMessage: 'Uma foto é obrigatória para a sugestão.',
-      ));
-      return;
-    }
+    // Foto removida da validação obrigatória (opcional)
 
     emit(state.copyWith(submissionStatus: SubmissionStatus.loading));
 
@@ -201,7 +195,7 @@ class AddBathroomBloc extends Bloc<AddBathroomEvent, AddBathroomState> {
         hasChangingTable: state.hasChangingTable,
         isFree: state.isFree,
         comment: event.comment?.trim(),
-        photo: state.photo!,
+        photo: state.photo,
         operatingHours: operatingHoursJson,
       );
 
