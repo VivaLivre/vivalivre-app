@@ -10,6 +10,8 @@ import 'package:viva_livre_app/features/health/presentation/pages/health_page.da
 import 'package:viva_livre_app/features/profile/presentation/pages/edit_profile_page.dart';
 import 'package:viva_livre_app/core/theme/app_theme.dart';
 
+final GlobalKey<NavigatorState> globalNavigatorKey = GlobalKey<NavigatorState>();
+
 class App extends StatelessWidget {
   const App({super.key});
 
@@ -21,6 +23,7 @@ class App extends StatelessWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
+      navigatorKey: globalNavigatorKey,
       // ── Rota raiz protegida pelo SplashPage ──
       // SplashPage verifica onboarding, dispara a autenticação e
       // encaminha para /home (MainShell), /login ou /onboarding.

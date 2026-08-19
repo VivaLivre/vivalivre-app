@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:viva_livre_app/app.dart';
 
 class ApiClient {
   late final Dio dio;
@@ -38,8 +39,9 @@ class ApiClient {
         },
         onError: (DioException e, handler) {
           if (e.response?.statusCode == 401) {
-            // You could trigger a logout event here via a stream if needed
             debugPrint('Unauthorized access - 401');
+            _storage.delete(key: 'jwt_token');
+            globalNavigatorKey.currentState?.pushReplacementNamed('/login');
           }
           return handler.next(e);
         },
