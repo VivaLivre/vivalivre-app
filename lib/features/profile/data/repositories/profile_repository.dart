@@ -13,6 +13,10 @@ class ProfileRepository {
     int? height,
     double? weight,
     DateTime? birthDate,
+    String? gender,
+    String? cpf,
+    String? clinicalCondition,
+    List<String>? comorbidities,
     XFile? photo,
   }) async {
     try {
@@ -21,6 +25,12 @@ class ProfileRepository {
         if (height != null) 'height': height.toString(),
         if (weight != null) 'weight': weight.toString(),
         if (birthDate != null) 'birth_date': '${birthDate.year}-${birthDate.month.toString().padLeft(2, '0')}-${birthDate.day.toString().padLeft(2, '0')}',
+        if (gender != null) 'gender': gender,
+        if (cpf != null) 'cpf': cpf,
+        if (clinicalCondition != null) 'clinical_condition': clinicalCondition,
+        if (comorbidities != null)
+          for (int i = 0; i < comorbidities.length; i++)
+            'comorbidities': comorbidities[i],
         if (photo != null)
           'photo': MultipartFile.fromBytes(
             await photo.readAsBytes(),

@@ -41,7 +41,11 @@ class _SplashPageState extends State<SplashPage> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthAuthenticated) {
-          Navigator.pushReplacementNamed(context, '/home');
+          if (state.user.clinicalCondition == null || state.user.clinicalCondition!.isEmpty) {
+            Navigator.pushReplacementNamed(context, '/complete-profile');
+          } else {
+            Navigator.pushReplacementNamed(context, '/home');
+          }
         } else if (state is AuthUnauthenticated) {
           Navigator.pushReplacementNamed(context, '/login');
         } else if (state is AuthError) {
