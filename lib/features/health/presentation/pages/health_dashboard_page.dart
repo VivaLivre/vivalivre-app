@@ -415,13 +415,13 @@ class _HealthDashboardPageState extends State<HealthDashboardPage>
         ),
         borderData: FlBorderData(show: false),
         barGroups: List.generate(values.length, (index) {
-          return _makeGroupData(index, values[index], _kBlue, isDark);
+          return _makeGroupData(index, values[index], _kBlue, isDark, maxY);
         }),
       ),
     );
   }
 
-  BarChartGroupData _makeGroupData(int x, double y, Color color, bool isDark) {
+  BarChartGroupData _makeGroupData(int x, double y, Color color, bool isDark, double maxY) {
     return BarChartGroupData(
       x: x,
       barRods: [
@@ -432,7 +432,7 @@ class _HealthDashboardPageState extends State<HealthDashboardPage>
           borderRadius: BorderRadius.circular(6),
           backDrawRodData: BackgroundBarChartRodData(
             show: true,
-            toY: 15, // Mock background
+            toY: maxY, // Utiliza o limite máximo verdadeiro para o fundo
             color: isDark ? Colors.grey.shade800 : const Color(0xFFF8FAFC),
           ),
         ),
