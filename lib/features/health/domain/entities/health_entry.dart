@@ -4,8 +4,8 @@ import 'package:equatable/equatable.dart';
 ///
 /// Regras de negócio:
 /// - [symptoms] é uma lista estruturada (nunca String concatenada).
-/// - [userId] garante isolamento multi-utilizador no Firestore.
-/// - [timestamp] é gerado pelo servidor (FieldValue.serverTimestamp) na camada de dados.
+/// - [userId] garante isolamento multi-utilizador no banco de dados (PostgreSQL).
+/// - [timestamp] é gerado pelo servidor ou enviado pela app na camada de dados.
 /// - [type] distingue eventos de banheiro de sintomas para o dashboard.
 class HealthEntry extends Equatable {
   final String id;

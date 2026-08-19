@@ -120,8 +120,8 @@ class _HealthPageState extends State<HealthPage>
   // ── Lógica ──
 
   /// Abre o modal "E mais alguma coisa?" antes de gravar a ida ao banheiro.
-  /// Sintomas adicionais são incluídos no MESMO documento Firestore —
-  /// um único .add() mantém o banco de dados leve.
+  /// Sintomas adicionais são incluídos no MESMO registo na API —
+  /// uma única chamada mantém o banco de dados consistente.
   Future<void> _showBathroomModal() async {
     Vibration.vibrate(duration: 80);
 
