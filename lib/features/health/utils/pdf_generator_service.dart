@@ -56,6 +56,8 @@ class PdfGeneratorService {
             pw.SizedBox(height: 24),
             if (symptomDistribution.isNotEmpty) _buildSymptomsTable(symptomDistribution, records),
             pw.SizedBox(height: 24),
+            _buildTimeOfDayChart(records),
+            pw.SizedBox(height: 24),
             _buildNotes(records),
           ];
         },
@@ -249,6 +251,90 @@ class PdfGeneratorService {
             );
           }).toList(),
         ),
+      ],
+    );
+  }
+
+  static pw.Widget _buildTimeOfDayChart(List<HealthRecord> records) {
+    int morning = 0;
+    int afternoon = 0;
+    int night = 0;
+
+    for (var r in records) {
+      final hour = r.timestamp.hour;
+      if (hour >= 6 && hour < 12) {
+        morning++;
+      } else if (hour >= 12 && hour < 18) {
+        afternoon++;
+      } else {
+        night++;
+      }
+    }
+
+    final total = morning + afternoon + night;
+    if (total == 0) return pw.SizedBox();
+
+    final mPct = morning / total;
+    final aPct = afternoon / total;
+    final nPct = night / total;
+
+    // A simple horizontal stacked bar
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Text('Período Crítico do Dia', style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
+        pw.SizedBox(height: 8),
+        pw.Text('Distribuição de todos os eventos (Idas ao banheiro + Sintomas)', style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey700)),
+        pw.SizedBox(height: 12),
+        pw.Container(
+          height: 24,
+          decoration: pw.BoxDecoration(
+            borderRadius: const pw.BorderRadius.all(pw.Radius.circular(12)),
+            border: pw.Border.all(color: PdfColors.grey300),
+          ),
+          child: pw.ClipRRect(
+            horizontalRadius: 12,
+            verticalRadius: 12,
+            child: pw.Row(
+              children: [
+                if (morning > 0)
+                  pw.Expanded(
+                    flex: (mPct * 100).toInt(),
+                    child: pw.Container(color: PdfColor.fromHex('#FCD34D')), // Amarelo
+                  ),
+                if (afternoon > 0)
+                  pw.Expanded(
+                    flex: (aPct * 100).toInt(),
+                    child: pw.Container(color: PdfColor.fromHex('#F59E0B')), // Laranja
+                  ),
+                if (night > 0)
+                  pw.Expanded(
+                    flex: (nPct * 100).toInt(),
+                    child: pw.Container(color: PdfColor.fromHex('#475569')), // Cinza Escuro
+                  ),
+              ],
+            ),
+          ),
+        ),
+        pw.SizedBox(height: 12),
+        pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.spaceAround,
+          children: [
+            _legendItem('Manhã (06h-12h)', '${(mPct * 100).toStringAsFixed(0)}%', PdfColor.fromHex('#FCD34D')),
+            _legendItem('Tarde (12h-18h)', '${(aPct * 100).toStringAsFixed(0)}%', PdfColor.fromHex('#F59E0B')),
+            _legendItem('Noite (18h-06h)', '${(nPct * 100).toStringAsFixed(0)}%', PdfColor.fromHex('#475569')),
+          ],
+        ),
+      ],
+    );
+  }
+
+  static pw.Widget _legendItem(String label, String pct, PdfColor color) {
+    return pw.Row(
+      children: [
+        pw.Container(width: 10, height: 10, decoration: pw.BoxDecoration(color: color, shape: pw.BoxShape.circle)),
+        pw.SizedBox(width: 6),
+        pw.Text('$label: $pct', style: const pw.TextStyle(fontSize: 10)),
       ],
     );
   }
