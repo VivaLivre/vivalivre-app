@@ -99,7 +99,7 @@ class AuthRepository {
 
   Future<UserModel?> loginWithGoogle() async {
     try {
-      const clientId = String.fromEnvironment('GOOGLE_CLIENT_ID');
+      const clientId = String.fromEnvironment('GOOGLE_CLIENT_ID', defaultValue: '437244400535-vvkllcs0vnv3ph8hag4piapkn9i7un65.apps.googleusercontent.com');
       final GoogleSignIn googleSignIn = GoogleSignIn(
         serverClientId: clientId.isNotEmpty ? clientId : null,
       );
