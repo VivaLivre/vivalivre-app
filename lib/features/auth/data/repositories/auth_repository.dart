@@ -99,8 +99,9 @@ class AuthRepository {
 
   Future<UserModel?> loginWithGoogle() async {
     try {
+      const clientId = String.fromEnvironment('GOOGLE_CLIENT_ID');
       final GoogleSignIn googleSignIn = GoogleSignIn(
-        serverClientId: '437244400535-vvkllcs0vnv3ph8hag4piapkn9i7un65.apps.googleusercontent.com',
+        serverClientId: clientId.isNotEmpty ? clientId : null,
       );
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
       if (googleUser == null) {
