@@ -68,8 +68,6 @@ class MapBloc extends Bloc<MapEvent, MapState> {
           final accuracy = await Geolocator.getLocationAccuracy();
           if (accuracy == LocationAccuracyStatus.reduced) {
             emit(const MapError('O VivaLivre precisa da localização EXATA. Altere nas configurações.'));
-            await Future.delayed(const Duration(seconds: 2));
-            await Geolocator.openAppSettings();
           } else {
             // ── 3. Limpeza de cache — descarta a última posição conhecida ──
             final LocationSettings locationSettings;
