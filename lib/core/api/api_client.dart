@@ -9,11 +9,11 @@ class ApiClient {
 
   ApiClient() {
     // Determine Base URL
-    // Aceita a URL via variável de ambiente ou usa localhost por padrão (requer adb reverse no Android físico)
+    // Aceita a URL via variável de ambiente ou usa o Railway por padrão
     String envUrl = const String.fromEnvironment('API_URL');
     String baseUrl = envUrl.isNotEmpty
         ? envUrl
-        : 'http://localhost:8080';
+        : 'https://vivalivre-backend-production.up.railway.app';
 
     dio = Dio(
       BaseOptions(
