@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:viva_livre_app/features/health/presentation/pages/health_page.dart';
-import '../../utils/health_data_aggregator.dart';
+import 'package:viva_livre_app/features/auth/presentation/auth_bloc.dart';
+import '../utils/health_data_aggregator.dart';
+import '../utils/pdf_generator_service.dart';
 
 class HealthDashboardPage extends StatefulWidget {
   final List<HealthRecord> records;
@@ -215,11 +218,19 @@ class _HealthDashboardPageState extends State<HealthDashboardPage>
               padding: const EdgeInsets.all(24),
               child: ElevatedButton.icon(
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Relatório pronto para exportação! (Em breve)'),
-                      backgroundColor: Color(0xFF10B981),
-                    ),
+                  final authState = context.read<AuthBloc>().state;
+                  String userName = 'Paciente VivaLivre';
+                  String condition = 'Não especificada';
+                  if (authState is AuthAuthenticated) {
+                    userName = authState.user.name;
+                    condition = authState.user.clinicalCondition ?? 'Não especificada';
+                  }
+
+                  PdfGeneratorService.generateAndPreviewPdf(
+                    records: filteredRecords,
+                    filter: _selectedFilter,
+                    userName: userName,
+                    clinicalCondition: condition,
                   );
                 },
                 style: ElevatedButton.styleFrom(
@@ -410,7 +421,6 @@ class _HealthDashboardPageState extends State<HealthDashboardPage>
         gridData: FlGridData(
           show: true,
           drawVerticalLine: false,
-          horizontalInterval: 2,
           getDrawingHorizontalLine: (value) => FlLine(color: isDark ? Theme.of(context).dividerColor : const Color(0xFFF1F5F9), strokeWidth: 1),
         ),
         borderData: FlBorderData(show: false),
