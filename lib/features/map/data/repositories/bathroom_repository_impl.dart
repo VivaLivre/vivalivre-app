@@ -76,7 +76,7 @@ class BathroomRepositoryImpl implements IBathroomRepository {
     required bool hasChangingTable,
     required bool isFree,
     String? comment,
-    required dynamic photo,
+    dynamic photo,
     String? operatingHours,
   }) async {
     final formData = FormData.fromMap({
@@ -90,10 +90,11 @@ class BathroomRepositoryImpl implements IBathroomRepository {
       if (comment != null && comment.isNotEmpty) 'comment': comment,
       if (operatingHours != null && operatingHours.isNotEmpty)
         'operating_hours': operatingHours,
-      'photo': MultipartFile.fromBytes(
-        await (photo as XFile).readAsBytes(),
-        filename: photo.name,
-      ),
+      if (photo != null)
+        'photo': MultipartFile.fromBytes(
+          await (photo as XFile).readAsBytes(),
+          filename: photo.name,
+        ),
     });
 
     final response = await _apiClient.dio.post(

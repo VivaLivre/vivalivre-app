@@ -168,13 +168,7 @@ class AddBathroomBloc extends Bloc<AddBathroomEvent, AddBathroomState> {
       return;
     }
 
-    if (state.photo == null) {
-      emit(state.copyWith(
-        submissionStatus: SubmissionStatus.error,
-        errorMessage: 'Uma foto é obrigatória para a sugestão.',
-      ));
-      return;
-    }
+    // Foto removida da validação obrigatória (opcional)
 
     emit(state.copyWith(submissionStatus: SubmissionStatus.loading));
 
