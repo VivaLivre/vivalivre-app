@@ -9,11 +9,11 @@ class ApiClient {
 
   ApiClient() {
     // Determine Base URL
-    // Aceita a URL via variável de ambiente ou usa o Railway por defeito
-    String baseUrl = const String.fromEnvironment(
-      'API_URL',
-      defaultValue: 'http://10.0.2.2:8080',
-    );
+    // Aceita a URL via variável de ambiente ou usa o localhost/10.0.2.2 consoante a plataforma
+    String envUrl = const String.fromEnvironment('API_URL');
+    String baseUrl = envUrl.isNotEmpty
+        ? envUrl
+        : (kIsWeb ? 'http://localhost:8080' : (defaultTargetPlatform == TargetPlatform.android ? 'http://10.0.2.2:8080' : 'http://localhost:8080'));
 
     dio = Dio(
       BaseOptions(
