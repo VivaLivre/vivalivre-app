@@ -18,7 +18,11 @@ class CompleteProfilePage extends StatefulWidget {
 }
 
 class _CompleteProfilePageState extends State<CompleteProfilePage> {
-  final _formKey = GlobalKey<FormState>();
+  int _currentStep = 0;
+  
+  final _step1FormKey = GlobalKey<FormState>();
+  final _step2FormKey = GlobalKey<FormState>();
+  final _step3FormKey = GlobalKey<FormState>();
 
   final TextEditingController _cpfController = TextEditingController();
   final _cpfFormatter = MaskTextInputFormatter(
@@ -89,30 +93,55 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
     super.dispose();
   }
 
-  Future<void> _submitProfile() async {
-    if (!_formKey.currentState!.validate()) return;
-    
-    if (_cpfController.text.trim().isEmpty || _cpfController.text.length < 14) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Por favor, informe um CPF válido.'), backgroundColor: AppColors.error));
-      return;
-    }
-    if (_selectedDate == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Selecione a sua data de nascimento.'), backgroundColor: AppColors.error));
-      return;
-    }
-    if (_selectedGender == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Selecione o seu género.'), backgroundColor: AppColors.error));
-      return;
-    }
-    if (_selectedCondition == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Selecione a sua condição clínica.'), backgroundColor: AppColors.error));
-      return;
-    }
-    if (_selectedCondition == 'Outra' && _customConditionController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Por favor, especifique a sua condição clínica.'), backgroundColor: AppColors.error));
-      return;
-    }
+  void _showSnack(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: AppColors.error),
+    );
+  }
 
+  void _onStepContinue() {
+    if (_currentStep == 0) {
+      if (_step1FormKey.currentState?.validate() ?? false) {
+        if (_cpfController.text.trim().isEmpty || _cpfController.text.length < 14) {
+          _showSnack('Por favor, informe um CPF válido.');
+          return;
+        }
+        if (_selectedDate == null) {
+          _showSnack('Selecione a sua data de nascimento.');
+          return;
+        }
+        if (_selectedGender == null) {
+          _showSnack('Selecione o seu género.');
+          return;
+        }
+        setState(() => _currentStep += 1);
+      }
+    } else if (_currentStep == 1) {
+      if (_step2FormKey.currentState?.validate() ?? false) {
+        if (_selectedCondition == null) {
+          _showSnack('Selecione a sua condição clínica.');
+          return;
+        }
+        if (_selectedCondition == 'Outra' && _customConditionController.text.trim().isEmpty) {
+          _showSnack('Por favor, especifique a sua condição clínica.');
+          return;
+        }
+        setState(() => _currentStep += 1);
+      }
+    } else if (_currentStep == 2) {
+      if (_step3FormKey.currentState?.validate() ?? false) {
+        _submitProfile();
+      }
+    }
+  }
+
+  void _onStepCancel() {
+    if (_currentStep > 0) {
+      setState(() => _currentStep -= 1);
+    }
+  }
+
+  Future<void> _submitProfile() async {
     setState(() { _isLoading = true; });
 
     try {
@@ -188,266 +217,304 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
         backgroundColor: Colors.transparent,
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  'Falta pouco para começarmos!',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w800,
-                    color: textDark,
-                    letterSpacing: -0.5,
+        child: Stepper(
+          type: StepperType.vertical,
+          currentStep: _currentStep,
+          onStepContinue: _isLoading ? null : _onStepContinue,
+          onStepCancel: _isLoading ? null : _onStepCancel,
+          physics: const ClampingScrollPhysics(),
+          controlsBuilder: (context, details) {
+            return Padding(
+              padding: const EdgeInsets.only(top: 24.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: CustomPrimaryButton(
+                      onPressed: _isLoading ? null : details.onStepContinue,
+                      label: _currentStep == 2 ? 'Finalizar Registo' : 'Continuar',
+                      isLoading: _isLoading && _currentStep == 2,
+                      loadingLabel: 'A guardar...',
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Preenche os dados em baixo para completares o teu perfil e acederes à plataforma.',
-                  style: TextStyle(fontSize: 15, color: textDark.withValues(alpha: 0.7)),
-                ),
-                const SizedBox(height: 32),
-
-                // -- Dados Pessoais --
-                const Text('Dados Pessoais', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 16),
-                CustomTextField(
-                  controller: _cpfController,
-                  hintText: 'CPF (Obrigatório)',
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [_cpfFormatter],
-                  prefixIcon: Icon(Icons.badge_outlined, color: iconColor),
-                  validator: (v) {
-                    if (v == null || v.trim().isEmpty || v.length < 14) {
-                      return 'CPF inválido';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                
-                // Data Nascimento e Género
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+                  const SizedBox(width: 12),
+                  if (_currentStep > 0)
                     Expanded(
-                      child: GestureDetector(
-                        onTap: () async {
-                          final DateTime? picked = await showDatePicker(
-                            context: context,
-                            initialDate: _selectedDate ?? DateTime.now().subtract(const Duration(days: 365 * 18)),
-                            firstDate: DateTime(1900),
-                            lastDate: DateTime.now(),
-                          );
-                          if (picked != null) {
-                            setState(() => _selectedDate = picked);
-                          }
-                        },
-                        child: AbsorbPointer(
-                          child: CustomTextField(
-                            controller: TextEditingController(
-                              text: _selectedDate != null ? DateFormat('dd/MM/yyyy').format(_selectedDate!) : '',
-                            ),
-                            hintText: 'Data Nasc.',
-                            prefixIcon: Icon(Icons.calendar_today, color: iconColor),
-                            validator: (v) => _selectedDate == null ? 'Obrigatório' : null,
+                      child: OutlinedButton(
+                        onPressed: _isLoading ? null : details.onStepCancel,
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          side: const BorderSide(color: Color(0xFF94A3B8)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: Text(
+                          'Voltar',
+                          style: TextStyle(
+                            color: textDark,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: DropdownButtonFormField<String>(
-                        value: _selectedGender,
-                        hint: Text('Género', style: TextStyle(color: iconColor)),
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: cardColor,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                          prefixIcon: Icon(Icons.person_outline, color: iconColor),
-                        ),
-                        dropdownColor: cardColor,
-                        items: _genders.map((g) => DropdownMenuItem(value: g, child: Text(g))).toList(),
-                        onChanged: (val) => setState(() => _selectedGender = val),
-                        validator: (v) => v == null ? 'Obrigatório' : null,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 32),
-
-                // -- Ficha Clínica --
-                const Text('Ficha Clínica', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 16),
-                DropdownButtonFormField<String>(
-                  value: _selectedCondition,
-                  hint: Text('Condição Clínica Principal', style: TextStyle(color: iconColor)),
-                  isExpanded: true,
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: cardColor,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                    prefixIcon: Icon(Icons.medical_services_outlined, color: iconColor),
-                  ),
-                  dropdownColor: cardColor,
-                  items: _conditions.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
-                  onChanged: (val) => setState(() {
-                    _selectedCondition = val;
-                    if (val != 'Outra') {
-                      _customConditionController.clear();
-                    }
-                  }),
-                  validator: (v) => v == null ? 'A condição é obrigatória' : null,
-                ),
-                if (_selectedCondition == 'Outra') ...[
-                  const SizedBox(height: 16),
-                  CustomTextField(
-                    controller: _customConditionController,
-                    hintText: 'Especificar condição',
-                    prefixIcon: Icon(Icons.edit_outlined, color: iconColor),
-                    validator: (v) {
-                      if (_selectedCondition == 'Outra' && (v == null || v.trim().isEmpty)) {
-                        return 'Especifique a sua condição.';
-                      }
-                      return null;
-                    },
-                  ),
                 ],
-                const SizedBox(height: 16),
-                
-                // Peso e Altura
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              ),
+            );
+          },
+          steps: [
+            // STEP 1: DADOS PESSOAIS
+            Step(
+              title: Text('Dados Pessoais', style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 18)),
+              isActive: _currentStep >= 0,
+              content: Form(
+                key: _step1FormKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Expanded(
-                      child: CustomTextField(
-                        controller: _weightController,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        hintText: 'Peso (kg)',
-                        prefixIcon: Icon(Icons.monitor_weight_outlined, color: iconColor),
-                      ),
+                    const SizedBox(height: 16),
+                    CustomTextField(
+                      controller: _cpfController,
+                      hintText: 'CPF (Obrigatório)',
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [_cpfFormatter],
+                      prefixIcon: Icon(Icons.badge_outlined, color: iconColor),
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty || v.length < 14) {
+                          return 'CPF inválido';
+                        }
+                        return null;
+                      },
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: CustomTextField(
-                        controller: _heightController,
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                        hintText: 'Altura (cm)',
-                        prefixIcon: Icon(Icons.height_outlined, color: iconColor),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 32),
-
-                // -- Comorbidades --
-                const Text('Comorbidades', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                Text('Adicione outras condições médicas (opcional)', style: TextStyle(color: iconColor, fontSize: 14)),
-                const SizedBox(height: 12),
-                CustomTextField(
-                  controller: _comorbitySearchController,
-                  hintText: 'Pesquisar condição...',
-                  prefixIcon: Icon(Icons.search, color: iconColor),
-                  textCapitalization: TextCapitalization.words,
-                  onChanged: (val) => setState(() {}),
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(16)),
-                  child: Builder(
-                    builder: (context) {
-                      final query = _comorbitySearchController.text.trim().toLowerCase();
-                      final filtered = _comorbiditiesList.where((c) => c.toLowerCase().contains(query)).toList();
-                      final exactMatch = _comorbiditiesList.any((c) => c.toLowerCase() == query);
-
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          if (query.isNotEmpty && !exactMatch)
-                            ListTile(
-                              leading: const Icon(Icons.add_circle_outline, color: Color(0xFF2563EB)),
-                              title: Text('Adicionar "$query"', style: const TextStyle(color: Color(0xFF2563EB), fontWeight: FontWeight.bold)),
-                              onTap: () {
-                                setState(() {
-                                  final newC = _comorbitySearchController.text.trim();
-                                  _comorbiditiesList.add(newC);
-                                  _selectedComorbidities.add(newC);
-                                  _comorbitySearchController.clear();
-                                  _comorbiditiesList.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
-                                });
-                              },
-                            ),
-                          if (filtered.isEmpty && query.isEmpty)
-                            const Padding(
-                              padding: EdgeInsets.all(16.0),
-                              child: Text('Nenhuma condição listada'),
-                            ),
-                          if (filtered.isNotEmpty)
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-                              child: Wrap(
-                                spacing: 8.0,
-                                runSpacing: 8.0,
-                                children: filtered.map((comorbity) {
-                                  final isSelected = _selectedComorbidities.contains(comorbity);
-                                  return FilterChip(
-                                    label: Text(comorbity),
-                                    selected: isSelected,
-                                    showCheckmark: false,
-                                    selectedColor: const Color(0xFF2563EB).withValues(alpha: 0.15),
-                                    backgroundColor: Colors.transparent,
-                                    labelStyle: TextStyle(
-                                      color: isSelected ? const Color(0xFF2563EB) : textDark,
-                                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(24),
-                                      side: BorderSide(
-                                        color: isSelected ? const Color(0xFF2563EB) : iconColor.withValues(alpha: 0.3),
-                                        width: isSelected ? 1.5 : 1.0,
-                                      ),
-                                    ),
-                                    onSelected: (checked) {
-                                      setState(() {
-                                        if (checked) _selectedComorbidities.add(comorbity);
-                                        else _selectedComorbidities.remove(comorbity);
-                                      });
-                                    },
-                                  );
-                                }).toList(),
+                    const SizedBox(height: 16),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () async {
+                              final DateTime? picked = await showDatePicker(
+                                context: context,
+                                initialDate: _selectedDate ?? DateTime.now().subtract(const Duration(days: 365 * 18)),
+                                firstDate: DateTime(1900),
+                                lastDate: DateTime.now(),
+                              );
+                              if (picked != null) {
+                                setState(() => _selectedDate = picked);
+                              }
+                            },
+                            child: AbsorbPointer(
+                              child: CustomTextField(
+                                controller: TextEditingController(
+                                  text: _selectedDate != null ? DateFormat('dd/MM/yyyy').format(_selectedDate!) : '',
+                                ),
+                                hintText: 'Data Nasc.',
+                                prefixIcon: Icon(Icons.calendar_today, color: iconColor),
+                                validator: (v) => _selectedDate == null ? 'Obrigatório' : null,
                               ),
                             ),
-                          const SizedBox(height: 8),
-                        ],
-                      );
-                    }
-                  ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: DropdownButtonFormField<String>(
+                            value: _selectedGender,
+                            hint: Text('Género', style: TextStyle(color: iconColor)),
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: cardColor,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none,
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                              prefixIcon: Icon(Icons.person_outline, color: iconColor),
+                            ),
+                            isExpanded: true,
+                            dropdownColor: cardColor,
+                            items: _genders.map((g) => DropdownMenuItem(value: g, child: Text(g, overflow: TextOverflow.ellipsis))).toList(),
+                            onChanged: (val) => setState(() => _selectedGender = val),
+                            validator: (v) => v == null ? 'Obrigatório' : null,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-
-                const SizedBox(height: 48),
-                CustomPrimaryButton(
-                  onPressed: _submitProfile,
-                  label: 'Concluir Registo',
-                  isLoading: _isLoading,
-                  loadingLabel: 'A guardar...',
-                ),
-                const SizedBox(height: 40),
-              ],
+              ),
             ),
-          ),
+
+            // STEP 2: FICHA CLÍNICA
+            Step(
+              title: Text('Ficha Clínica', style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 18)),
+              isActive: _currentStep >= 1,
+              content: Form(
+                key: _step2FormKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      value: _selectedCondition,
+                      hint: Text('Condição Clínica Principal', style: TextStyle(color: iconColor)),
+                      isExpanded: true,
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: cardColor,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                        prefixIcon: Icon(Icons.medical_services_outlined, color: iconColor),
+                      ),
+                      dropdownColor: cardColor,
+                      items: _conditions.map((c) => DropdownMenuItem(value: c, child: Text(c, overflow: TextOverflow.ellipsis))).toList(),
+                      onChanged: (val) => setState(() {
+                        _selectedCondition = val;
+                        if (val != 'Outra') {
+                          _customConditionController.clear();
+                        }
+                      }),
+                      validator: (v) => v == null ? 'A condição é obrigatória' : null,
+                    ),
+                    if (_selectedCondition == 'Outra') ...[
+                      const SizedBox(height: 16),
+                      CustomTextField(
+                        controller: _customConditionController,
+                        hintText: 'Especificar condição',
+                        prefixIcon: Icon(Icons.edit_outlined, color: iconColor),
+                        validator: (v) {
+                          if (_selectedCondition == 'Outra' && (v == null || v.trim().isEmpty)) {
+                            return 'Especifique a sua condição.';
+                          }
+                          return null;
+                        },
+                      ),
+                    ],
+                    const SizedBox(height: 16),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: CustomTextField(
+                            controller: _weightController,
+                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            hintText: 'Peso (kg)',
+                            prefixIcon: Icon(Icons.monitor_weight_outlined, color: iconColor),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: CustomTextField(
+                            controller: _heightController,
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                            hintText: 'Altura (cm)',
+                            prefixIcon: Icon(Icons.height_outlined, color: iconColor),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // STEP 3: COMORBIDADES
+            Step(
+              title: Text('Comorbidades', style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 18)),
+              isActive: _currentStep >= 2,
+              content: Form(
+                key: _step3FormKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 16),
+                    Text('Adicione outras condições médicas (opcional)', style: TextStyle(color: iconColor, fontSize: 14)),
+                    const SizedBox(height: 12),
+                    CustomTextField(
+                      controller: _comorbitySearchController,
+                      hintText: 'Pesquisar condição...',
+                      prefixIcon: Icon(Icons.search, color: iconColor),
+                      textCapitalization: TextCapitalization.words,
+                      onChanged: (val) => setState(() {}),
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(16)),
+                      child: Builder(
+                        builder: (context) {
+                          final query = _comorbitySearchController.text.trim().toLowerCase();
+                          final filtered = _comorbiditiesList.where((c) => c.toLowerCase().contains(query)).toList();
+                          final exactMatch = _comorbiditiesList.any((c) => c.toLowerCase() == query);
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              if (query.isNotEmpty && !exactMatch)
+                                ListTile(
+                                  leading: const Icon(Icons.add_circle_outline, color: Color(0xFF2563EB)),
+                                  title: Text('Adicionar "$query"', style: const TextStyle(color: Color(0xFF2563EB), fontWeight: FontWeight.bold)),
+                                  onTap: () {
+                                    setState(() {
+                                      final newC = _comorbitySearchController.text.trim();
+                                      _comorbiditiesList.add(newC);
+                                      _selectedComorbidities.add(newC);
+                                      _comorbitySearchController.clear();
+                                      _comorbiditiesList.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+                                    });
+                                  },
+                                ),
+                              if (filtered.isEmpty && query.isEmpty)
+                                const Padding(
+                                  padding: EdgeInsets.all(16.0),
+                                  child: Text('Nenhuma condição listada'),
+                                ),
+                              if (filtered.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                                  child: Wrap(
+                                    spacing: 8.0,
+                                    runSpacing: 8.0,
+                                    children: filtered.map((comorbity) {
+                                      final isSelected = _selectedComorbidities.contains(comorbity);
+                                      return FilterChip(
+                                        label: Text(comorbity),
+                                        selected: isSelected,
+                                        showCheckmark: false,
+                                        selectedColor: const Color(0xFF2563EB).withValues(alpha: 0.15),
+                                        backgroundColor: Colors.transparent,
+                                        labelStyle: TextStyle(
+                                          color: isSelected ? const Color(0xFF2563EB) : textDark,
+                                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(24),
+                                          side: BorderSide(
+                                            color: isSelected ? const Color(0xFF2563EB) : iconColor.withValues(alpha: 0.3),
+                                            width: isSelected ? 1.5 : 1.0,
+                                          ),
+                                        ),
+                                        onSelected: (checked) {
+                                          setState(() {
+                                            if (checked) _selectedComorbidities.add(comorbity);
+                                            else _selectedComorbidities.remove(comorbity);
+                                          });
+                                        },
+                                      );
+                                    }).toList(),
+                                  ),
+                                ),
+                              const SizedBox(height: 8),
+                            ],
+                          );
+                        }
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

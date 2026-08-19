@@ -521,7 +521,7 @@ class _RegisterPageState extends State<RegisterPage> {
                             ),
                             hint: Text('Sexo', style: TextStyle(color: iconColor)),
                             dropdownColor: cardColor,
-                            items: _genders.map((g) => DropdownMenuItem(value: g, child: Text(g, style: TextStyle(color: textDark)))).toList(),
+                            items: _genders.map((g) => DropdownMenuItem(value: g, child: Text(g, style: TextStyle(color: textDark), overflow: TextOverflow.ellipsis))).toList(),
                             onChanged: (val) => setState(() => _selectedGender = val),
                           ),
                         ),
