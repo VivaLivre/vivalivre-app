@@ -12,6 +12,7 @@ class ProfileRepository {
     required String email,
     int? height,
     double? weight,
+    DateTime? birthDate,
     XFile? photo,
   }) async {
     try {
@@ -19,6 +20,7 @@ class ProfileRepository {
         'email': email,
         if (height != null) 'height': height.toString(),
         if (weight != null) 'weight': weight.toString(),
+        if (birthDate != null) 'birth_date': '${birthDate.year}-${birthDate.month.toString().padLeft(2, '0')}-${birthDate.day.toString().padLeft(2, '0')}',
         if (photo != null)
           'photo': MultipartFile.fromBytes(
             await photo.readAsBytes(),

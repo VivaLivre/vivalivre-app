@@ -161,10 +161,23 @@ class _EditProfilePageState extends State<EditProfilePage> {
       final weight = double.tryParse(_weightController.text.trim());
       
       final profileRepo = RepositoryProvider.of<ProfileRepository>(context);
+      
+      // Parse birth date
+      DateTime? bDate;
+      if (_birthDateController.text.trim().isNotEmpty) {
+        try {
+          final parts = _birthDateController.text.trim().split('/');
+          if (parts.length == 3) {
+            bDate = DateTime(int.parse(parts[2]), int.parse(parts[1]), int.parse(parts[0]));
+          }
+        } catch (_) {}
+      }
+
       final updatedUser = await profileRepo.updateProfile(
         email: email,
         height: height,
         weight: weight,
+        birthDate: bDate,
         photo: _selectedImage,
       );
 
@@ -380,14 +393,51 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           ),
                           const SizedBox(height: 16),
 
-                          // Birth Date (Read Only with Lock Icon)
-                          _buildTextField(
-                            label: 'Data de Nascimento (Não alterável)',
-                            controller: _birthDateController,
-                            icon: Icons.calendar_month_outlined,
-                            fillColor: _kInputBg.withValues(alpha: 0.5),
-                            readOnly: true,
-                            suffixIcon: const Icon(Icons.lock_outline, color: Colors.grey, size: 18),
+                          // Birth Date (Editable via DatePicker)
+                          GestureDetector(
+                            onTap: () async {
+                              DateTime initialDate = DateTime.now().subtract(const Duration(days: 365 * 18));
+                              if (_birthDateController.text.trim().isNotEmpty) {
+                                try {
+                                  final parts = _birthDateController.text.trim().split('/');
+                                  if (parts.length == 3) {
+                                    initialDate = DateTime(int.parse(parts[2]), int.parse(parts[1]), int.parse(parts[0]));
+                                  }
+                                } catch (_) {}
+                              }
+                              
+                              final DateTime? picked = await showDatePicker(
+                                context: context,
+                                initialDate: initialDate,
+                                firstDate: DateTime(1900),
+                                lastDate: DateTime.now(),
+                                builder: (context, child) {
+                                  return Theme(
+                                    data: Theme.of(context).copyWith(
+                                      colorScheme: Theme.of(context).colorScheme.copyWith(
+                                        primary: AppColors.primary,
+                                      ),
+                                    ),
+                                    child: child!,
+                                  );
+                                },
+                              );
+                              if (picked != null) {
+                                setState(() {
+                                  _birthDateController.text = "${picked.day.toString().padLeft(2, '0')}/${picked.month.toString().padLeft(2, '0')}/${picked.year}";
+                                });
+                              }
+                            },
+                            child: AbsorbPointer(
+                              child: _buildTextField(
+                                label: 'Data de Nascimento',
+                                controller: _birthDateController,
+                                icon: Icons.calendar_month_outlined,
+                                fillColor: _kInputBg,
+                                readOnly: true,
+                                suffixIcon: const Icon(Icons.edit_calendar_rounded, color: Colors.grey, size: 18),
+                              ),
+                            ),
                           ),
                         ],
                       ),
