@@ -11,7 +11,7 @@ class ApiClient {
     // Aceita a URL via variável de ambiente ou usa o Railway por defeito
     String baseUrl = const String.fromEnvironment(
       'API_URL',
-      defaultValue: 'https://vivalivre-backend-production.up.railway.app',
+      defaultValue: 'http://10.0.2.2:8080',
     );
 
     dio = Dio(
