@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vibration/vibration.dart';
 import 'package:viva_livre_app/features/health/domain/entities/health_entry.dart';
 import 'package:viva_livre_app/features/health/presentation/health_bloc.dart';
@@ -112,12 +113,29 @@ class _HealthPageState extends State<HealthPage>
   void initState() {
     super.initState();
     _customSymptoms = List.from(_baseSymptoms);
+    _loadCustomSymptoms();
 
     // No novo backend, o userId é inferido do Token JWT.
     context.read<HealthBloc>().add(const WatchHealthEntries());
   }
 
   // ── Lógica ──
+
+  Future<void> _loadCustomSymptoms() async {
+    final prefs = await SharedPreferences.getInstance();
+    final saved = prefs.getStringList('custom_symptoms');
+    if (saved != null && saved.isNotEmpty) {
+      setState(() {
+        _customSymptoms = List.from(_baseSymptoms)..addAll(saved.where((s) => !_baseSymptoms.contains(s)));
+      });
+    }
+  }
+
+  Future<void> _saveCustomSymptoms() async {
+    final prefs = await SharedPreferences.getInstance();
+    final extras = _customSymptoms.where((s) => !_baseSymptoms.contains(s)).toList();
+    await prefs.setStringList('custom_symptoms', extras);
+  }
 
   /// Abre o modal "E mais alguma coisa?" antes de gravar a ida ao banheiro.
   /// Sintomas adicionais são incluídos no MESMO registo na API —
@@ -193,10 +211,15 @@ class _HealthPageState extends State<HealthPage>
       builder: (context) => SymptomSearchModal(
         availableSymptoms: _customSymptoms,
         onAdd: (List<String> symptoms) {
+          bool addedAny = false;
           for (var symptom in symptoms) {
             if (!_customSymptoms.contains(symptom)) {
               setState(() => _customSymptoms.add(symptom));
+              addedAny = true;
             }
+          }
+          if (addedAny) {
+            _saveCustomSymptoms();
           }
 
           Vibration.vibrate(duration: 150, amplitude: 255);

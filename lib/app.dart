@@ -29,7 +29,6 @@ class App extends StatelessWidget {
       // encaminha para /home (MainShell), /login ou /onboarding.
       home: const SplashPage(),
       routes: {
-        '/splash': (_) => const SplashPage(),
         '/onboarding': (_) => const OnboardingPage(),
         '/login': (_) => const LoginPage(),
         '/register': (_) => const RegisterPage(),

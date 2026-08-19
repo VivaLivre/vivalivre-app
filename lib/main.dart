@@ -46,7 +46,10 @@ void main() async {
       child: MultiBlocProvider(
         providers: [
           BlocProvider<AuthBloc>(
-            create: (_) => AuthBloc(authRepository: authRepository),
+            create: (_) => AuthBloc(
+              authRepository: authRepository,
+              onboardingRepository: onboardingRepository,
+            ),
           ),
           BlocProvider<HealthBloc>(
             create: (_) => HealthBloc(healthRepository: healthRepository),

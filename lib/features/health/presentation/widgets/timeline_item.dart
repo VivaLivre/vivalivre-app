@@ -5,6 +5,7 @@ import 'package:viva_livre_app/features/health/presentation/health_bloc.dart';
 import 'package:viva_livre_app/features/health/domain/entities/health_entry.dart';
 import 'package:viva_livre_app/core/widgets/confirm_delete_dialog.dart';
 import 'entry_detail_dialog.dart';
+import 'package:viva_livre_app/features/health/presentation/utils/health_ui_utils.dart';
 
 class TimelineItem extends StatelessWidget {
   final HealthEntry entry;
@@ -12,13 +13,7 @@ class TimelineItem extends StatelessWidget {
 
   const TimelineItem({required this.entry, required this.isLast});
 
-  static Color _severityColor(String severity) {
-    return switch (severity) {
-      'Grave' => const Color(0xFFEF4444),
-      'Observação' || 'Moderada' => const Color(0xFFF59E0B),
-      _ => const Color(0xFF10B981),
-    };
-  }
+  // _severityColor has been moved to health_ui_utils.dart
 
   void _showMenu(BuildContext context) {
     showModalBottomSheet(
@@ -115,7 +110,7 @@ class TimelineItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final timeStr = DateFormat('HH:mm').format(entry.timestamp);
     final isBathroom = entry.type == 'banheiro';
-    final dotColor = _severityColor(entry.severity);
+    final dotColor = getSeverityColor(entry.severity);
     final title = entry.symptoms.isNotEmpty
         ? entry.symptoms.join(', ')
         : 'Registo';

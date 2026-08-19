@@ -177,8 +177,21 @@ class _PlaceholderPage extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             const Text(
-              'Em desenvolvimento',
-              style: TextStyle(fontSize: 14, color: Color(0xFF64748B)),
+              'Brevemente',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF2563EB),
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 32.0),
+              child: Text(
+                'Estamos a trabalhar na comunidade VivaLivre!',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 14, color: Color(0xFF64748B)),
+              ),
             ),
           ],
         ),

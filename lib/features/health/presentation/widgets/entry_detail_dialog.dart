@@ -3,23 +3,18 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:viva_livre_app/features/health/presentation/health_bloc.dart';
 import 'package:viva_livre_app/features/health/domain/entities/health_entry.dart';
+import 'package:viva_livre_app/features/health/presentation/utils/health_ui_utils.dart';
 import 'package:viva_livre_app/core/widgets/confirm_delete_dialog.dart';
 
 class EntryDetailDialog extends StatelessWidget {
   final HealthEntry entry;
   const EntryDetailDialog({required this.entry});
 
-  static Color _severityColor(String severity) {
-    return switch (severity) {
-      'Grave' => const Color(0xFFEF4444),
-      'Observação' || 'Moderada' => const Color(0xFFF59E0B),
-      _ => const Color(0xFF10B981),
-    };
-  }
+  // _severityColor has been moved to health_ui_utils.dart
 
   @override
   Widget build(BuildContext context) {
-    final dotColor = _severityColor(entry.severity);
+    final dotColor = getSeverityColor(entry.severity);
     final isBathroom = entry.type == 'banheiro';
     final dateStr = DateFormat(
       "dd 'de' MMMM 'de' yyyy",

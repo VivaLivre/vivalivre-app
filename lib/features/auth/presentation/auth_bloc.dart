@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import '../data/repositories/auth_repository.dart';
+import '../data/repositories/onboarding_repository.dart';
 import '../../../core/models/user_model.dart';
 
 part 'auth_event.dart';
@@ -11,16 +12,21 @@ part 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository _authRepository;
+  final OnboardingRepository _onboardingRepository;
 
-  AuthBloc({required AuthRepository authRepository})
-    : _authRepository = authRepository,
-      super(AuthInitial()) {
+  AuthBloc({
+    required AuthRepository authRepository,
+    required OnboardingRepository onboardingRepository,
+  })  : _authRepository = authRepository,
+        _onboardingRepository = onboardingRepository,
+        super(AuthInitial()) {
     on<AuthAppStarted>(_onAuthAppStarted);
     on<AuthLoginRequested>(_onAuthLoginRequested);
     on<AuthRegisterRequested>(_onAuthRegisterRequested);
     on<AuthLogoutRequested>(_onAuthLogoutRequested);
     on<AuthGoogleLoginRequested>(_onAuthGoogleLoginRequested);
     on<AuthUserUpdated>(_onAuthUserUpdated);
+    on<AuthOnboardingCompleted>(_onAuthOnboardingCompleted);
   }
 
   Future<void> _onAuthAppStarted(
@@ -152,5 +158,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) {
     emit(AuthAuthenticated(event.user));
+  }
+  Future<void> _onAuthOnboardingCompleted(
+    AuthOnboardingCompleted event,
+    Emitter<AuthState> emit,
+  ) async {
+    await _onboardingRepository.setOnboardingSeen();
   }
 }

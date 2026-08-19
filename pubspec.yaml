@@ -81,6 +81,10 @@ dependencies:
   flutter_svg: ^2.3.0
   mask_text_input_formatter: ^2.9.0
   image_cropper: ^12.2.1
+  sqflite: ^2.4.2+1
+  path_provider: ^2.1.6
+  uuid: ^4.6.0
+  path: ^1.9.1
 
 dev_dependencies:
   flutter_test:

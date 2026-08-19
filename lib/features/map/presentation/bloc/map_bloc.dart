@@ -197,12 +197,16 @@ class MapBloc extends Bloc<MapEvent, MapState> {
             bathrooms: bathroomMap.values.toList(),
           ));
         } else {
-          emit(const MapError('Nenhum banheiro aberto encontrado na sua região.'));
-          emit(currentState);
+          emit(currentState.copyWith(
+            errorMessage: 'Nenhum banheiro aberto encontrado na sua região.',
+          ));
+          emit(currentState.copyWith(clearError: true));
         }
       } catch (e) {
-        emit(MapError('Erro ao buscar banheiros próximos.'));
-        emit(currentState);
+        emit(currentState.copyWith(
+          errorMessage: 'Erro ao buscar banheiros próximos.',
+        ));
+        emit(currentState.copyWith(clearError: true));
       }
     }
   }
