@@ -1,7 +1,7 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:viva_livre_app/core/api/api_client.dart';
-import 'package:viva_livre_app/features/auth/data/models/user_model.dart';
+import 'package:viva_livre_app/core/models/user_model.dart';
 import 'package:viva_livre_app/core/database/local_database.dart';
 
 class AuthRepository {
