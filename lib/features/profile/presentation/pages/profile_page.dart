@@ -5,6 +5,7 @@ import 'package:viva_livre_app/core/theme/app_colors.dart';
 import 'package:viva_livre_app/features/health/presentation/health_bloc.dart';
 import 'package:viva_livre_app/features/health/domain/entities/health_entry.dart';
 import 'package:viva_livre_app/features/health/presentation/pages/health_page.dart' show HealthRecord;
+import 'package:viva_livre_app/features/health/domain/repositories/i_health_repository.dart';
 import 'package:viva_livre_app/features/health/utils/pdf_generator_service.dart';
 import 'dart:typed_data';
 import 'package:viva_livre_app/core/models/user_model.dart';
@@ -22,6 +23,7 @@ class _ProfilePageState extends State<ProfilePage>
     with AutomaticKeepAliveClientMixin {
 
   bool _isGeneratingPdf = false;
+  bool _isLoadingDashboard = false;
 
   @override
   bool get wantKeepAlive => true;
@@ -479,15 +481,27 @@ class _ProfilePageState extends State<ProfilePage>
 
                   // ── 2.5 Resumo de Saúde (Dashboard) ──
                   GestureDetector(
-                    onTap: () {
-                      final healthState = context.read<HealthBloc>().state;
-                      final entries = healthState is HealthEntriesLoaded
-                          ? healthState.entries
-                          : healthState is HealthEntryAdding
-                              ? healthState.entries
-                              : <HealthEntry>[];
-                      final records = entries.map(HealthRecord.fromEntry).toList();
-                      Navigator.pushNamed(context, '/health-dashboard', arguments: records);
+                    onTap: _isLoadingDashboard ? null : () async {
+                      setState(() {
+                        _isLoadingDashboard = true;
+                      });
+                      try {
+                        final repo = context.read<IHealthRepository>();
+                        final entries = await repo.getEntries();
+                        final records = entries.map(HealthRecord.fromEntry).toList();
+                        if (mounted) {
+                          setState(() {
+                            _isLoadingDashboard = false;
+                          });
+                          Navigator.pushNamed(context, '/health-dashboard', arguments: records);
+                        }
+                      } catch (e) {
+                        if (mounted) {
+                          setState(() {
+                            _isLoadingDashboard = false;
+                          });
+                        }
+                      }
                     },
                     child: Container(
                       padding: const EdgeInsets.all(20),
@@ -511,7 +525,13 @@ class _ProfilePageState extends State<ProfilePage>
                               color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: Icon(Icons.bar_chart_rounded, color: Theme.of(context).colorScheme.primary, size: 24),
+                            child: _isLoadingDashboard
+                                ? const SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: CircularProgressIndicator(strokeWidth: 2.5),
+                                  )
+                                : Icon(Icons.bar_chart_rounded, color: Theme.of(context).colorScheme.primary, size: 24),
                           ),
                           const SizedBox(width: 16),
                           Expanded(
@@ -550,16 +570,27 @@ class _ProfilePageState extends State<ProfilePage>
                   const SizedBox(height: 12),
 
                   GestureDetector(
-                    onTap: _isGeneratingPdf ? null : () {
-                      final healthState = context.read<HealthBloc>().state;
-                      final entries = healthState is HealthEntriesLoaded
-                          ? healthState.entries
-                          : healthState is HealthEntryAdding
-                              ? healthState.entries
-                              : <HealthEntry>[];
-                      final records = entries.map(HealthRecord.fromEntry).toList();
-                      if (user != null) {
-                        _showExportOptionsDialog(context, records, user);
+                    onTap: _isGeneratingPdf ? null : () async {
+                      if (user == null) return;
+                      setState(() {
+                        _isGeneratingPdf = true;
+                      });
+                      try {
+                        final repo = context.read<IHealthRepository>();
+                        final entries = await repo.getEntries();
+                        final records = entries.map(HealthRecord.fromEntry).toList();
+                        if (mounted) {
+                          setState(() {
+                            _isGeneratingPdf = false;
+                          });
+                          _showExportOptionsDialog(context, records, user);
+                        }
+                      } catch (e) {
+                        if (mounted) {
+                          setState(() {
+                            _isGeneratingPdf = false;
+                          });
+                        }
                       }
                     },
                     child: Container(
