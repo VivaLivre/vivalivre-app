@@ -57,7 +57,8 @@ class BathroomExtrasModalState extends State<BathroomExtrasModal> {
             MediaQuery.of(context).viewPadding.bottom +
             24,
       ),
-      child: Column(
+      child: SingleChildScrollView(
+        child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
