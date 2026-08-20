@@ -191,8 +191,14 @@ class _MapPageState extends State<MapPage>
               if (state.nearestBathroom != null &&
                   state.selectedBathroom != null) {
                 _animatedMove(state.selectedBathroom!.location, _kInitialZoom);
+                
+                // Issue 3.20: Manter overlay durante animação e prevenir race conditions
                 _emergencyTimer?.cancel();
-                setState(() => _showEmergency = false);
+                _emergencyTimer = Timer(const Duration(milliseconds: 1100), () {
+                  if (mounted) {
+                    setState(() => _showEmergency = false);
+                  }
+                });
               } else {
                 setState(() => _showEmergency = false);
               }

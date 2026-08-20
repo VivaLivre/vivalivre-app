@@ -33,17 +33,51 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
   final List<String> _severityOptions = ['Leve', 'Observação', 'Grave'];
 
   final List<String> _symptomsOptions = [
-    'Dor Abdominal', 'Diarreia', 'Sangue nas Fezes', 'Fadiga Extrema',
-    'Febre', 'Náusea/Vómito', 'Gases/Inchaço', 'Perda de Apetite',
-    'Dores Articulares', 'Cólica Intestinal', 'Urgência Evacuatória',
-    'Incontinência Fecal', 'Muco nas Fezes', 'Constipação/Prisão de Ventre',
-    'Azia', 'Refluxo', 'Dor de Cabeça', 'Enxaqueca', 'Tontura', 'Calafrios',
-    'Suores Noturnos', 'Aftas', 'Feridas na Boca', 'Lesões na Pele',
-    'Eritema Nodoso', 'Olhos Vermelhos/Irritados', 'Visão Embaçada',
-    'Perda de Peso', 'Anemia', 'Fraqueza', 'Desidratação', 'Boca Seca',
-    'Palpitações', 'Ansiedade', 'Insónia', 'Alterações de Humor',
-    'Dor Lombar', 'Cãibras', 'Espasmos Musculares', 'Parestesia/Formigueiro',
-    'Dor de Garganta', 'Tosse', 'Falta de Ar', 'Olho Seco', 'Coceira/Prurido',
+    'Dor Abdominal',
+    'Diarreia',
+    'Sangue nas Fezes',
+    'Fadiga Extrema',
+    'Febre',
+    'Náusea/Vómito',
+    'Gases/Inchaço',
+    'Perda de Apetite',
+    'Dores Articulares',
+    'Cólica Intestinal',
+    'Urgência Evacuatória',
+    'Incontinência Fecal',
+    'Muco nas Fezes',
+    'Constipação/Prisão de Ventre',
+    'Azia',
+    'Refluxo',
+    'Dor de Cabeça',
+    'Enxaqueca',
+    'Tontura',
+    'Calafrios',
+    'Suores Noturnos',
+    'Aftas',
+    'Feridas na Boca',
+    'Lesões na Pele',
+    'Eritema Nodoso',
+    'Olhos Vermelhos/Irritados',
+    'Visão Embaçada',
+    'Perda de Peso',
+    'Anemia',
+    'Fraqueza',
+    'Desidratação',
+    'Boca Seca',
+    'Palpitações',
+    'Ansiedade',
+    'Insónia',
+    'Alterações de Humor',
+    'Dor Lombar',
+    'Cãibras',
+    'Espasmos Musculares',
+    'Parestesia/Formigueiro',
+    'Dor de Garganta',
+    'Tosse',
+    'Falta de Ar',
+    'Olho Seco',
+    'Coceira/Prurido',
     'Dificuldade de Concentração',
   ];
 
@@ -56,7 +90,7 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
       _type = widget.entryToEdit!.type;
       // Filter out 'Ida ao Banheiro' just in case it was saved in the past
       _selectedSymptoms.addAll(
-        widget.entryToEdit!.symptoms.where((s) => s != 'Ida ao Banheiro')
+        widget.entryToEdit!.symptoms.where((s) => s != 'Ida ao Banheiro'),
       );
     }
   }
@@ -98,7 +132,6 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
   /// Calcula automaticamente a gravidade com base nos sintomas selecionados.
   /// É chamado sempre que o utilizador toca num chip de sintoma.
   /// Regra principal: QUALQUER sintoma grave = Grave, independente da quantidade.
-  /// O utilizador ainda pode ajustar manualmente no seletor de gravidade.
   void _autoCalculateSeverity() {
     final newSeverity = HealthEntry.calculateSeverity(_selectedSymptoms);
     if (newSeverity != _severity) {
@@ -115,10 +148,18 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
         appBar: AppBar(
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           elevation: 0,
-          iconTheme: IconThemeData(color: Theme.of(context).colorScheme.onSurface),
+          iconTheme: IconThemeData(
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
           title: Text(
-            widget.entryToEdit != null ? 'Editar Registo' : 'Registar Sintoma / Crise',
-            style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.w700, fontSize: 18),
+            widget.entryToEdit != null
+                ? 'Editar Registo'
+                : 'Registar Sintoma / Crise',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
+              fontWeight: FontWeight.w700,
+              fontSize: 18,
+            ),
           ),
           centerTitle: true,
           actions: [
@@ -140,7 +181,6 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
           child: ListView(
             padding: const EdgeInsets.all(24),
             children: [
-
               // ── Tipo de Registo ──
               _SectionLabel('Tipo de Registo'),
               const SizedBox(height: 12),
@@ -172,19 +212,20 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 decoration: BoxDecoration(
-                  color: (_severity == 'Leve'
-                          ? const Color(0xFF10B981)
-                          : _severity == 'Observação'
+                  color:
+                      (_severity == 'Leve'
+                              ? const Color(0xFF10B981)
+                              : _severity == 'Observação'
                               ? const Color(0xFFF59E0B)
                               : const Color(0xFFEF4444))
-                      .withValues(alpha: 0.15),
+                          .withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: _severity == 'Leve'
                         ? const Color(0xFF10B981)
                         : _severity == 'Observação'
-                            ? const Color(0xFFF59E0B)
-                            : const Color(0xFFEF4444),
+                        ? const Color(0xFFF59E0B)
+                        : const Color(0xFFEF4444),
                     width: 2,
                   ),
                 ),
@@ -197,8 +238,8 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
                     color: _severity == 'Leve'
                         ? const Color(0xFF10B981)
                         : _severity == 'Observação'
-                            ? const Color(0xFFF59E0B)
-                            : const Color(0xFFEF4444),
+                        ? const Color(0xFFF59E0B)
+                        : const Color(0xFFEF4444),
                   ),
                 ),
               ),
@@ -208,7 +249,9 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
               _SectionLabel('Sintomas'),
               const SizedBox(height: 4),
               Text(
-                _type == 'sintoma' ? 'Selecione pelo menos um.' : 'Opcional para Ida ao Banheiro.',
+                _type == 'sintoma'
+                    ? 'Selecione pelo menos um.'
+                    : 'Opcional para Ida ao Banheiro.',
                 style: const TextStyle(fontSize: 13, color: Color(0xFF64748B)),
               ),
               const SizedBox(height: 12),
@@ -216,8 +259,8 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
                 initialValue: _selectedSymptoms,
                 validator: (value) =>
                     (_type == 'sintoma' && (value == null || value.isEmpty))
-                        ? 'Selecione pelo menos um sintoma.'
-                        : null,
+                    ? 'Selecione pelo menos um sintoma.'
+                    : null,
                 builder: (FormFieldState<List<String>> state) {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -226,7 +269,9 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
                         spacing: 8.0,
                         runSpacing: 8.0,
                         children: _symptomsOptions.map((symptom) {
-                          final isSelected = _selectedSymptoms.contains(symptom);
+                          final isSelected = _selectedSymptoms.contains(
+                            symptom,
+                          );
                           return FilterChip(
                             label: Text(symptom),
                             selected: isSelected,
@@ -248,11 +293,17 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
                             checkmarkColor: _kBlue,
                             backgroundColor: Theme.of(context).cardColor,
                             side: BorderSide(
-                              color: isSelected ? _kBlue : Theme.of(context).dividerColor,
+                              color: isSelected
+                                  ? _kBlue
+                                  : Theme.of(context).dividerColor,
                             ),
                             labelStyle: TextStyle(
-                              color: isSelected ? _kBlue : Theme.of(context).colorScheme.onSurface,
-                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                              color: isSelected
+                                  ? _kBlue
+                                  : Theme.of(context).colorScheme.onSurface,
+                              fontWeight: isSelected
+                                  ? FontWeight.w600
+                                  : FontWeight.normal,
                             ),
                           );
                         }).toList(),
@@ -297,7 +348,10 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
                       padding: const EdgeInsets.only(top: 6),
                       child: Text(
                         '$count/500',
-                        style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 11),
+                        style: const TextStyle(
+                          color: Color(0xFF94A3B8),
+                          fontSize: 11,
+                        ),
                       ),
                     );
                   },
@@ -318,7 +372,11 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
                           elevatedButtonTheme: ElevatedButtonThemeData(
                             style: ElevatedButton.styleFrom(
                               backgroundColor: _kBlue,
-                              disabledBackgroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.grey.shade800 : Colors.grey.shade300,
+                              disabledBackgroundColor:
+                                  Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? Colors.grey.shade800
+                                  : Colors.grey.shade300,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
                               ),
@@ -398,7 +456,9 @@ class _TypeChip extends StatelessWidget {
           duration: const Duration(milliseconds: 180),
           padding: const EdgeInsets.symmetric(vertical: 14),
           decoration: BoxDecoration(
-            color: isSelected ? color.withValues(alpha: 0.12) : Theme.of(context).cardColor,
+            color: isSelected
+                ? color.withValues(alpha: 0.12)
+                : Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: isSelected ? color : Theme.of(context).dividerColor,
@@ -407,7 +467,11 @@ class _TypeChip extends StatelessWidget {
           ),
           child: Column(
             children: [
-              Icon(icon, color: isSelected ? color : const Color(0xFF94A3B8), size: 22),
+              Icon(
+                icon,
+                color: isSelected ? color : const Color(0xFF94A3B8),
+                size: 22,
+              ),
               const SizedBox(height: 6),
               Text(
                 label,

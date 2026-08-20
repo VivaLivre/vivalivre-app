@@ -7,8 +7,8 @@ import 'package:viva_livre_app/features/health/presentation/pages/health_page.da
 import 'health_data_aggregator.dart';
 
 class PdfGeneratorService {
-  /// Gera o PDF com base nos dados e abre a preview nativa de partilha/impressão
-  static Future<void> generateAndPreviewPdf({
+  /// Gera o PDF com base nos dados e retorna os bytes
+  static Future<Uint8List> generatePdfBytes({
     required List<HealthRecord> records,
     required String filter,
     required String userName,
@@ -74,11 +74,7 @@ class PdfGeneratorService {
       ),
     );
 
-    // Abre o ecrã nativo (iOS/Android/Web) com a pré-visualização e opções (Print, Share, Save)
-    await Printing.layoutPdf(
-      onLayout: (PdfPageFormat format) async => pdf.save(),
-      name: 'Relatorio_Saude_VivaLivre_${DateFormat('yyyyMMdd').format(now)}.pdf',
-    );
+    return pdf.save();
   }
 
   static pw.Widget _buildHeader(String userName, String clinicalCondition, String dateStr, int daysCount) {
@@ -177,7 +173,8 @@ class PdfGeneratorService {
       final parts = r.title.split(', ');
       for (var p in parts) {
         final symptom = p.trim();
-        if (symptom.isEmpty || symptom.toLowerCase() == 'ida ao banheiro') continue;
+        final lower = symptom.toLowerCase();
+        if (lower.isEmpty || lower == 'ida ao banheiro' || lower.contains('sem sintoma')) continue;
         counts[symptom] = (counts[symptom] ?? 0) + 1;
       }
     }

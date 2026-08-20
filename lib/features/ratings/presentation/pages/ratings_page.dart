@@ -430,7 +430,7 @@ class _RatingsPageState extends State<RatingsPage> {
               Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: const Text('Obrigado pela sua contribuição! A nossa equipa vai analisar.'),
+                  content: const Text('Obrigado pela sua contribuição! A nossa equipe vai analisar.'),
                   backgroundColor: const Color(0xFF10B981),
                   behavior: SnackBarBehavior.floating,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -573,7 +573,7 @@ class _RatingsPageState extends State<RatingsPage> {
               Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: const Text('Obrigado pela sua contribuição! A nossa equipa vai analisar.'),
+                  content: const Text('Obrigado pela sua contribuição! A nossa equipe vai analisar.'),
                   backgroundColor: const Color(0xFF10B981),
                   behavior: SnackBarBehavior.floating,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

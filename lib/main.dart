@@ -4,6 +4,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:viva_livre_app/features/auth/presentation/auth_bloc.dart';
 import 'package:viva_livre_app/features/health/presentation/health_bloc.dart';
 import 'package:viva_livre_app/features/health/data/repositories/health_repository.dart';
+import 'package:viva_livre_app/features/health/domain/repositories/i_health_repository.dart';
 import 'package:viva_livre_app/features/map/presentation/bloc/map_bloc.dart';
 import 'package:viva_livre_app/features/map/data/repositories/bathroom_repository_impl.dart';
 import 'package:viva_livre_app/features/ratings/presentation/bloc/rating_bloc.dart';
@@ -42,6 +43,7 @@ void main() async {
         RepositoryProvider.value(value: profileRepository),
         RepositoryProvider.value(value: onboardingRepository),
         RepositoryProvider<IBathroomRepository>.value(value: bathroomRepository),
+        RepositoryProvider<IHealthRepository>.value(value: healthRepository),
       ],
       child: MultiBlocProvider(
         providers: [

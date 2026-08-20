@@ -5,6 +5,7 @@ import 'package:viva_livre_app/features/map/presentation/pages/map_page.dart';
 import 'package:viva_livre_app/features/health/presentation/pages/health_page.dart';
 import 'package:viva_livre_app/features/card/presentation/pages/cartao_dii_page.dart';
 import 'package:viva_livre_app/features/profile/presentation/pages/profile_page.dart';
+import 'package:viva_livre_app/core/presentation/widgets/lazy_indexed_stack.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -33,7 +34,7 @@ class _MainShellState extends State<MainShell> {
         }
       },
       child: Scaffold(
-        body: IndexedStack(
+        body: LazyIndexedStack(
           index: _currentIndex,
           children: _pages,
         ),

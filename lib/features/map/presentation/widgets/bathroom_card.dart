@@ -51,12 +51,12 @@ class BathroomCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final _kBlue = theme.colorScheme.primary;
-    final _kBlueSoft = theme.colorScheme.primary.withValues(alpha: 0.1);
-    final _kBlueBorder = theme.colorScheme.primary.withValues(alpha: 0.3);
+    final primaryColor = theme.colorScheme.primary;
+    final primarySoft = theme.colorScheme.primary.withValues(alpha: 0.1);
+    final primaryBorder = theme.colorScheme.primary.withValues(alpha: 0.3);
     final _kText = theme.colorScheme.onSurface;
     final _kSubText = theme.colorScheme.onSurface.withValues(alpha: 0.6);
-    final _kGray = theme.dividerColor;
+    final dividerColor = theme.dividerColor;
 
     final isOpen = bathroom.isOpen;
     final tags = bathroom.tags;
@@ -140,7 +140,7 @@ class BathroomCard extends StatelessWidget {
                               shape: BoxShape.circle,
                               color: isOpen
                                   ? (Theme.of(context).brightness == Brightness.dark ? const Color(0xFF34D399) : const Color(0xFF10B981))
-                                  : _kGray,
+                                  : dividerColor,
                             ),
                           ),
                           const SizedBox(width: 6),
@@ -151,7 +151,7 @@ class BathroomCard extends StatelessWidget {
                               fontWeight: FontWeight.w700,
                               color: isOpen
                                   ? (Theme.of(context).brightness == Brightness.dark ? const Color(0xFF34D399) : const Color(0xFF059669))
-                                  : _kGray,
+                                  : dividerColor,
                             ),
                           ),
                         ],
@@ -263,25 +263,25 @@ class BathroomCard extends StatelessWidget {
                 _TagChip(
                   icon: Icons.accessible_outlined,
                   label: 'Acessível',
-                  bg: _kBlueSoft,
-                  border: _kBlueBorder,
-                  fg: _kBlue,
+                  bg: primarySoft,
+                  border: primaryBorder,
+                  fg: primaryColor,
                 ),
               if (bathroom.hasChangingTable)
                 _TagChip(
                   icon: Icons.child_care_outlined,
                   label: 'Trocador',
-                  bg: _kBlueSoft,
-                  border: _kBlueBorder,
-                  fg: _kBlue,
+                  bg: primarySoft,
+                  border: primaryBorder,
+                  fg: primaryColor,
                 ),
               if (bathroom.isFree)
                 _TagChip(
                   icon: Icons.local_offer_outlined,
                   label: 'Gratuito',
-                  bg: _kBlueSoft,
-                  border: _kBlueBorder,
-                  fg: _kBlue,
+                  bg: primarySoft,
+                  border: primaryBorder,
+                  fg: primaryColor,
                 ),
               ...tags
                   .where((tag) => 
@@ -292,9 +292,9 @@ class BathroomCard extends StatelessWidget {
                   .map(
                 (tag) => _TagChip(
                   label: tag,
-                  bg: _kBlueSoft,
-                  border: _kBlueBorder,
-                  fg: _kBlue,
+                  bg: primarySoft,
+                  border: primaryBorder,
+                  fg: primaryColor,
                 ),
               ),
             ],
@@ -315,10 +315,10 @@ class BathroomCard extends StatelessWidget {
                   label: Text(isOpen ? 'Ir agora' : 'Fechado'),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    backgroundColor: isOpen ? _kBlue : _kGray,
+                    backgroundColor: isOpen ? primaryColor : dividerColor,
                     foregroundColor: Colors.white,
                     disabledBackgroundColor: const Color(0xFFE5E7EB),
-                    disabledForegroundColor: _kGray,
+                    disabledForegroundColor: dividerColor,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
