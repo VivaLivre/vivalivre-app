@@ -51,11 +51,9 @@ class BathroomExtrasModalState extends State<BathroomExtrasModal> {
         left: 24,
         right: 24,
         top: 20,
-        // viewInsets.bottom = teclado; viewPadding.bottom = barra de navegação
-        bottom:
-            MediaQuery.of(context).viewInsets.bottom +
-            MediaQuery.of(context).viewPadding.bottom +
-            24,
+        bottom: MediaQuery.of(context).viewInsets.bottom > 0
+            ? MediaQuery.of(context).viewInsets.bottom + 16
+            : MediaQuery.of(context).viewPadding.bottom + 24,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
