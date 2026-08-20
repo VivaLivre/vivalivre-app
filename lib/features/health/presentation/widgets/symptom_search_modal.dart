@@ -56,11 +56,14 @@ class SymptomSearchModalState extends State<SymptomSearchModal> {
           (s) => s.toLowerCase() == query.toLowerCase(),
         );
 
+    final double keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+    
     return Container(
-      height: MediaQuery.of(context).size.height * 0.75,
+      height: MediaQuery.of(context).size.height * 0.85,
+      padding: EdgeInsets.only(bottom: keyboardHeight),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Column(
         children: [
@@ -201,11 +204,11 @@ class SymptomSearchModalState extends State<SymptomSearchModal> {
           
           // ── Observações ──
           Padding(
-            padding: EdgeInsets.only(
+            padding: const EdgeInsets.only(
               left: 24, 
               right: 24, 
               top: 16, 
-              bottom: MediaQuery.of(context).viewInsets.bottom > 0 ? 16 : 8,
+              bottom: 8,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

@@ -73,8 +73,6 @@ class BathroomModel extends Bathroom {
       'address': address,
       'latitude': location.latitude,
       'longitude': location.longitude,
-      'lat': location.latitude,
-      'lng': location.longitude,
       'rating': rating,
       'average_rating': rating,
       'reviews_count': reviewsCount,

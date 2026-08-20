@@ -76,7 +76,7 @@ class BathroomRepositoryImpl implements IBathroomRepository {
     required bool hasChangingTable,
     required bool isFree,
     String? comment,
-    dynamic photo,
+    XFile? photo,
     String? operatingHours,
   }) async {
     final formData = FormData.fromMap({

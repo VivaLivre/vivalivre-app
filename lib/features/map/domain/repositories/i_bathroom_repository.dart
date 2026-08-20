@@ -1,6 +1,7 @@
 // Removed dart:io
 import 'package:latlong2/latlong.dart';
 import 'package:viva_livre_app/features/map/domain/entities/bathroom.dart';
+import 'package:image_picker/image_picker.dart';
 
 abstract class IBathroomRepository {
   Future<List<Bathroom>> getBathrooms(double lat, double lng, {double radius = 5000});
@@ -17,7 +18,7 @@ abstract class IBathroomRepository {
     required bool hasChangingTable,
     required bool isFree,
     String? comment,
-    dynamic photo,
+    XFile? photo,
     String? operatingHours,
   });
 }
