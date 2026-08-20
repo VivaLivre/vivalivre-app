@@ -140,11 +140,18 @@ class TimelineItem extends StatelessWidget {
     final timeStr = DateFormat('HH:mm').format(entry.timestamp);
     final isBathroom = entry.type == 'banheiro';
     final dotColor = getSeverityColor(entry.severity);
-    final title = isBathroom
-        ? (entry.symptoms.where((s) => s != 'Ida ao Banheiro').isNotEmpty
-            ? 'Ida ao Banheiro + ${entry.symptoms.where((s) => s != 'Ida ao Banheiro').join(', ')}'
-            : 'Ida ao Banheiro')
-        : (entry.symptoms.isNotEmpty ? entry.symptoms.where((s) => s != 'Ida ao Banheiro').join(', ') : 'Registo de Sintomas');
+    final otherSymptoms = entry.symptoms.where((s) => s != 'Ida ao Banheiro' && s.trim().isNotEmpty).toList();
+    
+    String title = 'Registo Clínico';
+    String? subtitle;
+    
+    if (isBathroom) {
+      title = 'Ida ao Banheiro';
+      if (otherSymptoms.isNotEmpty) subtitle = otherSymptoms.join(', ');
+    } else if (otherSymptoms.isNotEmpty) {
+      title = otherSymptoms.first;
+      if (otherSymptoms.length > 1) subtitle = otherSymptoms.skip(1).join(', ');
+    }
 
     return IntrinsicHeight(
       child: Row(
@@ -228,45 +235,100 @@ class TimelineItem extends StatelessWidget {
                       ],
                     ),
                     child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(
-                          isBathroom ? Icons.wc_rounded : Icons.healing_rounded,
-                          color: dotColor,
-                          size: 20,
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          margin: const EdgeInsets.only(top: 2),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).cardColor.withValues(alpha: 0.5),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            isBathroom ? Icons.wc_rounded : Icons.healing_rounded,
+                            color: dotColor,
+                            size: 20,
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
-                          child: Text(
-                            title,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Theme.of(context).colorScheme.onSurface,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      title,
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                        color: Theme.of(context).colorScheme.onSurface,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  if (entry.severity != 'Leve')
+                                    Container(
+                                      margin: const EdgeInsets.only(left: 6),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 7,
+                                        vertical: 3,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: dotColor.withValues(alpha: 0.12),
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Text(
+                                        entry.severity,
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w700,
+                                          color: dotColor,
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              if (subtitle != null) ...[
+                                const SizedBox(height: 4),
+                                Text(
+                                  subtitle,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                              if (entry.notes.trim().isNotEmpty) ...[
+                                const SizedBox(height: 8),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Icon(Icons.notes_rounded, size: 14, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
+                                    const SizedBox(width: 4),
+                                    Expanded(
+                                      child: Text(
+                                        entry.notes,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontStyle: FontStyle.italic,
+                                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ]
+                            ],
                           ),
                         ),
-                        if (entry.severity != 'Leve')
-                          Container(
-                            margin: const EdgeInsets.only(left: 6),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 7,
-                              vertical: 3,
-                            ),
-                            decoration: BoxDecoration(
-                              color: dotColor.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(
-                              entry.severity,
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                                color: dotColor,
-                              ),
-                            ),
-                          ),
                         // ── 3 pontos ──
                         IconButton(
                           icon: const Icon(

@@ -217,7 +217,7 @@ class _AddBathroomPageState extends State<AddBathroomPage>
                   SizedBox(width: 12),
                   Expanded(
                     child: Text('Sugestão enviada com sucesso! '
-                        'Será analisada pela equipa.'),
+                        'Será analisada pela equipe.'),
                   ),
                 ],
               ),
