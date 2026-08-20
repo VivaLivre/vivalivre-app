@@ -133,17 +133,18 @@ class _HealthDashboardPageState extends State<HealthDashboardPage>
                   const SizedBox(height: 32),
 
                   // ── Gráfico de Pizza: Distribuição de Sintomas ──
+                  Text(
+                    'Distribuição de Sintomas',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: textColor),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Quais foram os sintomas mais recorrentes $subtitleText',
+                    style: TextStyle(fontSize: 13, color: mutedText),
+                  ),
+                  const SizedBox(height: 24),
+                  
                   if (symptomDistribution.isNotEmpty) ...[
-                    Text(
-                      'Distribuição de Sintomas',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: textColor),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Quais foram os sintomas mais recorrentes $subtitleText',
-                      style: TextStyle(fontSize: 13, color: mutedText),
-                    ),
-                    const SizedBox(height: 24),
                     Container(
                       padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
@@ -174,8 +175,28 @@ class _HealthDashboardPageState extends State<HealthDashboardPage>
                         ],
                       ),
                     ),
-                    const SizedBox(height: 32),
+                  ] else ...[
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: surfaceColor,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.withValues(alpha: 0.1)),
+                      ),
+                      alignment: Alignment.center,
+                      child: Column(
+                        children: [
+                          Icon(Icons.pie_chart_outline_rounded, size: 48, color: mutedText.withValues(alpha: 0.5)),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Nenhum sintoma registado',
+                            style: TextStyle(color: mutedText, fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
+                  const SizedBox(height: 32),
 
                   // ── Gráfico de Atividade (Barras) ──
                   Text(
