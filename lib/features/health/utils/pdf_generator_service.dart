@@ -173,12 +173,12 @@ class PdfGeneratorService {
   static pw.Widget _buildSymptomsTable(Map<String, double> symptomDistribution, List<HealthRecord> records) {
     // Calcular as ocorrências exatas para colocar na tabela
     final counts = <String, int>{};
-    final symptoms = records.where((r) => r.type == 'sintoma').toList();
-    for (var r in symptoms) {
+    for (var r in records) {
       final parts = r.title.split(', ');
       for (var p in parts) {
-        if (p.trim().isEmpty) continue;
-        counts[p] = (counts[p] ?? 0) + 1;
+        final symptom = p.trim();
+        if (symptom.isEmpty || symptom.toLowerCase() == 'ida ao banheiro') continue;
+        counts[symptom] = (counts[symptom] ?? 0) + 1;
       }
     }
 
