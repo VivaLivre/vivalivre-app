@@ -1,7 +1,8 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import '../../../../core/api/api_client.dart';
-import '../../../../core/models/user_model.dart';
+import 'package:viva_livre_app/core/api/api_client.dart';
+import 'package:viva_livre_app/core/models/user_model.dart';
+import 'package:viva_livre_app/core/database/local_database.dart';
 
 class AuthRepository {
   final ApiClient _apiClient;
@@ -74,6 +75,7 @@ class AuthRepository {
 
   Future<void> logout() async {
     await _storage.delete(key: 'jwt_token');
+    await LocalDatabase.instance.clearAll();
   }
 
   Future<bool> isAuthenticated() async {

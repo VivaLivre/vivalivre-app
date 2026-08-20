@@ -47,6 +47,11 @@ CREATE TABLE health_entries (
 ''');
   }
 
+  Future<void> clearAll() async {
+    final db = await instance.database;
+    await db.delete('health_entries');
+  }
+
   Future<void> close() async {
     final db = await instance.database;
     db.close();

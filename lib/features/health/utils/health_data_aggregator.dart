@@ -31,19 +31,19 @@ class HealthDataAggregator {
 
   /// Retorna o sintoma mais frequente e a sua severidade a partir de um conjunto de registos
   static MapEntry<String, String>? getMostFrequentSymptom(List<HealthRecord> records) {
-    final symptoms = records.where((r) => r.type == 'sintoma').toList();
-    if (symptoms.isEmpty) return null;
+    if (records.isEmpty) return null;
 
     final map = <String, int>{};
     final severityMap = <String, String>{}; // Guarda a última severidade registada para aquele sintoma
 
-    for (var r in symptoms) {
+    for (var r in records) {
       final parts = r.title.split(', ');
       for (var p in parts) {
-        if (p.trim().isEmpty) continue;
-        map[p] = (map[p] ?? 0) + 1;
+        final symptom = p.trim();
+        if (symptom.isEmpty || symptom.toLowerCase() == 'ida ao banheiro') continue;
+        map[symptom] = (map[symptom] ?? 0) + 1;
         if (r.severity != null) {
-          severityMap[p] = r.severity!;
+          severityMap[symptom] = r.severity!;
         }
       }
     }
@@ -65,17 +65,17 @@ class HealthDataAggregator {
 
   /// Retorna a distribuição percentual dos sintomas (útil para o Gráfico de Pizza)
   static Map<String, double> getSymptomDistribution(List<HealthRecord> records) {
-    final symptoms = records.where((r) => r.type == 'sintoma').toList();
-    if (symptoms.isEmpty) return {};
+    if (records.isEmpty) return {};
 
     final map = <String, int>{};
     int totalCount = 0;
 
-    for (var r in symptoms) {
+    for (var r in records) {
       final parts = r.title.split(', ');
       for (var p in parts) {
-        if (p.trim().isEmpty) continue;
-        map[p] = (map[p] ?? 0) + 1;
+        final symptom = p.trim();
+        if (symptom.isEmpty || symptom.toLowerCase() == 'ida ao banheiro') continue;
+        map[symptom] = (map[symptom] ?? 0) + 1;
         totalCount++;
       }
     }
