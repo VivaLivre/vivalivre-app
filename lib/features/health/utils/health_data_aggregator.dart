@@ -40,7 +40,8 @@ class HealthDataAggregator {
       final parts = r.title.split(', ');
       for (var p in parts) {
         final symptom = p.trim();
-        if (symptom.isEmpty || symptom.toLowerCase() == 'ida ao banheiro') continue;
+        final lower = symptom.toLowerCase();
+        if (lower.isEmpty || lower == 'ida ao banheiro' || lower.contains('sem sintoma')) continue;
         map[symptom] = (map[symptom] ?? 0) + 1;
         if (r.severity != null) {
           severityMap[symptom] = r.severity!;
@@ -74,7 +75,8 @@ class HealthDataAggregator {
       final parts = r.title.split(', ');
       for (var p in parts) {
         final symptom = p.trim();
-        if (symptom.isEmpty || symptom.toLowerCase() == 'ida ao banheiro') continue;
+        final lower = symptom.toLowerCase();
+        if (lower.isEmpty || lower == 'ida ao banheiro' || lower.contains('sem sintoma')) continue;
         map[symptom] = (map[symptom] ?? 0) + 1;
         totalCount++;
       }

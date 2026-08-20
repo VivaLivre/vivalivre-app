@@ -173,7 +173,8 @@ class PdfGeneratorService {
       final parts = r.title.split(', ');
       for (var p in parts) {
         final symptom = p.trim();
-        if (symptom.isEmpty || symptom.toLowerCase() == 'ida ao banheiro') continue;
+        final lower = symptom.toLowerCase();
+        if (lower.isEmpty || lower == 'ida ao banheiro' || lower.contains('sem sintoma')) continue;
         counts[symptom] = (counts[symptom] ?? 0) + 1;
       }
     }
