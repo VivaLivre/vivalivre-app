@@ -11,6 +11,11 @@ import 'dart:typed_data';
 import 'package:viva_livre_app/core/models/user_model.dart';
 import 'package:printing/printing.dart';
 import 'package:pdf/pdf.dart';
+import 'package:dio/dio.dart';
+import 'package:viva_livre_app/features/profile/data/repositories/profile_repository.dart';
+import 'package:viva_livre_app/features/profile/presentation/widgets/settings_sheet.dart';
+import 'package:viva_livre_app/core/presentation/widgets/custom_text_field.dart';
+import 'package:viva_livre_app/core/presentation/widgets/custom_primary_button.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -180,115 +185,7 @@ class _ProfilePageState extends State<ProfilePage>
     );
   }
 
-  void _showPrivacyDialog() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        final theme = Theme.of(context);
-        return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          backgroundColor: theme.cardColor,
-          title: Row(
-            children: [
-              const Icon(Icons.shield_outlined, color: AppColors.primary),
-              const SizedBox(width: 8),
-              const Text('Privacidade e LGPD', style: TextStyle(fontWeight: FontWeight.w700)),
-            ],
-          ),
-          content: const SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Segurança e controle dos seus dados',
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
-                ),
-                SizedBox(height: 12),
-                Text(
-                  'No VivaLivre, levamos a sério a Lei Geral de Proteção de Dados (LGPD). Todos os seus registros de saúde, sintomas e urgências são armazenados com criptografia ponta a ponta e nunca são compartilhados sem sua permissão explícita.',
-                  style: TextStyle(fontSize: 14, height: 1.4),
-                ),
-                SizedBox(height: 12),
-                Text(
-                  'Direitos do Usuário:',
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
-                ),
-                SizedBox(height: 6),
-                Text(
-                  '• Revogação de consentimento a qualquer momento.\n• Acesso completo ao relatório exportável.\n• Exclusão total e definitiva dos dados ao remover sua conta.',
-                  style: TextStyle(fontSize: 14, height: 1.4),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Entendi', style: TextStyle(fontWeight: FontWeight.w700)),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _showHelpSupportDialog() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        final theme = Theme.of(context);
-        return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          backgroundColor: theme.cardColor,
-          title: Row(
-            children: [
-              const Icon(Icons.help_outline_rounded, color: AppColors.primary),
-              const SizedBox(width: 8),
-              const Text('Ajuda e Suporte', style: TextStyle(fontWeight: FontWeight.w700)),
-            ],
-          ),
-          content: const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Estamos aqui para ajudar!',
-                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
-              ),
-              SizedBox(height: 12),
-              Text(
-                'Se você tiver dúvidas, sugestões ou problemas técnicos com o VivaLivre, entre em contato através de nossos canais oficiais:',
-                style: TextStyle(fontSize: 14, height: 1.4),
-              ),
-              SizedBox(height: 16),
-              Row(
-                children: [
-                  Icon(Icons.email_outlined, size: 18, color: AppColors.lightSubText),
-                  SizedBox(width: 8),
-                  Text('suporte@vivalivre.org', style: TextStyle(fontWeight: FontWeight.w600)),
-                ],
-              ),
-              SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(Icons.phone_outlined, size: 18, color: AppColors.lightSubText),
-                  SizedBox(width: 8),
-                  Text('0800 123 4567', style: TextStyle(fontWeight: FontWeight.w600)),
-                ],
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Fechar', style: TextStyle(fontWeight: FontWeight.w700)),
-            ),
-          ],
-        );
-      },
-    );
-  }
+  // Removed _showChangePasswordSheet, _showPrivacyDialog, _showHelpSupportDialog
 
   @override
   Widget build(BuildContext context) {
@@ -325,12 +222,28 @@ class _ProfilePageState extends State<ProfilePage>
                           color: _kText,
                         ),
                       ),
-                      IconButton(
-                        icon: Icon(Icons.edit_outlined, color: _kBlue, size: 22),
-                        tooltip: 'Editar Perfil',
-                        onPressed: () {
-                          Navigator.pushNamed(context, '/edit-profile');
-                        },
+                      Row(
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.settings_outlined, color: _kText, size: 24),
+                            tooltip: 'Configurações',
+                            onPressed: () {
+                              showModalBottomSheet(
+                                context: context,
+                                backgroundColor: Colors.transparent,
+                                isScrollControlled: true,
+                                builder: (ctx) => const SettingsSheet(),
+                              );
+                            },
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.edit_outlined, color: _kBlue, size: 22),
+                            tooltip: 'Editar Perfil',
+                            onPressed: () {
+                              Navigator.pushNamed(context, '/edit-profile');
+                            },
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -669,34 +582,6 @@ class _ProfilePageState extends State<ProfilePage>
                     ),
                   ),
 
-                  const SizedBox(height: 12),
-
-                  Text(
-                    'Configurações',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: _kSubText, letterSpacing: 0.5),
-                  ),
-                  const SizedBox(height: 10),
-                  _ProfileMenuItem(
-                    icon: Icons.shield_outlined,
-                    title: 'Privacidade e LGPD',
-                    onTap: _showPrivacyDialog,
-                    cardBg: _kCardBg,
-                  ),
-                  _ProfileMenuItem(
-                    icon: Icons.help_outline_rounded,
-                    title: 'Ajuda e Suporte',
-                    onTap: _showHelpSupportDialog,
-                    cardBg: _kCardBg,
-                  ),
-                  _ProfileMenuItem(
-                    icon: Icons.logout_rounded,
-                    title: 'Sair',
-                    isDestructive: true,
-                    onTap: () {
-                      context.read<AuthBloc>().add(AuthLogoutRequested());
-                    },
-                    cardBg: _kCardBg,
-                  ),
                   const SizedBox(height: 24),
                 ],
               ),
@@ -776,55 +661,5 @@ class _MetricCard extends StatelessWidget {
   }
 }
 
-// ═════════════════════════════════════════════════════════════════════════════
-//  _ProfileMenuItem
-// ═════════════════════════════════════════════════════════════════════════════
-
-class _ProfileMenuItem extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final VoidCallback onTap;
-  final bool isDestructive;
-  final Color cardBg;
-
-  const _ProfileMenuItem({
-    required this.icon,
-    required this.title,
-    required this.onTap,
-    required this.cardBg,
-    this.isDestructive = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final color = isDestructive ? AppColors.error : Theme.of(context).colorScheme.onSurface;
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(
-        color: cardBg,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.015),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: ListTile(
-        leading: Icon(icon, color: color, size: 22),
-        title: Text(
-          title,
-          style: TextStyle(fontWeight: FontWeight.w700, color: color, fontSize: 15),
-        ),
-        trailing: isDestructive
-            ? null
-            : const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8), size: 20),
-        onTap: onTap,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      ),
-    );
-  }
-}
+//  End of profile_page.dart
 

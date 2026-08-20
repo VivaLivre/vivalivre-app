@@ -40,6 +40,10 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
   final TextEditingController _comorbitySearchController = TextEditingController();
   final Set<String> _selectedComorbidities = {};
 
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
+  bool _obscurePassword = true;
+
   bool _isLoading = false;
 
   static const List<String> _conditions = [
@@ -90,6 +94,8 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
     _weightController.dispose();
     _heightController.dispose();
     _comorbitySearchController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -113,6 +119,16 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
         if (_selectedGender == null) {
           _showSnack('Selecione o seu género.');
           return;
+        }
+        if (_passwordController.text.isNotEmpty) {
+          if (_passwordController.text.length < 6) {
+            _showSnack('A palavra-passe deve ter pelo menos 6 caracteres.');
+            return;
+          }
+          if (_passwordController.text != _confirmPasswordController.text) {
+            _showSnack('As palavras-passe não coincidem.');
+            return;
+          }
         }
         setState(() => _currentStep += 1);
       }
@@ -164,6 +180,7 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
         cpf: cpf,
         clinicalCondition: clinicalCondition,
         comorbidities: _selectedComorbidities.toList(),
+        password: _passwordController.text.isNotEmpty ? _passwordController.text : null,
       );
 
       if (mounted) {
@@ -336,6 +353,37 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
                           ),
                         ),
                       ],
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      'Definir Palavra-passe (Opcional)',
+                      style: TextStyle(color: textDark, fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Podes definir uma palavra-passe agora para poderes iniciar sessão com email/senha noutros dispositivos.',
+                      style: TextStyle(color: iconColor, fontSize: 13),
+                    ),
+                    const SizedBox(height: 12),
+                    CustomTextField(
+                      controller: _passwordController,
+                      hintText: 'Nova palavra-passe',
+                      obscureText: _obscurePassword,
+                      prefixIcon: Icon(Icons.lock_outline, color: iconColor),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                          color: iconColor,
+                        ),
+                        onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    CustomTextField(
+                      controller: _confirmPasswordController,
+                      hintText: 'Confirmar palavra-passe',
+                      obscureText: _obscurePassword,
+                      prefixIcon: Icon(Icons.lock_outline, color: iconColor),
                     ),
                   ],
                 ),

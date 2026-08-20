@@ -136,4 +136,31 @@ class AuthRepository {
     return null;
   }
 
+  Future<void> forgotPassword(String email) async {
+    try {
+      final response = await _apiClient.dio.post('/api/auth/forgot-password', data: {
+        'email': email,
+      });
+      if (response.statusCode != 200) {
+        throw Exception('Erro ao solicitar recuperação de senha.');
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> resetPassword(String token, String newPassword) async {
+    try {
+      final response = await _apiClient.dio.post('/api/auth/reset-password', data: {
+        'token': token,
+        'new_password': newPassword,
+      });
+      if (response.statusCode != 200) {
+        throw Exception('Erro ao redefinir a senha.');
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
 }
