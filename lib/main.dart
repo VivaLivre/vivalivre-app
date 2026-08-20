@@ -18,6 +18,7 @@ import 'package:viva_livre_app/features/profile/data/repositories/profile_reposi
 import 'package:viva_livre_app/features/crowdsource/data/repositories/crowdsource_repository_impl.dart';
 import 'package:viva_livre_app/features/crowdsource/presentation/bloc/crowdsource_bloc.dart';
 import 'package:viva_livre_app/features/map/domain/repositories/i_bathroom_repository.dart';
+import 'package:viva_livre_app/core/theme/theme_cubit.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -64,6 +65,9 @@ void main() async {
           ),
           BlocProvider<CrowdsourceBloc>(
             create: (_) => CrowdsourceBloc(repository: crowdsourceRepository),
+          ),
+          BlocProvider<ThemeCubit>(
+            create: (_) => ThemeCubit(),
           ),
         ],
         child: const App(),

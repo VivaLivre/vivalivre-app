@@ -18,6 +18,7 @@ class ProfileRepository {
     String? clinicalCondition,
     List<String>? comorbidities,
     XFile? photo,
+    String? password,
   }) async {
     try {
       final formData = FormData.fromMap({
@@ -28,6 +29,7 @@ class ProfileRepository {
         if (gender != null) 'gender': gender,
         if (cpf != null) 'cpf': cpf,
         if (clinicalCondition != null) 'clinical_condition': clinicalCondition,
+        if (password != null) 'password': password,
         if (comorbidities != null)
           for (int i = 0; i < comorbidities.length; i++)
             'comorbidities': comorbidities[i],
@@ -53,5 +55,23 @@ class ProfileRepository {
       rethrow;
     }
     return null;
+  }
+
+  Future<void> updatePassword({
+    required String newPassword,
+  }) async {
+    try {
+      final response = await _apiClient.dio.put(
+        '/api/users/me/password',
+        data: {
+          'new_password': newPassword,
+        },
+      );
+      if (response.statusCode != 200) {
+        throw Exception('Erro ao atualizar palavra-passe.');
+      }
+    } catch (e) {
+      rethrow;
+    }
   }
 }
