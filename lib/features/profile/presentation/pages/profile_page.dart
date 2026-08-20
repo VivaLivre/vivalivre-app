@@ -6,7 +6,10 @@ import 'package:viva_livre_app/features/health/presentation/health_bloc.dart';
 import 'package:viva_livre_app/features/health/domain/entities/health_entry.dart';
 import 'package:viva_livre_app/features/health/presentation/pages/health_page.dart' show HealthRecord;
 import 'package:viva_livre_app/features/health/utils/pdf_generator_service.dart';
+import 'dart:typed_data';
 import 'package:viva_livre_app/core/models/user_model.dart';
+import 'package:printing/printing.dart';
+import 'package:pdf/pdf.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -89,8 +92,8 @@ class _ProfilePageState extends State<ProfilePage>
         final start = DateTime(now.year, now.month, now.day).subtract(Duration(days: days));
         final filteredRecords = allRecords.where((r) => r.timestamp.isAfter(start)).toList();
 
-        // Gerar
-        await PdfGeneratorService.generateAndPreviewPdf(
+        // Gerar bytes do PDF
+        final pdfBytes = await PdfGeneratorService.generatePdfBytes(
           records: filteredRecords,
           filter: title,
           userName: user.name,
@@ -101,6 +104,9 @@ class _ProfilePageState extends State<ProfilePage>
           setState(() {
             _isGeneratingPdf = false;
           });
+          
+          // Mostrar opções de partilha/visualização
+          _showPdfOptionsDialog(context, pdfBytes);
         }
       },
       borderRadius: BorderRadius.circular(16),
@@ -129,6 +135,46 @@ class _ProfilePageState extends State<ProfilePage>
           ],
         ),
       ),
+    );
+  }
+
+  void _showPdfOptionsDialog(BuildContext context, Uint8List pdfBytes) {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text('Relatório Pronto', style: TextStyle(fontWeight: FontWeight.bold)),
+          content: const Text('O que pretende fazer com o relatório gerado?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                Printing.layoutPdf(
+                  onLayout: (PdfPageFormat format) async => pdfBytes,
+                  name: 'Relatorio_Saude_VivaLivre.pdf',
+                );
+              },
+              child: const Text('Visualizar'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              onPressed: () {
+                Navigator.pop(ctx);
+                Printing.sharePdf(
+                  bytes: pdfBytes,
+                  filename: 'Relatorio_Saude_VivaLivre.pdf',
+                );
+              },
+              child: const Text('Encaminhar'),
+            ),
+          ],
+        );
+      },
     );
   }
 
