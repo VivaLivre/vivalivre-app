@@ -59,13 +59,16 @@ class SymptomSearchModalState extends State<SymptomSearchModal> {
     final double keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
     
     return Container(
-      height: MediaQuery.of(context).size.height * 0.85,
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.95,
+      ),
       padding: EdgeInsets.only(bottom: keyboardHeight),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           const SizedBox(height: 12),
           Container(
@@ -127,7 +130,7 @@ class SymptomSearchModalState extends State<SymptomSearchModal> {
           const SizedBox(height: 16),
 
           // ── Lista de Chips ──
-          Expanded(
+          Flexible(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Column(

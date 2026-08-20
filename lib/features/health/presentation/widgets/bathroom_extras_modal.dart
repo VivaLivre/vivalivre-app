@@ -57,11 +57,11 @@ class BathroomExtrasModalState extends State<BathroomExtrasModal> {
             MediaQuery.of(context).viewPadding.bottom +
             24,
       ),
-      child: SingleChildScrollView(
-        child: Column(
+      child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+
           // ── Alça visual ──
           Center(
             child: Container(
@@ -108,7 +108,12 @@ class BathroomExtrasModalState extends State<BathroomExtrasModal> {
           ),
           const SizedBox(height: 20),
 
-          // ── Chips de sintomas rápidos ──
+          Flexible(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ── Chips de sintomas rápidos ──
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -152,11 +157,15 @@ class BathroomExtrasModalState extends State<BathroomExtrasModal> {
               color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
-          const SizedBox(height: 8),
-          CustomTextField(
-            controller: _notesController,
-            maxLines: 3,
-            hintText: 'Algum detalhe adicional?',
+                  const SizedBox(height: 8),
+                  CustomTextField(
+                    controller: _notesController,
+                    maxLines: 3,
+                    hintText: 'Algum detalhe adicional?',
+                  ),
+                ],
+              ),
+            ),
           ),
           const SizedBox(height: 24),
 
