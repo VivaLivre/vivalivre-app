@@ -34,6 +34,9 @@ class _MapPageState extends State<MapPage>
   final MapController _mapController = MapController();
   final TextEditingController _searchController = TextEditingController();
   bool _showEmergency = false;
+  late final AnimationController _moveController;
+  void Function()? _moveListener;
+  Timer? _debounceTimer;
   Timer? _emergencyTimer;
   Bathroom? _lastSelectedBathroom;
 
@@ -43,6 +46,7 @@ class _MapPageState extends State<MapPage>
   @override
   void initState() {
     super.initState();
+    _moveController = AnimationController(duration: const Duration(milliseconds: 900), vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<MapBloc>().add(const RequestGpsLocation());
     });
@@ -50,8 +54,9 @@ class _MapPageState extends State<MapPage>
 
   @override
   void dispose() {
+    _moveController.dispose();
+    _debounceTimer?.cancel();
     _emergencyTimer?.cancel();
-    _moveController?.dispose();
     _mapController.dispose();
     _searchController.dispose();
     super.dispose();
@@ -63,8 +68,6 @@ class _MapPageState extends State<MapPage>
       ..clearSnackBars()
       ..showSnackBar(SnackBar(content: Text(msg)));
   }
-
-  AnimationController? _moveController;
 
   void _animatedMove(LatLng dest, double zoom) {
     final latTween = Tween<double>(
@@ -80,22 +83,21 @@ class _MapPageState extends State<MapPage>
       end: zoom,
     );
 
-    _moveController?.dispose();
+    if (_moveListener != null) {
+      _moveController.removeListener(_moveListener!);
+    }
 
-    _moveController = AnimationController(
-      duration: const Duration(milliseconds: 900),
-      vsync: this,
-    );
-    final anim = CurvedAnimation(parent: _moveController!, curve: Curves.fastOutSlowIn);
+    final anim = CurvedAnimation(parent: _moveController, curve: Curves.fastOutSlowIn);
 
-    _moveController!.addListener(() {
+    _moveListener = () {
       _mapController.move(
         LatLng(latTween.evaluate(anim), lngTween.evaluate(anim)),
         zoomTween.evaluate(anim),
       );
-    });
+    };
 
-    _moveController!.forward();
+    _moveController.addListener(_moveListener!);
+    _moveController.forward(from: 0);
   }
 
   Marker _buildCurrentLocationMarker(LatLng position) {
@@ -255,7 +257,13 @@ class _MapPageState extends State<MapPage>
                       // Margem de segurança de 20% e limite máximo de 80km
                       radiusInMeters = (radiusInMeters * 1.2).clamp(100.0, 80000.0);
 
-                      context.read<MapBloc>().add(FetchBathroomsInArea(center, radiusInMeters));
+                      // Issue 12.2: Debounce de 500ms para evitar spam à API
+                      _debounceTimer?.cancel();
+                      _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+                        if (mounted) {
+                          context.read<MapBloc>().add(FetchBathroomsInArea(center, radiusInMeters));
+                        }
+                      });
                     }
                   },
                 ),

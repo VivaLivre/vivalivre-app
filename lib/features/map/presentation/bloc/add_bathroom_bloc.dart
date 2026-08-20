@@ -217,7 +217,7 @@ class AddBathroomBloc extends Bloc<AddBathroomEvent, AddBathroomState> {
         } else if (e.type == DioExceptionType.connectionError || e.type == DioExceptionType.connectionTimeout) {
           message = 'Sem conexão com o servidor. Verifique a sua internet.';
         }
-      } else if (e is SocketException || e.toString().contains('Connection')) {
+      } else if (e is SocketException) {
         message = 'Sem conexão com o servidor. Verifique a sua internet.';
       }
 
