@@ -232,25 +232,59 @@ class _AddBathroomPageState extends State<AddBathroomPage>
 
         if (state.submissionStatus == SubmissionStatus.error &&
             state.errorMessage != null) {
-          ScaffoldMessenger.of(context)
-            ..clearSnackBars()
-            ..showSnackBar(
-              SnackBar(
-                content: Row(
+          showModalBottomSheet(
+            context: context,
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(32))),
+            builder: (context) => SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(32.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.error_outline_rounded,
-                        color: Colors.white, size: 20),
-                    const SizedBox(width: 12),
-                    Expanded(child: Text(state.errorMessage!)),
+                    Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.error_outline_rounded, color: Color(0xFFEF4444), size: 40),
+                    ),
+                    const SizedBox(height: 24),
+                    const Text(
+                      'Oops! Algo correu mal',
+                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      state.errorMessage!,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: Theme.of(context).textTheme.bodySmall?.color ?? Colors.grey,
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFEF4444),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        ),
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Entendido', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      ),
+                    ),
                   ],
                 ),
-                backgroundColor: const Color(0xFFEF4444),
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-                margin: const EdgeInsets.all(16),
               ),
-            );
+            ),
+          );
         }
       },
       builder: (context, state) {
