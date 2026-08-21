@@ -337,9 +337,12 @@ class _RegisterPageState extends State<RegisterPage> {
                           textCapitalization: TextCapitalization.words,
                           prefixIcon: Icon(Icons.person_outline, color: iconColor),
                           textInputAction: TextInputAction.next,
+                          maxLength: 100,
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) return 'Informe o seu nome.';
                             if (value.trim().length < 3) return 'Pelo menos 3 caracteres.';
+                            final nameRegex = RegExp(r"^[\p{L}\s\-']+$", unicode: true);
+                            if (!nameRegex.hasMatch(value)) return 'O nome contém caracteres inválidos.';
                             return null;
                           },
                         ),
@@ -350,9 +353,10 @@ class _RegisterPageState extends State<RegisterPage> {
                           hintText: 'E-mail',
                           prefixIcon: Icon(Icons.email_outlined, color: iconColor),
                           textInputAction: TextInputAction.next,
+                          maxLength: 255,
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) return 'Informe o seu e-mail.';
-                            if (!_emailRegex.hasMatch(value.trim())) return 'Formato inválido.';
+                            if (!value.contains('@')) return 'E-mail inválido.';
                             return null;
                           },
                         ),
@@ -362,10 +366,13 @@ class _RegisterPageState extends State<RegisterPage> {
                           obscureText: _obscurePassword,
                           hintText: 'Palavra-passe',
                           prefixIcon: Icon(Icons.lock_outline, color: iconColor),
+                          textInputAction: TextInputAction.next,
+                          maxLength: 100,
                           suffixIcon: IconButton(
-                            icon: Icon(_obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: iconColor),
+                            icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, color: iconColor),
                             onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                           ),
+                          onChanged: _checkPasswordStrength,
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) return 'Informe a sua senha.';
                             if (_passwordScore < 3) return 'Senha muito fraca. Use letras, números e no mínimo 8 caracteres.';
@@ -425,8 +432,10 @@ class _RegisterPageState extends State<RegisterPage> {
                           obscureText: _obscureConfirmPassword,
                           hintText: 'Confirmar palavra-passe',
                           prefixIcon: Icon(Icons.lock_outline, color: iconColor),
+                          textInputAction: TextInputAction.done,
+                          maxLength: 100,
                           suffixIcon: IconButton(
-                            icon: Icon(_obscureConfirmPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: iconColor),
+                            icon: Icon(_obscureConfirmPassword ? Icons.visibility_off : Icons.visibility, color: iconColor),
                             onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
                           ),
                           validator: (value) {
