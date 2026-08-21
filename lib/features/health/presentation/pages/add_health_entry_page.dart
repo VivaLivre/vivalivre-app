@@ -270,6 +270,7 @@ class _AddHealthEntryPageState extends State<AddHealthEntryPage> {
               CustomTextField(
                 controller: _notesController,
                 maxLines: 5,
+                maxLength: 500,
                 hintText: 'Descreva como se sente, contexto, etc.',
               ),
               Align(
